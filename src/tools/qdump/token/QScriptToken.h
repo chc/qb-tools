@@ -1,7 +1,11 @@
-#ifndef _TOKEN_H
-#define _TOKEN_H
+#ifndef _QSCRTIPTTOKEN_H
+#define _QSCRTIPTTOKEN_H
 
-typedef uint8_t EScriptTokenType;
+#include <stdint.h>
+#include <string>
+#include <vector>
+
+class IQStream;
 
 enum EScriptToken
 {
@@ -115,5 +119,21 @@ enum EScriptToken
 	// Warning! Do not exceed 256 entries, since these are stored in bytes.
 };
 
-const char *GetTokenName(EScriptToken token);
-#endif
+typedef struct {
+	std::string token;
+	size_t offset;
+} TokenInjection;
+
+class QScriptToken {
+    public:
+        QScriptToken();
+        virtual ~QScriptToken();
+        virtual EScriptToken GetType() = 0;
+		virtual void LoadParams(IQStream *stream) = 0;
+		static QScriptToken *Resolve(uint8_t token);
+		virtual std::string ToString() = 0;
+		virtual int	GetPreTabOffset();
+		virtual int GetPostTabOffset();
+		virtual std::vector<TokenInjection> GetInjections();
+};
+#endif //_QSCRTIPTTOKEN_H
