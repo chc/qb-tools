@@ -1,13 +1,12 @@
 #ifndef _RANDOMNOREPEATTOKEN_H
 #define _RANDOMNOREPEATTOKEN_H
-#include "QScriptToken.h"
+#include "RandomToken.h"
 
-class RandomNoRepeatToken : public QScriptToken {
+class RandomNoRepeatToken : public RandomToken {
     public:
         RandomNoRepeatToken();
         ~RandomNoRepeatToken();
         EScriptToken GetType();
-        void LoadParams(IQStream *stream);
         std::string ToString();
     private:
 };

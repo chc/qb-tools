@@ -25,5 +25,6 @@ std::vector<TokenInjection> ArgToken::GetInjections() {
     TokenInjection injection;
     injection.offset = sizeof(uint32_t) + sizeof(uint8_t); //size of name token
     injection.token = ">";
+    result.push_back(injection);
     return result;
 }

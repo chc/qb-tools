@@ -15,9 +15,12 @@ EScriptToken JumpToken::GetType() {
     return ESCRIPTTOKEN_JUMP;
 }
 void JumpToken::LoadParams(IQStream *stream) {
-    uint32_t offset = stream->ReadUInt32();
+    m_offset = stream->ReadUInt32();
+    
 }
 std::string JumpToken::ToString() {
-    //return " JUMP ";
+    /*std::ostringstream ss;
+    ss << "JMP(" << m_offset << ")";
+    return ss.str();*/
     return "";
 }

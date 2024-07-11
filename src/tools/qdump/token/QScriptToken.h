@@ -120,6 +120,11 @@ enum EScriptToken
 };
 
 typedef struct {
+    uint16_t weight;
+    uint32_t offset;
+} RandomOffset;
+
+typedef struct {
 	std::string token;
 	size_t offset;
 } TokenInjection;

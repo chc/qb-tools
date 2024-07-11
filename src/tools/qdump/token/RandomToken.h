@@ -2,13 +2,16 @@
 #define _RANDOMTOKEN_H
 #include "QScriptToken.h"
 
+
 class RandomToken : public QScriptToken {
     public:
         RandomToken();
         ~RandomToken();
-        EScriptToken GetType();
+        virtual EScriptToken GetType();
         void LoadParams(IQStream *stream);
-        std::string ToString();
+        virtual std::string ToString();
+        std::vector<TokenInjection> GetInjections();
     private:
+        std::vector<TokenInjection> m_injections;
 };
 #endif //_RANDOMTOKEN_H

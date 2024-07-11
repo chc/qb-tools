@@ -5,6 +5,7 @@
 
 #include "token/NameToken.h"
 #include "token/ChecksumNameToken.h"
+#include "token/InjectedToken.h"
 
 #include <vector>
 const char *path = "/Users/chc/skate5/data/scripts/game/animevents.qb";
@@ -41,6 +42,31 @@ void map_checksum_names() {
     }
 }
 
+std::vector<TokenInjection> active_injections;
+void append_injections(QScriptFileStream &fs, QScriptToken *token) {
+    size_t offset = fs.GetOffset();
+    std::vector<TokenInjection> injections = token->GetInjections();
+    if(!injections.empty()) {
+        std::vector<TokenInjection>::iterator it = injections.begin();
+        while(it != injections.end()) {
+            TokenInjection injection = *it;
+            injection.offset += offset;
+            active_injections.push_back(injection);
+            it++;
+        }
+    }
+}
+void perform_injections(QScriptFileStream &fs) {
+    std::vector<TokenInjection>::iterator it = active_injections.begin();
+    while(it != active_injections.end()) {
+        TokenInjection injection = *it;
+        if(fs.GetOffset() == injection.offset) {
+            InjectedToken *token = new InjectedToken(injection.token);
+            token_list.push_back(token);
+        }
+        it++;
+    }
+}
 int main() {
     QScriptFileStream fs(path);
 
@@ -48,7 +74,9 @@ int main() {
     while(true) {
         token = fs.NextToken();
         if(token != NULL) {
+            append_injections(fs, token);
             token_list.push_back(token);
+            perform_injections(fs);
         }
         if(token == NULL || token->GetType() == ESCRIPTTOKEN_ENDOFFILE) {
             break;
