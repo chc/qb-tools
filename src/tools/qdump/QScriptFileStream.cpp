@@ -9,6 +9,9 @@ QScriptFileStream::QScriptFileStream(const char *path) {
 QScriptFileStream::~QScriptFileStream() {
     fclose(mp_fd);
 }
+bool QScriptFileStream::IsFileOpened() {
+    return mp_fd != NULL;
+}
 QScriptToken *QScriptFileStream::NextToken() {
     if(feof(mp_fd)) {
         return NULL;

@@ -5,10 +5,10 @@
 
 #include "token/NameToken.h"
 #include "token/ChecksumNameToken.h"
+#include "token/JumpToken.h"
 #include "token/InjectedToken.h"
 
 #include <vector>
-const char *path = "/Users/chc/skate5/data/scripts/game/animevents.qb";
 std::vector<QScriptToken *> token_list;
 void dump_token_list(std::vector<QScriptToken *> token_list, FILE *out);
 
@@ -50,8 +50,23 @@ void append_injections(QScriptFileStream &fs, QScriptToken *token) {
         std::vector<TokenInjection>::iterator it = injections.begin();
         while(it != injections.end()) {
             TokenInjection injection = *it;
-            injection.offset += offset;
+            if(injection.use_next_jump_offset == false) {
+                injection.offset += offset;
+            }
             active_injections.push_back(injection);
+            it++;
+        }
+    }
+}
+void update_jump_injection(QScriptFileStream &fs, JumpToken *token) {
+    size_t offset = fs.GetOffset();
+    if(!active_injections.empty()) {
+        std::vector<TokenInjection>::iterator it = active_injections.begin();
+        while(it != active_injections.end()) {
+            if(it->use_next_jump_offset == true) {
+                it->use_next_jump_offset = false;
+                it->offset = offset + token->GetOffset();
+            }
             it++;
         }
     }
@@ -60,21 +75,39 @@ void perform_injections(QScriptFileStream &fs) {
     std::vector<TokenInjection>::iterator it = active_injections.begin();
     while(it != active_injections.end()) {
         TokenInjection injection = *it;
-        if(fs.GetOffset() == injection.offset) {
+        if(fs.GetOffset() == injection.offset && injection.use_next_jump_offset == false) {
             InjectedToken *token = new InjectedToken(injection.token);
             token_list.push_back(token);
+
+            //its assumed there will only be 1 injection at a given offset
+            active_injections.erase(it);
+            break;
         }
         it++;
     }
 }
-int main() {
-    QScriptFileStream fs(path);
+
+int main(int argc, const char *argv[]) {
+    if(argc  < 2) {
+        fprintf(stderr, "usage: %s [filepath]\n",argv[0]);
+        return -1;
+    }
+
+    QScriptFileStream fs(argv[1]);
+
+    if(!fs.IsFileOpened()) {
+        fprintf(stderr, "Failed to open file: %s\n", argv[1]);
+        return -1;
+    }
 
     QScriptToken *token;
     while(true) {
         token = fs.NextToken();
         if(token != NULL) {
             append_injections(fs, token);
+            if(token->GetType() == ESCRIPTTOKEN_JUMP) {
+                update_jump_injection(fs, reinterpret_cast<JumpToken*>(token));
+            }
             token_list.push_back(token);
             perform_injections(fs);
         }

@@ -127,6 +127,7 @@ typedef struct {
 typedef struct {
 	std::string token;
 	size_t offset;
+	bool use_next_jump_offset;
 } TokenInjection;
 
 class QScriptToken {

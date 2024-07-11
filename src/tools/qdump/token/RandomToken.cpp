@@ -34,7 +34,8 @@ void RandomToken::LoadParams(IQStream *stream) {
 
     for(int i=0;i<num_items;i++) {
         std::ostringstream ss;
-        TokenInjection injection;   
+        TokenInjection injection;
+        injection.use_next_jump_offset = false;
         injection.offset = offsets[i].offset - total_size;
 
         ss << "@";
@@ -44,6 +45,12 @@ void RandomToken::LoadParams(IQStream *stream) {
         injection.token = ss.str();
         m_injections.push_back(injection);
     }
+
+    TokenInjection injection;
+    injection.offset = 0;
+    injection.use_next_jump_offset = true;
+    injection.token = ")";
+    m_injections.push_back(injection);
 
     delete []offsets;
 }

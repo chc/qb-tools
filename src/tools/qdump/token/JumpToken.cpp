@@ -24,3 +24,6 @@ std::string JumpToken::ToString() {
     return ss.str();*/
     return "";
 }
+uint32_t JumpToken::GetOffset() {
+    return m_offset;
+}

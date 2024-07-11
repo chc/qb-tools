@@ -9,6 +9,7 @@ class JumpToken : public QScriptToken {
         EScriptToken GetType();
         void LoadParams(IQStream *stream);
         std::string ToString();
+        uint32_t GetOffset();
     private:
         uint32_t m_offset;
 };

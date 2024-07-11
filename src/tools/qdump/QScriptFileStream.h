@@ -16,6 +16,7 @@ class QScriptFileStream : public IQStream {
         const char *ReadNTS();
         uint8_t ReadByte();
         size_t GetOffset();
+        bool IsFileOpened();
     private:
         FILE *mp_fd;
 };
