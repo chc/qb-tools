@@ -23,6 +23,7 @@ std::string ArgToken::ToString() {
 std::vector<TokenInjection> ArgToken::GetInjections() {
     std::vector<TokenInjection> result;
     TokenInjection injection;
+    injection.use_next_jump_offset = false;
     injection.offset = sizeof(uint32_t) + sizeof(uint8_t); //size of name token
     injection.token = "> ";
     result.push_back(injection);
