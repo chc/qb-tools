@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "QScriptFileStream.h"
-#include "token/QScriptToken.h"
+#include "QStream.h"
+#include <QScriptToken.h>
 
-#include "token/NameToken.h"
-#include "token/ChecksumNameToken.h"
-#include "token/JumpToken.h"
-#include "token/InjectedToken.h"
+#include <NameToken.h>
+#include <ChecksumNameToken.h>
+#include <JumpToken.h>
+#include <InjectedToken.h>
 
 #include <vector>
 std::vector<QScriptToken *> token_list;
@@ -43,7 +43,7 @@ void map_checksum_names() {
 }
 
 std::vector<TokenInjection> active_injections;
-void append_injections(QScriptFileStream &fs, QScriptToken *token) {
+void append_injections(IStream &fs, QScriptToken *token) {
     size_t offset = fs.GetOffset();
     std::vector<TokenInjection> injections = token->GetInjections();
     if(!injections.empty()) {
@@ -58,7 +58,7 @@ void append_injections(QScriptFileStream &fs, QScriptToken *token) {
         }
     }
 }
-void update_jump_injection(QScriptFileStream &fs, JumpToken *token) {
+void update_jump_injection(IStream &fs, JumpToken *token) {
     size_t offset = fs.GetOffset();
     if(!active_injections.empty()) {
         std::vector<TokenInjection>::iterator it = active_injections.begin();
@@ -71,7 +71,7 @@ void update_jump_injection(QScriptFileStream &fs, JumpToken *token) {
         }
     }
 }
-void perform_injections(QScriptFileStream &fs) {
+void perform_injections(IStream &fs) {
     std::vector<TokenInjection>::iterator it = active_injections.begin();
     while(it != active_injections.end()) {
         TokenInjection injection = *it;
@@ -93,7 +93,9 @@ int main(int argc, const char *argv[]) {
         return -1;
     }
 
-    QScriptFileStream fs(argv[1]);
+    FileStream fs(argv[1]);
+
+    QStream qs =(&fs);
 
     if(!fs.IsFileOpened()) {
         fprintf(stderr, "Failed to open file: %s\n", argv[1]);
@@ -102,7 +104,7 @@ int main(int argc, const char *argv[]) {
 
     QScriptToken *token;
     while(true) {
-        token = fs.NextToken();
+        token = qs.NextToken();
         if(token != NULL) {
             append_injections(fs, token);
             if(token->GetType() == ESCRIPTTOKEN_JUMP) {
