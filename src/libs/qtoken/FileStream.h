@@ -16,6 +16,8 @@ class FileStream : public IStream {
         uint8_t ReadByte();
         size_t GetOffset();
         bool IsFileOpened();
+        void Seek(int32_t offset);
+        void SetCursor(int32_t offset);
     private:
         FILE *mp_fd;
 };

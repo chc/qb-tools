@@ -12,7 +12,7 @@ include_directories("src/libs/qtoken")
 add_executable (qdump ${QDUMP_SRCS})
 target_link_libraries(qdump qtoken)
 
-file (GLOB QDUMP_SRCS "src/tools/qsymboldump/*.cpp")
+file (GLOB QDUMP_SRCS "src/tools/qsymboldump/*.cpp" "src/tools/qsymboldump/symbol/*.cpp")
 include_directories("src/libs/qtoken")
 add_executable (qsymboldump ${QDUMP_SRCS})
 target_link_libraries(qsymboldump qtoken)

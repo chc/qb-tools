@@ -95,7 +95,7 @@ int main(int argc, const char *argv[]) {
 
     FileStream fs(argv[1]);
 
-    QStream qs =(&fs);
+    QStream qs = QStream(&fs);
 
     if(!fs.IsFileOpened()) {
         fprintf(stderr, "Failed to open file: %s\n", argv[1]);

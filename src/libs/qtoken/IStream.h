@@ -14,5 +14,7 @@ class IStream {
         virtual float ReadFloat() = 0;
         virtual const char *ReadNTS() = 0; //This returns a *new* string pointer
         virtual size_t GetOffset() = 0;
+        virtual void Seek(int32_t offset) = 0;
+        virtual void SetCursor(int32_t offset) = 0;
 };
 #endif // _ISTREAM_H

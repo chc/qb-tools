@@ -1,5 +1,11 @@
-#ifndef _SYMBOLTYPE_H
-#define _SYMBOLTYPE_H
+#ifndef _QSYMBOLTOKEN_H
+#define _QSYMBOLTOKEN_H
+
+#include <stdint.h>
+#include <string>
+#include <vector>
+#include <IStream.h>
+
 enum ESymbolType
 {
     ESYMBOLTYPE_NONE=0,
@@ -35,4 +41,20 @@ enum ESymbolType
 	// a 8 or 16 bit index, when WriteToBuffer writes out parameter names.
 };
 
-#endif
+class QSymbolToken {
+    public:
+        QSymbolToken();
+        virtual ~QSymbolToken();
+        virtual ESymbolType GetType() = 0;
+		virtual void LoadParams(IStream *stream) = 0;
+		static QSymbolToken *Resolve(uint8_t token);
+		virtual std::string ToString() = 0;
+        void SetNameChecksum(uint32_t name) { m_name_checksum = name; }
+        void SetSourceChecksum(uint32_t name) { m_source_checksum = name; }
+    protected:
+        uint32_t m_name_checksum;
+        uint32_t m_source_checksum;
+};
+
+
+#endif //_QSYMBOLTOKEN_H
