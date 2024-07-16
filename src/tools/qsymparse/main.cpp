@@ -3,6 +3,7 @@
 
 #include "symbol.h"
 #include <cassert>
+#include <stddef.h>
 
 void show_dump(unsigned char* data, unsigned int len, FILE* stream);
 
