@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.24)
 project(qbtools)
 enable_testing()
 
@@ -12,7 +13,15 @@ include_directories("src/libs/qtoken")
 add_executable (qdump ${QDUMP_SRCS})
 target_link_libraries(qdump qtoken)
 
-file (GLOB QDUMP_SRCS "src/tools/qsymboldump/*.cpp" "src/tools/qsymboldump/symbol/*.cpp")
+file (GLOB QSYMDUMP_SRCS "src/tools/qsymboldump/*.cpp")
+FILE (GLOB QSYMDUMP_SYMBOLS "src/tools/qsymboldump/symbol/*.cpp")
 include_directories("src/libs/qtoken")
-add_executable (qsymboldump ${QDUMP_SRCS})
+source_group("Sources" FILES ${QSYMDUMP_SRCS})
+source_group("Symbols" FILES ${QSYMDUMP_SYMBOLS})
+add_executable (qsymboldump ${QSYMDUMP_SRCS} ${QSYMDUMP_SYMBOLS})
 target_link_libraries(qsymboldump qtoken)
+
+file (GLOB QSYMPARSE_SRCS "src/tools/qsymparse/*.cpp")
+include_directories("src/libs/qsymparse")
+add_executable (qsymparse ${QSYMPARSE_SRCS})
+target_link_libraries(qsymparse)

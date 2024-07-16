@@ -19,10 +19,11 @@ ESymbolType QScriptSymbol::GetType() {
     return ESYMBOLTYPE_QSCRIPT;
 }
 void QScriptSymbol::LoadParams(IStream *stream) {
+    
     uint32_t size  = stream->ReadInt32();
-    //printf("size is: %d\n", size);
     stream->ReadInt32(); //??
 
+    printf("QScriptSymbol data_checksum at: %p\n", stream->GetOffset());
     uint32_t data_checksum = stream->ReadUInt32();
     uint32_t uncompressed_size = stream->ReadUInt32();
     uint32_t compressed_size = stream->ReadUInt32();
