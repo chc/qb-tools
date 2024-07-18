@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "QScriptFileStream.h"
-#include "token/QScriptToken.h"
+#include "QStream.h"
+#include <QScriptToken.h>
 
-#include "token/EndOfLineNumberToken.h"
-#include "token/NameToken.h"
-#include "token/ChecksumNameToken.h"
+#include <EndOfLineNumberToken.h>
+#include <NameToken.h>
+#include <ChecksumNameToken.h>
 
 #include <vector>
 #include <cassert>
