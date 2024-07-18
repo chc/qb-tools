@@ -8,6 +8,7 @@ class FloatSymbol : public QSymbolToken {
         ~FloatSymbol();
         ESymbolType GetType();
         void LoadParams(IStream *stream);
+        void LoadParamsFromArray(IStream *stream);
         std::string ToString();
     private:
         float m_value;

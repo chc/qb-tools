@@ -47,10 +47,6 @@ int main(int argc, const char *argv[]) {
         }
         //std::string s = symbol->ToString();
         //printf("symbol: %s - %04x\n", s.c_str(), fs.GetOffset());
-
-        if(symbol->GetType() != ESYMBOLTYPE_QSCRIPT) {
-            fs.ReadInt32(); //??
-        }
         
     }
     printf("exit\n");

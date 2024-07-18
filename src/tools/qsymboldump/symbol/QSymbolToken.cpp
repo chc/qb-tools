@@ -8,6 +8,9 @@
 #include "StructureSymbol.h"
 #include "QScriptSymbol.h"
 QSymbolToken::QSymbolToken() {
+    m_next_offset = 0;
+    m_name_checksum = 0;
+    m_source_checksum = 0;
 
 }
 QSymbolToken::~QSymbolToken() {
@@ -33,4 +36,10 @@ QSymbolToken* QSymbolToken::Resolve(uint8_t token) {
     printf("Failed to resolve symbol type: %d\n", token);
     assert(false);
     return nullptr;
+}
+void QSymbolToken::LoadParamsFromArray(IStream *stream) {
+    assert(false);
+}
+uint32_t QSymbolToken::GetNextOffset() {
+    return m_next_offset;
 }

@@ -14,8 +14,10 @@ ESymbolType NameSymbol::GetType() {
 }
 void NameSymbol::LoadParams(IStream *stream) {
     m_value = stream->ReadUInt32();
-    printf("Name Symbol: %p\n", m_value);
-    assert(false);
+    m_next_offset = stream->ReadUInt32();
+}
+void NameSymbol::LoadParamsFromArray(IStream *stream) {
+    m_value = stream->ReadUInt32();
 }
 std::string NameSymbol::ToString() {
     std::ostringstream ss;

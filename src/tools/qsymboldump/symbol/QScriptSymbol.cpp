@@ -23,7 +23,6 @@ void QScriptSymbol::LoadParams(IStream *stream) {
     uint32_t size  = stream->ReadInt32();
     stream->ReadInt32(); //??
 
-    printf("QScriptSymbol data_checksum at: %p\n", stream->GetOffset());
     uint32_t data_checksum = stream->ReadUInt32();
     uint32_t uncompressed_size = stream->ReadUInt32();
     uint32_t compressed_size = stream->ReadUInt32();
@@ -40,13 +39,8 @@ void QScriptSymbol::LoadParams(IStream *stream) {
     for(int i=0;i<compressed_size;i++) {
         comp_buff[i] = stream->ReadByte();
     }
-    //stream->ReadByte();
-    //stream->ReadByte();
-    //stream->ReadByte();
-    //stream->ReadByte();
 
     while((stream->GetOffset() & 4)) {
-        //printf("skipping: %d\n", stream->GetOffset());
         stream->ReadByte();
     }
 
@@ -56,8 +50,8 @@ void QScriptSymbol::LoadParams(IStream *stream) {
 
     uint32_t checksum = crc32(0, (void *)decomp_buff, uncompressed_size);
 
-    //printf("QScript data: \n");
-    //show_dump((unsigned char *)decomp_buff, decomp_len, stdout);
+    printf("QScript data: \n");
+    show_dump((unsigned char *)decomp_buff, decomp_len, stdout);
 
     //printf("checksum: %08x == %08x, decomp: %d\n", data_checksum, checksum, decomp_len);
     //assert(checksum == data_checksum);

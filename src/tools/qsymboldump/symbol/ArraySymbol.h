@@ -8,6 +8,7 @@ class ArraySymbol : public QSymbolToken {
         ~ArraySymbol();
         ESymbolType GetType();
         void LoadParams(IStream *stream);
+        void LoadParamsFromArray(IStream *stream);        
         std::string ToString();
     private:
 };

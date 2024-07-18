@@ -16,43 +16,74 @@ ESymbolType StructureSymbol::GetType() {
 }
 QSymbolToken *StructureSymbol::NextSymbol(IStream *stream) {
     uint16_t flags = stream->ReadUInt16();
-    printf("struct flags: %04x - %04x\n", flags, stream->GetOffset());
-
-    /*if(~flags & 0x01 ) {
-        stream->Seek(-sizeof(uint16_t));
-        //stream->Seek(-sizeof(uint32_t)); ///XXX: hack
-        //stream->Seek(-sizeof(uint32_t)); ///XXX: hack
-        printf("** exit StructureSymbol loop: %04x\n", stream->GetOffset());
-        return nullptr;
-    }*/
-
     uint8_t type = stream->ReadByte();
-    printf("type: %d\n", type);
+    stream->ReadByte();
+    
+    QSymbolToken *token = QSymbolToken::Resolve(type);
+    token->LoadParams(stream);
+    return token;
+}
+void StructureSymbol::LoadParamsFromArray(IStream *stream) {
+   
+    printf("StructureSymbol::LoadParamsFromArray %d / %p\n", stream->GetOffset(), stream->GetOffset());
+
+    stream->ReadInt16();
+    uint8_t hdr = stream->ReadByte();
+    assert(hdr == 1);
     stream->ReadByte();
 
-    //uint32_t name_checksum = stream->ReadUInt32();
-    //printf("name_checksum: %p\n", name_checksum);
+    uint32_t offset = stream->ReadUInt32();
+    assert(offset == stream->GetOffset());
+    while(true) {
+        uint8_t unk = stream->ReadByte();
+        uint8_t type_flags = stream->ReadByte();
+        assert(type_flags & 0x80);
+        uint8_t type = type_flags & 0xF;
 
-    QSymbolToken *token = QSymbolToken::Resolve(type);
-    //token->SetNameChecksum(name_checksum);
-    token->LoadParams(stream);
-    //stream->ReadInt32(); //??
-    return token;
+        uint16_t unk2 = stream->ReadUInt16();
+        assert(unk2 == 0);
+
+        uint32_t name = stream->ReadUInt32();
+
+        QSymbolToken *token = QSymbolToken::Resolve(type);
+        token->SetNameChecksum(name);     
+        token->LoadParams(stream);
+
+        uint32_t next = token->GetNextOffset();
+        if(next == 0) {
+            break;
+        }
+    }
 }
 void StructureSymbol::LoadParams(IStream *stream) {
     
-    printf("StructureSymbol::LoadParams %d / %p\n", stream->GetOffset(), stream->GetOffset());
-   
+    stream->ReadInt16();
+    uint8_t hdr = stream->ReadByte();
+    assert(hdr == 1);
+    stream->ReadByte();
 
+    uint32_t offset = stream->ReadUInt32();
+    assert(offset = stream->GetOffset());
     while(true) {
-        stream->ReadInt16();
-        uint8_t hdr = stream->ReadByte();
-        assert(hdr == 1);
+        uint8_t unk = stream->ReadByte();
+        uint8_t type_flags = stream->ReadByte();
+        assert(type_flags & 0x80);
+        uint8_t type = type_flags & 0xF;
 
-        uint32_t offset = stream->ReadUInt32();
-        printf("Seek: %d\n", offset);
-        stream->Seek(offset);
-        break;
+        uint16_t unk2 = stream->ReadUInt16();
+        assert(unk2 == 0);
+
+        uint32_t name = stream->ReadUInt32();
+
+        QSymbolToken *token = QSymbolToken::Resolve(type);
+        token->SetNameChecksum(name);
+        
+        token->LoadParams(stream);
+
+        uint32_t next = token->GetNextOffset();
+        if(next == 0) {
+            break;
+        }
     }
 }
 std::string StructureSymbol::ToString() {

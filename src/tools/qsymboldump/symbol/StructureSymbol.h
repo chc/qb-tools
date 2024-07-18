@@ -8,6 +8,7 @@ class StructureSymbol : public QSymbolToken {
         ~StructureSymbol();
         ESymbolType GetType();
         void LoadParams(IStream *stream);
+        void LoadParamsFromArray(IStream *stream);
         std::string ToString();
         static QSymbolToken *NextSymbol(IStream *stream);
     private:

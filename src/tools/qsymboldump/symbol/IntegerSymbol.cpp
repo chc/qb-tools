@@ -14,6 +14,10 @@ ESymbolType IntegerSymbol::GetType() {
 }
 void IntegerSymbol::LoadParams(IStream *stream) {
     m_value = stream->ReadInt32();
+    m_next_offset = stream->ReadUInt32();
+}
+void IntegerSymbol::LoadParamsFromArray(IStream *stream) {
+    m_value = stream->ReadInt32();
 }
 std::string IntegerSymbol::ToString() {
     std::ostringstream ss;

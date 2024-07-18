@@ -8,6 +8,7 @@ class NameSymbol : public QSymbolToken {
         ~NameSymbol();
         ESymbolType GetType();
         void LoadParams(IStream *stream);
+        void LoadParamsFromArray(IStream *stream);
         std::string ToString();
     private:
         uint32_t m_value;

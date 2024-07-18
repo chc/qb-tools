@@ -47,6 +47,8 @@ class QSymbolToken {
         virtual ~QSymbolToken();
         virtual ESymbolType GetType() = 0;
 		virtual void LoadParams(IStream *stream) = 0;
+        virtual void LoadParamsFromArray(IStream *stream);
+        uint32_t GetNextOffset();
 		static QSymbolToken *Resolve(uint8_t token);
 		virtual std::string ToString() = 0;
         void SetNameChecksum(uint32_t name) { m_name_checksum = name; }
@@ -54,6 +56,7 @@ class QSymbolToken {
     protected:
         uint32_t m_name_checksum;
         uint32_t m_source_checksum;
+        uint32_t m_next_offset;
 };
 
 

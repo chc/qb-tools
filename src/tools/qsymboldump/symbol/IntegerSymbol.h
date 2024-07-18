@@ -8,6 +8,7 @@ class IntegerSymbol : public QSymbolToken {
         ~IntegerSymbol();
         ESymbolType GetType();
         void LoadParams(IStream *stream);
+        void LoadParamsFromArray(IStream *stream);
         std::string ToString();
     private:
         int32_t m_value;
