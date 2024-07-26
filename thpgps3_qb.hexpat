@@ -1,5 +1,4 @@
 #pragma endian big
-#pragma eval_depth 64
 import std.mem;
 
 import std.string;
@@ -19,7 +18,9 @@ struct AlignTo<auto Alignment> {
 
 struct Offset<T> {
     u32 offset;   
-    T data @offset;
+    if(offset > 0) {
+        T data @offset;
+    }
 };
 
 
@@ -126,7 +127,6 @@ struct SStructValue {
     u16 unk2;
     u32 name;
 
-
     if(flags.IsReference) {
         u32 data;
     } else if(flags.Type == ESymbolType::ESYMBOLTYPE_INTEGER) {
@@ -205,6 +205,7 @@ struct SArray {
     } else if(flags.Type == ESymbolType::ESYMBOLTYPE_QSCRIPT) {
         SQScript data[num_items];
     } else if(flags.Type == ESymbolType::ESYMBOLTYPE_STRUCTURE) {
+    
         if(flags.IsReference) {
             u32 offset;
             SChecksumName data[num_items] @ offset;
@@ -212,12 +213,12 @@ struct SArray {
             if(num_items == 1) {
                 Offset<SStruct> data[num_items];
             } else {
-                Offset<SStruct> *data[num_items] : u32;
+                u32 offset;
+                Offset<SStruct> data[num_items] @offset;
             }
             
         }     
     } else if(flags.Type == ESymbolType::ESYMBOLTYPE_ARRAY) {
-        
         u32 offset;
         if(flags.IsReference) {
             Offset<SChecksumName> data[num_items] @offset;
@@ -356,4 +357,4 @@ fn local_string_length(u32 offset) { //includes null char
 
 
 header_t header @ 0x00;
-root_symbol_t v[while(!std::mem::eof())] @$;
+root_symbol_t root[while(!std::mem::eof())] @$;
