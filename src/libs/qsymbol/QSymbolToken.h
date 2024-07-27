@@ -49,11 +49,15 @@ class QSymbolToken {
 		virtual void LoadParams(IStream *stream) = 0;
         virtual void LoadParamsFromArray(IStream *stream);
         uint32_t GetNextOffset();
+        void SetNextOffset(uint32_t v) { m_next_offset = v; }
 		static QSymbolToken *Resolve(uint8_t token);
 		virtual std::string ToString() = 0;
         void SetNameChecksum(uint32_t name) { m_name_checksum = name; }
         void SetSourceChecksum(uint32_t name) { m_source_checksum = name; }
+        void SetIsStructItem(bool active) { m_struct_item = active; }
+        bool GetIsStructItem() { return m_struct_item; }
     protected:
+        bool m_struct_item;
         uint32_t m_name_checksum;
         uint32_t m_source_checksum;
         uint32_t m_next_offset;

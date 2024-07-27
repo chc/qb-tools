@@ -2,8 +2,8 @@
 #include <stdint.h>
 
 #include <FileStream.h>
-#include "symbol/ISStream.h"
-#include "symbol/QSymbolToken.h"
+#include <ISStream.h>
+#include <QSymbolToken.h>
 #include "SStream.h"
 
 int main(int argc, const char *argv[]) {
@@ -41,15 +41,17 @@ int main(int argc, const char *argv[]) {
 
     QSymbolToken *symbol;
     while(fs.GetOffset() < total_length) {
+        printf("Next symbol on: %08x\n", fs.GetOffset());
         symbol = ss.NextSymbol();
         if(symbol == nullptr) {
+            printf("got null symbol\n");
             break;
         }
         //std::string s = symbol->ToString();
         //printf("symbol: %s - %04x\n", s.c_str(), fs.GetOffset());
         
     }
-    printf("exit\n");
+    printf("exit: %08x\n", fs.GetOffset());
 
     return 0;
 }

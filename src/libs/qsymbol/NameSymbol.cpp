@@ -14,7 +14,11 @@ ESymbolType NameSymbol::GetType() {
 }
 void NameSymbol::LoadParams(IStream *stream) {
     m_value = stream->ReadUInt32();
-    m_next_offset = stream->ReadUInt32();
+    if(m_struct_item) {
+        m_next_offset = stream->ReadUInt32();
+    } else {
+        stream->ReadUInt32();
+    }
 }
 void NameSymbol::LoadParamsFromArray(IStream *stream) {
     m_value = stream->ReadUInt32();

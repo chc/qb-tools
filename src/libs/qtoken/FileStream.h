@@ -18,6 +18,7 @@ class FileStream : public IStream {
         bool IsFileOpened();
         void Seek(int32_t offset);
         void SetCursor(int32_t offset);
+        void Align();
     private:
         FILE *mp_fd;
 };

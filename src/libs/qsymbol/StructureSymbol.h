@@ -1,6 +1,7 @@
 #ifndef _STRUCTURESYMBOL_H
 #define _STRUCTURESYMBOL_H
 #include "QSymbolToken.h"
+#include <vector>
 
 class StructureSymbol : public QSymbolToken {
     public:
@@ -12,5 +13,6 @@ class StructureSymbol : public QSymbolToken {
         std::string ToString();
         static QSymbolToken *NextSymbol(IStream *stream);
     private:
+        std::vector<QSymbolToken *> m_children;
 };
 #endif //_STRUCTURESYMBOL_H

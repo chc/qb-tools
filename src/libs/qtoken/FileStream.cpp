@@ -105,3 +105,8 @@ void FileStream::Seek(int32_t offset) {
 void FileStream::SetCursor(int32_t offset) {
     fseek(mp_fd, offset, SEEK_SET);
 }
+void FileStream::Align() {
+    while((GetOffset() % 4)) {
+        ReadByte();
+    }
+}

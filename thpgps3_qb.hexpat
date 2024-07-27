@@ -118,7 +118,32 @@ bitfield StructFlags {
     Unk2 : 1;
     IsRoot : 1;
     IsReference : 1;
-    Type : 4;
+    Type : 4 [[format("format_structtype")]];
+};
+fn format_structtype(u8 type) {
+ if(type == ESymbolType::ESYMBOLTYPE_INTEGER) {
+        return "ESYMBOLTYPE_INTEGER";
+    } else if(type == ESymbolType::ESYMBOLTYPE_FLOAT) {
+        return "ESYMBOLTYPE_FLOAT";
+    } else if(type == ESymbolType::ESYMBOLTYPE_NAME) {
+        return "ESYMBOLTYPE_NAME";
+    } else if(type == ESymbolType::ESYMBOLTYPE_STRING) {
+        return "ESYMBOLTYPE_STRING";
+    }  else if(type == ESymbolType::ESYMBOLTYPE_LOCALSTRING) {
+        return "ESYMBOLTYPE_LOCALSTRING";
+    } else if(type == ESymbolType::ESYMBOLTYPE_PAIR) {
+        return "ESYMBOLTYPE_PAIR";
+    } else if(type == ESymbolType::ESYMBOLTYPE_VECTOR) {
+        return "ESYMBOLTYPE_VECTOR";
+    } else if(type == ESymbolType::ESYMBOLTYPE_QSCRIPT) {
+        return "ESYMBOLTYPE_QSCRIPT";
+    } else if(type == ESymbolType::ESYMBOLTYPE_STRUCTURE) {
+        return "ESYMBOLTYPE_STRUCTURE";;
+    } else if(type == ESymbolType::ESYMBOLTYPE_ARRAY) {
+        return "ESYMBOLTYPE_ARRAY";
+    }
+    return type;
+       
 };
 
 struct SStructValue {

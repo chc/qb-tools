@@ -1,9 +1,9 @@
 #include "StructureSymbol.h"
+#include "ReferenceItemSymbol.h"
 
 #include <sstream>
 #include <iomanip>
 #include <cassert>
-#include "../SStream.h"
 
 StructureSymbol::StructureSymbol() {
 
@@ -24,13 +24,10 @@ QSymbolToken *StructureSymbol::NextSymbol(IStream *stream) {
     return token;
 }
 void StructureSymbol::LoadParamsFromArray(IStream *stream) {
-   
-    printf("StructureSymbol::LoadParamsFromArray %d / %p\n", stream->GetOffset(), stream->GetOffset());
-
-    stream->ReadInt16();
-    uint8_t hdr = stream->ReadByte();
-    assert(hdr == 1);
-    stream->ReadByte();
+    printf("StructureSymbol::LoadParamsFromArray: %08x\n", stream->GetOffset());
+    
+    uint32_t hdr = stream->ReadUInt32();
+    assert(hdr == 256);
 
     uint32_t offset = stream->ReadUInt32();
     assert(offset == stream->GetOffset());
@@ -45,9 +42,21 @@ void StructureSymbol::LoadParamsFromArray(IStream *stream) {
 
         uint32_t name = stream->ReadUInt32();
 
-        QSymbolToken *token = QSymbolToken::Resolve(type);
-        token->SetNameChecksum(name);     
-        token->LoadParams(stream);
+        QSymbolToken *token = NULL;
+        if(type_flags & 0x10) { //is reference
+            ReferenceItemSymbol *ref = new ReferenceItemSymbol();
+            ref->SetIsStructItem(true);
+            ref->SetType(type_flags & 0xF);
+            ref->SetValue(stream->ReadUInt32());
+            ref->SetNextOffset(stream->ReadUInt32());
+            token = ref;
+        } else {
+            token = QSymbolToken::Resolve(type);
+            token->SetIsStructItem(true);
+            token->LoadParams(stream);
+        }
+        token->SetNameChecksum(name);
+        
 
         uint32_t next = token->GetNextOffset();
         if(next == 0) {
@@ -56,11 +65,11 @@ void StructureSymbol::LoadParamsFromArray(IStream *stream) {
     }
 }
 void StructureSymbol::LoadParams(IStream *stream) {
-    
-    stream->ReadInt16();
-    uint8_t hdr = stream->ReadByte();
-    assert(hdr == 1);
-    stream->ReadByte();
+    uint32_t struct_offset = stream->ReadUInt32();
+    stream->SetCursor(struct_offset);
+
+    uint32_t hdr = stream->ReadUInt32();
+    assert(hdr == 256);
 
     uint32_t offset = stream->ReadUInt32();
     assert(offset = stream->GetOffset());
@@ -75,10 +84,22 @@ void StructureSymbol::LoadParams(IStream *stream) {
 
         uint32_t name = stream->ReadUInt32();
 
-        QSymbolToken *token = QSymbolToken::Resolve(type);
+        QSymbolToken *token = NULL;
+        if(type_flags & 0x10) { //is reference
+            ReferenceItemSymbol *ref = new ReferenceItemSymbol();
+            ref->SetIsStructItem(true);
+            ref->SetType(type_flags & 0xF);
+            ref->SetValue(stream->ReadUInt32());
+            ref->SetNextOffset(stream->ReadUInt32());
+            token = ref;
+        } else {
+            token = QSymbolToken::Resolve(type);
+            token->SetIsStructItem(true);
+            token->LoadParams(stream);
+        }
         token->SetNameChecksum(name);
         
-        token->LoadParams(stream);
+
 
         uint32_t next = token->GetNextOffset();
         if(next == 0) {

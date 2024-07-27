@@ -4,8 +4,8 @@
 #include <FileStream.h>
 #include <stdio.h>
 #include <IStream.h>
-#include "symbol/QSymbolToken.h"
-#include "symbol/ISStream.h"
+#include <QSymbolToken.h>
+#include <ISStream.h>
 
 class SStream : public ISStream {
     public:

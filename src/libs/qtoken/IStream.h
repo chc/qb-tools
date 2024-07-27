@@ -16,5 +16,6 @@ class IStream {
         virtual size_t GetOffset() = 0;
         virtual void Seek(int32_t offset) = 0;
         virtual void SetCursor(int32_t offset) = 0;
+        virtual void Align() = 0;
 };
 #endif // _ISTREAM_H

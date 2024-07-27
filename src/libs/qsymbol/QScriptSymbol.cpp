@@ -4,9 +4,8 @@
 #include <iomanip>
 #include <cassert>
 
-#include "../crc32.h"
-#include "../lzss.h"
-#include "../show_dump.h"
+#include "crc32.h"
+#include "lzss.h"
 
 
 QScriptSymbol::QScriptSymbol() {
@@ -27,7 +26,7 @@ void QScriptSymbol::LoadParams(IStream *stream) {
     uint32_t uncompressed_size = stream->ReadUInt32();
     uint32_t compressed_size = stream->ReadUInt32();
 
-    //printf("data checksum: %d\n", data_checksum);
+    //printf("data checksum: %08x\n", data_checksum);
     //printf("uncompressed_size: %d\n", uncompressed_size);
     //printf("compressed_size: %d\n", compressed_size);
 
@@ -40,9 +39,7 @@ void QScriptSymbol::LoadParams(IStream *stream) {
         comp_buff[i] = stream->ReadByte();
     }
 
-    while((stream->GetOffset() & 4)) {
-        stream->ReadByte();
-    }
+    stream->Align();
 
     //DecodeLZSS((unsigned char *)comp_buff, (unsigned char *)decomp_buff, compressed_size);
 
@@ -50,10 +47,7 @@ void QScriptSymbol::LoadParams(IStream *stream) {
 
     uint32_t checksum = crc32(0, (void *)decomp_buff, uncompressed_size);
 
-    printf("QScript data: \n");
-    show_dump((unsigned char *)decomp_buff, decomp_len, stdout);
-
-    //printf("checksum: %08x == %08x, decomp: %d\n", data_checksum, checksum, decomp_len);
+    printf("checksum: %08x == %08x, decomp: %d\n", data_checksum, checksum, decomp_len);
     //assert(checksum == data_checksum);
 
     delete[] decomp_buff;
