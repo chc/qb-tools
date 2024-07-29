@@ -3,7 +3,7 @@
 #include <cassert>
 #include <string.h>
 
-#define _BYTE_SWAP
+//#define _BYTE_SWAP
 
 #if defined(_BYTE_SWAP)
     #define READ_UINT32(x) (((x) >> 24) | (((x) & 0x00FF0000) >> 8) | (((x) & 0x0000FF00) << 8) | ((x) << 24))
@@ -14,6 +14,7 @@
     #define READ_UINT32(x) x
     #define READ_UINT16(x) x
     #define READ_INT32(x)  x
+    #define READ_INT16(x) x
 #endif
 
 FileStream::FileStream(const char *path, bool is_write) {

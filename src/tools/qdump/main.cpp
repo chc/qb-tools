@@ -117,10 +117,6 @@ int main(int argc, const char *argv[]) {
             break;
         }
 
-        if(token->GetType() == ESCRIPTTOKEN_ENDOFLINE) {
-            break;
-        }
-
     }
     map_checksum_names();
 

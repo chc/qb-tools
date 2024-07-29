@@ -52,7 +52,7 @@ void QScriptSymbol::LoadParams(IStream *stream) {
 
     uint32_t checksum = crc32(0, (void *)m_decomp_buff, uncompressed_size);
 
-    printf("checksum: %08x == %08x, decomp: %d\n", data_checksum, checksum, m_decomp_len);
+    //printf("checksum: %08x == %08x, decomp: %d\n", data_checksum, checksum, m_decomp_len);
     //assert(checksum == data_checksum);
 
     delete[] comp_buff;

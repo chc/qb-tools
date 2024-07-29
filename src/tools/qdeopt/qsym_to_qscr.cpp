@@ -56,12 +56,16 @@ void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream) {
             WriteAsScriptToken<FloatSymbol, FloatToken>(reinterpret_cast<FloatSymbol *>(symbol), stream);
             break;
         case ESYMBOLTYPE_STRING:
+            assert(false);
             break;
         case ESYMBOLTYPE_LOCALSTRING:
+            assert(false);
             break;
         case ESYMBOLTYPE_PAIR:
+            assert(false);
             break;
         case ESYMBOLTYPE_VECTOR:
+            assert(false);
             break;
         case ESYMBOLTYPE_QSCRIPT:
             WriteQScript(reinterpret_cast<QScriptSymbol *>(symbol), stream);
