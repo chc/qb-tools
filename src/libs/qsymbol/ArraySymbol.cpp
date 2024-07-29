@@ -19,12 +19,10 @@ QSymbolToken *NextSymbol(IStream *stream, uint8_t type) {
     return token;
 }
 void ArraySymbol::LoadParams(IStream *stream) {
-    printf("Load array params: %08x\n", stream->GetOffset());
     uint32_t array_data_offset = stream->ReadUInt32();
-    printf("array data offset: %08x\n", array_data_offset);
+
     if(m_struct_item) {
         m_next_offset = stream->ReadUInt32();
-        printf("next offset: %08x\n", m_next_offset);
     }
     stream->SetCursor(array_data_offset);
 
@@ -34,27 +32,11 @@ void ArraySymbol::LoadParams(IStream *stream) {
     uint8_t type = stream->ReadByte();
     stream->ReadByte();
 
-    uint32_t num_items = stream->ReadUInt32();
+    m_num_items = stream->ReadUInt32();
 
-    if(num_items > 1) {
-        uint32_t item_data_offset = stream->ReadUInt32();
-        stream->SetCursor(item_data_offset);
+    m_tokens = new QSymbolToken*[m_num_items];
 
-        uint32_t *offsets = new uint32_t[num_items];
-        for(int i=0;i<num_items;i++) {
-            offsets[i] = stream->ReadUInt32();
-        }
-
-        for(int i=0;i<num_items;i++) {
-            stream->SetCursor(offsets[i]);
-            QSymbolToken *token = NextSymbol(stream, type);
-            m_items.push_back(token);
-        }
-        delete[] offsets;
-    } else {
-            QSymbolToken *token = NextSymbol(stream, type);
-            m_items.push_back(token);
-    }
+    ReadSymbolsFromArray(stream, type, m_num_items, m_tokens);
 }
 
 void ArraySymbol::LoadParamsFromArray(IStream *stream) {

@@ -51,7 +51,7 @@ int main(int argc, const char *argv[]) {
         //printf("symbol: %s - %04x\n", s.c_str(), fs.GetOffset());
         
     }
-    printf("exit: %08x\n", fs.GetOffset());
+    printf("exit: %08x %08x\n", fs.GetOffset(), total_length);
 
     return 0;
 }

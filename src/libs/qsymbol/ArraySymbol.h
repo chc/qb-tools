@@ -12,6 +12,7 @@ class ArraySymbol : public QSymbolToken {
         void LoadParamsFromArray(IStream *stream);        
         std::string ToString();
     private:
-        std::vector<QSymbolToken *> m_items;
+        uint32_t m_num_items;
+        QSymbolToken **m_tokens;
 };
 #endif //_ARRAYSYMBOL_H

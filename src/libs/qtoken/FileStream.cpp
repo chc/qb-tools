@@ -103,6 +103,10 @@ void FileStream::Seek(int32_t offset) {
     fseek(mp_fd, offset, SEEK_CUR);
 }
 void FileStream::SetCursor(int32_t offset) {
+    if(offset  == 0x278) {
+        printf("on start string\n");
+    }
+    printf("Cursor is now: %08x\n", offset);
     fseek(mp_fd, offset, SEEK_SET);
 }
 void FileStream::Align() {

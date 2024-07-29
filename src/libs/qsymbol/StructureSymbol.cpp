@@ -25,12 +25,12 @@ QSymbolToken *StructureSymbol::NextSymbol(IStream *stream) {
 }
 void StructureSymbol::LoadParamsFromArray(IStream *stream) {
     printf("StructureSymbol::LoadParamsFromArray: %08x\n", stream->GetOffset());
-    
+
     uint32_t hdr = stream->ReadUInt32();
     assert(hdr == 256);
 
     uint32_t offset = stream->ReadUInt32();
-    assert(offset == stream->GetOffset());
+    stream->SetCursor(offset);
     while(true) {
         uint8_t unk = stream->ReadByte();
         uint8_t type_flags = stream->ReadByte();
