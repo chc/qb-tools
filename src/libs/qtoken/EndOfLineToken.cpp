@@ -14,6 +14,9 @@ EScriptToken EndOfLineToken::GetType() {
 }
 void EndOfLineToken::LoadParams(IStream *stream) {
 }
+void EndOfLineToken::Write(IStream *stream) {
+    stream->WriteByte(ESCRIPTTOKEN_ENDOFLINE);
+}
 std::string EndOfLineToken::ToString() {
     return "\n";
 }

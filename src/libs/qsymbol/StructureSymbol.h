@@ -12,6 +12,7 @@ class StructureSymbol : public QSymbolToken {
         void LoadParamsFromArray(IStream *stream);
         std::string ToString();
         static QSymbolToken *NextSymbol(IStream *stream);
+        std::vector<QSymbolToken *> GetTokens() { return m_children; }
     private:
         std::vector<QSymbolToken *> m_children;
 };

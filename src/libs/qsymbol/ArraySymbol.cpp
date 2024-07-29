@@ -5,6 +5,7 @@
 #include <cassert>
 
 ArraySymbol::ArraySymbol() {
+    m_struct_item = false;
 
 }
 ArraySymbol::~ArraySymbol() {
@@ -19,11 +20,13 @@ QSymbolToken *NextSymbol(IStream *stream, uint8_t type) {
     return token;
 }
 void ArraySymbol::LoadParams(IStream *stream) {
-    uint32_t array_data_offset = stream->ReadUInt32();
 
+    uint32_t array_data_offset = stream->ReadUInt32();
+    
     if(m_struct_item) {
         m_next_offset = stream->ReadUInt32();
     }
+
     stream->SetCursor(array_data_offset);
 
     uint16_t hdr = stream->ReadUInt16();

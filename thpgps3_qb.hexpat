@@ -1,4 +1,5 @@
 #pragma endian big
+#pragma eval_depth 64
 import std.mem;
 
 import std.string;

@@ -24,8 +24,6 @@ QSymbolToken *StructureSymbol::NextSymbol(IStream *stream) {
     return token;
 }
 void StructureSymbol::LoadParamsFromArray(IStream *stream) {
-    printf("StructureSymbol::LoadParamsFromArray: %08x\n", stream->GetOffset());
-
     uint32_t hdr = stream->ReadUInt32();
     assert(hdr == 256);
 
@@ -49,6 +47,7 @@ void StructureSymbol::LoadParamsFromArray(IStream *stream) {
             ref->SetType(type_flags & 0xF);
             ref->SetValue(stream->ReadUInt32());
             ref->SetNextOffset(stream->ReadUInt32());
+            
             token = ref;
         } else {
             token = QSymbolToken::Resolve(type);
@@ -56,7 +55,7 @@ void StructureSymbol::LoadParamsFromArray(IStream *stream) {
             token->LoadParams(stream);
         }
         token->SetNameChecksum(name);
-        
+        m_children.push_back(token);
 
         uint32_t next = token->GetNextOffset();
         if(next == 0) {

@@ -8,6 +8,7 @@ class EndOfLineToken : public QScriptToken {
         ~EndOfLineToken();
         EScriptToken GetType();
         void LoadParams(IStream *stream);
+        void Write(IStream *stream);
         std::string ToString();
     private:
 };

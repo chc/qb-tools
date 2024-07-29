@@ -8,6 +8,7 @@ class EqualsToken : public QScriptToken {
         ~EqualsToken();
         EScriptToken GetType();
         void LoadParams(IStream *stream);
+        void Write(IStream *stream);
         std::string ToString();
     private:
 };

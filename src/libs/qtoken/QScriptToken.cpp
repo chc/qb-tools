@@ -171,3 +171,6 @@ int QScriptToken::GetPostTabOffset() {
 std::vector<TokenInjection> QScriptToken::GetInjections() {
     return std::vector<TokenInjection>();
 }
+void QScriptToken::Write(IStream *stream) {
+
+ }

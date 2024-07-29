@@ -17,5 +17,15 @@ class IStream {
         virtual void Seek(int32_t offset) = 0;
         virtual void SetCursor(int32_t offset) = 0;
         virtual void Align() = 0;
+
+
+        virtual void WriteByte(uint8_t) = 0;
+        virtual void WriteUInt16(uint16_t) = 0;
+        virtual void WriteUInt32(uint32_t) = 0;
+        virtual void WriteInt16(int16_t) = 0;
+        virtual void WriteInt32(int32_t) = 0;
+        virtual void WriteFloat(float v) = 0;
+        virtual void WriteNTS(const char *v) = 0;
+        virtual void WriteBuffer(uint8_t *v, uint32_t len) = 0;
 };
 #endif // _ISTREAM_H

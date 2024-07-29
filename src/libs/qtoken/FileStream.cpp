@@ -16,8 +16,13 @@
     #define READ_INT32(x)  x
 #endif
 
-FileStream::FileStream(const char *path) {
-    mp_fd = fopen(path,"rb");
+FileStream::FileStream(const char *path, bool is_write) {
+    if(is_write) {
+        mp_fd = fopen(path,"wb"); 
+    } else {
+        mp_fd = fopen(path,"rb");
+    }
+    
 }
 FileStream::~FileStream() {
     fclose(mp_fd);
@@ -103,14 +108,50 @@ void FileStream::Seek(int32_t offset) {
     fseek(mp_fd, offset, SEEK_CUR);
 }
 void FileStream::SetCursor(int32_t offset) {
-    if(offset  == 0x278) {
-        printf("on start string\n");
-    }
-    printf("Cursor is now: %08x\n", offset);
     fseek(mp_fd, offset, SEEK_SET);
 }
 void FileStream::Align() {
     while((GetOffset() % 4)) {
         ReadByte();
     }
+}
+
+void FileStream::WriteByte(uint8_t v) {
+    int len = fwrite(&v, sizeof(uint8_t), 1, mp_fd);
+
+    assert(len == 1);
+}
+
+void FileStream::WriteUInt16(uint16_t v) {
+    int len = fwrite(&v, sizeof(uint16_t), 1, mp_fd);
+    assert(len == 1);
+}
+
+void FileStream::WriteUInt32(uint32_t v) {
+    int len = fwrite(&v, sizeof(uint32_t), 1, mp_fd);
+    assert(len == 1);
+}
+
+void FileStream::WriteInt16(int16_t v) {
+    int len = fwrite(&v, sizeof(int16_t), 1, mp_fd);
+    assert(len == 1);
+}
+
+void FileStream::WriteInt32(int32_t v) {
+    int len = fwrite(&v, sizeof(int32_t), 1, mp_fd);
+    assert(len == 1);
+}
+
+void FileStream::WriteFloat(float v) {
+    int len = fwrite(&v, sizeof(float), 1, mp_fd);
+    assert(len == 1);
+}
+
+void FileStream::WriteNTS(const char *v) {
+    int len = fwrite(v, strlen(v), 1, mp_fd);
+    assert(len == 1);
+}
+void FileStream::WriteBuffer(uint8_t *v, uint32_t len) {
+    int w_len = fwrite(v, len, 1, mp_fd);
+    assert(w_len == 1);
 }

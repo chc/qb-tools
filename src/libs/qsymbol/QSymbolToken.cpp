@@ -57,6 +57,10 @@ void QSymbolToken::ReadSymbolsFromArray(IStream *stream, uint8_t type, uint32_t 
     }
 
     if(readmode == 1) {
+        if(num_items > 1) {
+            uint32_t data_offset = stream->ReadUInt32();
+            stream->SetCursor(data_offset);
+        }
         for(int i=0;i<num_items;i++) {
             output_tokens[i] = Resolve(type);
             output_tokens[i]->LoadParamsFromArray(stream);

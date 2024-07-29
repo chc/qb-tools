@@ -8,6 +8,9 @@
 IntegerToken::IntegerToken() {
 
 }
+IntegerToken::IntegerToken(int32_t v) {
+    m_value = v;
+}
 IntegerToken::~IntegerToken() {
 
 }
@@ -16,6 +19,10 @@ EScriptToken IntegerToken::GetType() {
 }
 void IntegerToken::LoadParams(IStream *stream) {
     m_value = stream->ReadInt32();
+}
+void IntegerToken::Write(IStream *stream) {
+    stream->WriteByte(ESCRIPTTOKEN_INTEGER);
+    stream->WriteInt32(m_value);
 }
 std::string IntegerToken::ToString() {
     std::ostringstream ss;

@@ -5,6 +5,10 @@
 #include <sstream>
 NameToken::NameToken() {
     m_checksum_name = NULL;
+    m_checksum = 0;
+}
+NameToken::NameToken(uint32_t v) {
+    m_checksum = v;
 }
 NameToken::~NameToken() {
 
@@ -14,6 +18,10 @@ EScriptToken NameToken::GetType() {
 }
 void NameToken::LoadParams(IStream *stream) {
     m_checksum = stream->ReadUInt32();
+}
+void NameToken::Write(IStream *stream) {
+    stream->WriteByte(ESCRIPTTOKEN_NAME);
+    stream->WriteUInt32(m_checksum);
 }
 uint32_t NameToken::GetChecksum() {
     return m_checksum;

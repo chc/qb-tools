@@ -10,6 +10,7 @@ class NameSymbol : public QSymbolToken {
         void LoadParams(IStream *stream);
         void LoadParamsFromArray(IStream *stream);
         std::string ToString();
+        uint32_t GetValue() { return m_value; }
     private:
         uint32_t m_value;
 };

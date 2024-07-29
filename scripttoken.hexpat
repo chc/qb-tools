@@ -1,12 +1,24 @@
-#ifndef _QSCRTIPTTOKEN_H
-#define _QSCRTIPTTOKEN_H
+//#pragma endian big
+#pragma eval_depth 64
+import std.mem;
 
-#include <stdint.h>
-#include <string>
-#include <vector>
-#include "IStream.h"
+import std.string;
+import std.time;
+import std.sys;
 
-enum EScriptToken
+
+struct AlignTo<auto Alignment> {
+    padding[Alignment- ((($ - 1) % Alignment) + 1)];
+} [[hidden]];
+
+
+struct AlignToPos<auto Alignment, auto Position> {
+    u8 xxx[Alignment- (((Position - 1) % Alignment) + 1)];
+};
+
+
+
+enum EScriptToken : u8
 {
 	// Misc
 	ESCRIPTTOKEN_ENDOFFILE,			// 0
@@ -115,31 +127,96 @@ enum EScriptToken
 	ESCRIPTTOKEN_RUNTIME_CFUNCTION,	// 67
 	ESCRIPTTOKEN_RUNTIME_MEMBERFUNCTION, // 68
 	
+	ESCRIPTTOKEN_KEYWORD_USEHEAP,
+	ESCRIPTTOKEN_KEYWORD_UNKNOWN,
+	ESCRIPTTOKEN_KEYWORD_FASTIF,
+	ESCRIPTTOKEN_KEYWORD_FASTELSE,
+	ESCRIPTTOKEN_SHORTJUMP,
+	ESCRIPTTOKEN_INLINEPACKSTRUCT,
+	ESCRIPTTOKEN_ARGUMENTPACK,
+	ESCRIPTTOKEN_WIDESTRING,
+	ESCRIPTTOKEN_NOTEQUAL,
+	ESCRIPTTOKEN_STRINGQS,
+	ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT,
+	ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER,
+	
 	// Warning! Do not exceed 256 entries, since these are stored in bytes.
 };
 
-typedef struct {
-    uint16_t weight;
-    uint32_t offset;
-} RandomOffset;
-
-typedef struct {
-	std::string token;
-	size_t offset;
-	bool use_next_jump_offset;
-} TokenInjection;
-
-class QScriptToken {
-    public:
-        QScriptToken();
-        virtual ~QScriptToken();
-        virtual EScriptToken GetType() = 0;
-		virtual void LoadParams(IStream *stream) = 0;
-		virtual void Write(IStream *stream);
-		static QScriptToken *Resolve(uint8_t token);
-		virtual std::string ToString() = 0;
-		virtual int	GetPreTabOffset();
-		virtual int GetPostTabOffset();
-		virtual std::vector<TokenInjection> GetInjections();
+fn string_length(u32 offset) { //includes null char
+    u32 len = 0;
+    while(true) {
+        u8 c = std::mem::read_unsigned(offset, 1);
+        len = len + 1;
+        if(c == 0) {
+            break;
+        }
+        offset = offset + 1;
+    }
+    return len;
 };
-#endif //_QSCRTIPTTOKEN_H
+
+fn is_single_byte_token(EScriptToken token) {
+ if(token == EScriptToken::ESCRIPTTOKEN_EQUALS) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_SCRIPT) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_ENDSCRIPT) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_STARTSTRUCT) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_ENDSTRUCT) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_RETURN) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_STARTARRAY) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_ENDARRAY) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_ENDOFFILE) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_ENDOFLINE) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_COLON) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_OPENPARENTH) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_CLOSEPARENTH) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_ARGUMENTPACK) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_ENDIF) {
+    } else {    
+        return 0;
+    }
+    return 1;
+};
+
+u32 last_start_script;
+struct ScriptToken {
+    EScriptToken token;
+    
+    if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_SCRIPT) {
+        last_start_script = $+5;
+    }
+    
+    if(is_single_byte_token(token)) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_ENDOFLINENUMBER) {
+        u32 number;
+    } else if(token == EScriptToken::ESCRIPTTOKEN_NAME) {
+        u32 name;
+    } else if(token == EScriptToken::ESCRIPTTOKEN_CHECKSUM_NAME) {
+        u32 name;
+        char name_str[string_length($)];
+    } else if(token == EScriptToken::ESCRIPTTOKEN_INTEGER) {
+        s32 value;
+    } else if(token == EScriptToken::ESCRIPTTOKEN_FLOAT) {
+        float value;
+    } else if(token == EScriptToken::ESCRIPTTOKEN_PAIR) {
+        float x;
+        float y;
+    } else if(token == EScriptToken::ESCRIPTTOKEN_STRING) {
+        u32 len;
+        char data[len];
+    }  else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_FASTIF) {
+        u16 offset;
+    } else if(token == EScriptToken::ESCRIPTTOKEN_INLINEPACKSTRUCT) {
+        u16 len;
+        u32 offset = $ - last_start_script;
+        AlignToPos<4, offset>;
+        //std::print("offset: {}", offset & 0xFFFFFFFC );
+        char data[len];
+    } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_FASTELSE) {
+        u16 offset;
+    }
+     else {
+        std::error(std::format("Unhandled Token: {}", token));
+    }
+};
+ScriptToken t[while(!std::mem::eof())] @0;

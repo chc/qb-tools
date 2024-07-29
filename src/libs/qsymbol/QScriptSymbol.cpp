@@ -9,9 +9,14 @@
 
 
 QScriptSymbol::QScriptSymbol() {
+    m_decomp_buff = NULL;
+    m_decomp_len = 0;
 
 }
 QScriptSymbol::~QScriptSymbol() {
+    if(m_decomp_buff != NULL) {
+        delete[] m_decomp_buff;
+    }
 
 }
 ESymbolType QScriptSymbol::GetType() {
@@ -30,7 +35,7 @@ void QScriptSymbol::LoadParams(IStream *stream) {
     //printf("uncompressed_size: %d\n", uncompressed_size);
     //printf("compressed_size: %d\n", compressed_size);
 
-    uint8_t *decomp_buff = new uint8_t[uncompressed_size];
+    m_decomp_buff = new uint8_t[uncompressed_size];
     uint8_t *comp_buff = new uint8_t[compressed_size];
 
 
@@ -43,14 +48,13 @@ void QScriptSymbol::LoadParams(IStream *stream) {
 
     //DecodeLZSS((unsigned char *)comp_buff, (unsigned char *)decomp_buff, compressed_size);
 
-    int decomp_len = decompress_lzss((unsigned char *)comp_buff, compressed_size, (unsigned char *)decomp_buff);
+    m_decomp_len = decompress_lzss((unsigned char *)comp_buff, compressed_size, (unsigned char *)m_decomp_buff);
 
-    uint32_t checksum = crc32(0, (void *)decomp_buff, uncompressed_size);
+    uint32_t checksum = crc32(0, (void *)m_decomp_buff, uncompressed_size);
 
-    printf("checksum: %08x == %08x, decomp: %d\n", data_checksum, checksum, decomp_len);
+    printf("checksum: %08x == %08x, decomp: %d\n", data_checksum, checksum, m_decomp_len);
     //assert(checksum == data_checksum);
 
-    delete[] decomp_buff;
     delete[] comp_buff;
 }
 std::string QScriptSymbol::ToString() {

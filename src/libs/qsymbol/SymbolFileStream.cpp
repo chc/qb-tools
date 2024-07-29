@@ -1,12 +1,12 @@
-#include "SStream.h"
+#include "SymbolFileStream.h"
 
-SStream::SStream(IStream *data_stream) {
+SymbolFileStream::SymbolFileStream(IStream *data_stream) {
     mp_stream = data_stream;
 }
-SStream::~SStream() {
+SymbolFileStream::~SymbolFileStream() {
 
 }
-QSymbolToken *SStream::NextSymbol() {
+QSymbolToken *SymbolFileStream::NextSymbol() {
     uint16_t flags = mp_stream->ReadUInt16();
     //printf("flags: %04x - %d\n", flags, mp_stream->GetOffset());
 

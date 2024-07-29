@@ -54,6 +54,7 @@ class QSymbolToken {
         static void ReadSymbolsFromArray(IStream *stream, uint8_t type, uint32_t num_items, QSymbolToken **output_tokens);
 		virtual std::string ToString() = 0;
         void SetNameChecksum(uint32_t name) { m_name_checksum = name; }
+        uint32_t GetNameChecksum() { return m_name_checksum; }
         void SetSourceChecksum(uint32_t name) { m_source_checksum = name; }
         void SetIsStructItem(bool active) { m_struct_item = active; }
         bool GetIsStructItem() { return m_struct_item; }

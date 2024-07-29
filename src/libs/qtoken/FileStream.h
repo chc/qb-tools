@@ -5,7 +5,7 @@
 
 class FileStream : public IStream {
     public:
-        FileStream(const char *path);
+        FileStream(const char *path, bool is_write = false);
         ~FileStream();
         uint16_t ReadUInt16();
         int16_t ReadInt16();
@@ -19,6 +19,15 @@ class FileStream : public IStream {
         void Seek(int32_t offset);
         void SetCursor(int32_t offset);
         void Align();
+
+        void WriteByte(uint8_t);
+        void WriteUInt16(uint16_t);
+        void WriteUInt32(uint32_t);
+        void WriteInt16(int16_t);
+        void WriteInt32(int32_t);
+        void WriteFloat(float v);
+        void WriteNTS(const char *v);
+        void WriteBuffer(uint8_t *v, uint32_t len);
     private:
         FILE *mp_fd;
 };

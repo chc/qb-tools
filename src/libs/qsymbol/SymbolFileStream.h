@@ -1,5 +1,5 @@
-#ifndef _SSTREAM_H
-#define _SSTREAM_H
+#ifndef _SYMBOLFILESTREAM_H
+#define _SYMBOLFILESTREAM_H
 
 #include <FileStream.h>
 #include <stdio.h>
@@ -7,13 +7,13 @@
 #include <QSymbolToken.h>
 #include <ISStream.h>
 
-class SStream : public ISStream {
+class SymbolFileStream : public ISStream {
     public:
-        SStream(IStream *data_stream);
-        ~SStream();
+        SymbolFileStream(IStream *data_stream);
+        ~SymbolFileStream();
         QSymbolToken *NextSymbol();
     private:
         IStream *mp_stream;
 };
 
-#endif //_SSTREAM_H
+#endif //_SYMBOLFILESTREAM_H

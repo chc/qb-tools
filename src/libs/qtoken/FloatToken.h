@@ -5,9 +5,11 @@
 class FloatToken : public QScriptToken {
     public:
         FloatToken();
+        FloatToken(float v);
         ~FloatToken();
         EScriptToken GetType();
         void LoadParams(IStream *stream);
+        void Write(IStream *stream);
         std::string ToString();
     private:
         float m_value;
