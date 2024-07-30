@@ -2,6 +2,8 @@
 #define _ISTREAM_H
 #include <stdint.h>
 #include <stddef.h>
+#define ISTREAM_LITTLE_ENDIAN 0
+#define ISTREAM_BIG_ENDIAN 1
 class IStream {
     public:
         //IQStream();
@@ -27,5 +29,8 @@ class IStream {
         virtual void WriteFloat(float v) = 0;
         virtual void WriteNTS(const char *v) = 0;
         virtual void WriteBuffer(uint8_t *v, uint32_t len) = 0;
+        
+        virtual void SetReadEndian(uint8_t endian_mode) = 0;
+        virtual void SetWriteEndian(uint8_t endian_mode) = 0;
 };
 #endif // _ISTREAM_H

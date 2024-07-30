@@ -5,8 +5,9 @@ enable_testing()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 file (GLOB QTOKEN_SRCS "src/libs/qtoken/*.cpp" "src/libs/qtoken/*.cpp")
+include_directories("src/libs/qsymbol")
 add_library(qtoken ${QTOKEN_SRCS})
-target_link_libraries(qtoken)
+target_link_libraries(qtoken qsymbol)
 
 
 file (GLOB QSYMBOL_SRCS "src/libs/qsymbol/*.cpp" "src/libs/qsymbol/*.cpp")

@@ -8,12 +8,15 @@
 #include <QScriptToken.h>
 void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream);
 
+extern int32_t g_last_script_keyword;
+
 int main(int argc, const char *argv[]) {
     if(argc  < 3) {
         fprintf(stderr, "usage: %s [inpath] [outpath]\n",argv[0]);
         return -1;
     }
     FileStream fs(argv[1]);
+    fs.SetReadEndian(ISTREAM_BIG_ENDIAN);
 
 
     if(!fs.IsFileOpened()) {

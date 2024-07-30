@@ -12,6 +12,8 @@
 std::vector<QScriptToken *> token_list;
 void dump_token_list(std::vector<QScriptToken *> token_list, FILE *out);
 
+extern uint32_t g_last_script_keyword;
+
 ChecksumNameToken *resolve_name(uint32_t checksum) {
     std::vector<QScriptToken *>::iterator it = token_list.begin();
     while(it != token_list.end()) {
@@ -109,6 +111,9 @@ int main(int argc, const char *argv[]) {
             append_injections(fs, token);
             if(token->GetType() == ESCRIPTTOKEN_JUMP) {
                 update_jump_injection(fs, reinterpret_cast<JumpToken*>(token));
+            }
+            if(token->GetType() == ESCRIPTTOKEN_KEYWORD_SCRIPT) {
+                g_last_script_keyword = fs.GetOffset();
             }
             token_list.push_back(token);
             perform_injections(fs);

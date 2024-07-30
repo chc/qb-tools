@@ -13,8 +13,8 @@ struct AlignTo<auto Alignment> {
 
 
 struct AlignToPos<auto Alignment, auto Position> {
-    u8 xxx[Alignment- (((Position - 1) % Alignment) + 1)];
-};
+    padding[Alignment- (((Position - 1) % Alignment) + 1)];
+} [[hidden]];
 
 
 
@@ -210,7 +210,7 @@ struct ScriptToken {
         u16 len;
         u32 offset = $ - last_start_script;
         AlignToPos<4, offset>;
-        //std::print("offset: {}", offset & 0xFFFFFFFC );
+        //std::print("offset: {}", offset );
         char data[len];
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_FASTELSE) {
         u16 offset;

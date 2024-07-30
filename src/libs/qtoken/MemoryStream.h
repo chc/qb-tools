@@ -3,10 +3,10 @@
 #include "IStream.h"
 #include <stdio.h>
 
-class FileStream : public IStream {
+class MemoryStream : public IStream {
     public:
-        FileStream(const char *path, bool is_write = false);
-        ~FileStream();
+        MemoryStream(void *address, size_t len);
+        ~MemoryStream();
         uint16_t ReadUInt16();
         int16_t ReadInt16();
         uint32_t ReadUInt32();
@@ -32,8 +32,11 @@ class FileStream : public IStream {
         void SetReadEndian(uint8_t endian_mode);
         void SetWriteEndian(uint8_t endian_mode);
     private:
-        FILE *mp_fd;
+        void *mp_head;
+        void *mp_cursor;
+        void *mp_end;
+        size_t m_total_len;
         uint8_t m_read_endian_mode;
-        uint8_t m_write_endian_mode;
+        uint8_t m_write_endian_mode;        
 };
 #endif //_IQFILESTREAM_H

@@ -65,13 +65,17 @@ void StructureSymbol::LoadParamsFromArray(IStream *stream) {
 }
 void StructureSymbol::LoadParams(IStream *stream) {
     uint32_t struct_offset = stream->ReadUInt32();
+    printf("struct_offset: %08x %d\n", struct_offset, stream->GetOffset());
     stream->SetCursor(struct_offset);
 
+    LoadParamsNoOffset(stream);
+}
+void StructureSymbol::LoadParamsNoOffset(IStream *stream) {
     uint32_t hdr = stream->ReadUInt32();
     assert(hdr == 256);
 
     uint32_t offset = stream->ReadUInt32();
-    assert(offset = stream->GetOffset());
+    //assert(offset = stream->GetOffset());
     while(true) {
         uint8_t unk = stream->ReadByte();
         uint8_t type_flags = stream->ReadByte();
@@ -97,7 +101,7 @@ void StructureSymbol::LoadParams(IStream *stream) {
             token->LoadParams(stream);
         }
         token->SetNameChecksum(name);
-        
+        m_children.push_back(token);
 
 
         uint32_t next = token->GetNextOffset();

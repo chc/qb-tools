@@ -51,6 +51,11 @@
 #include "DivideToken.h"
 #include "JumpToken.h"
 #include "DotToken.h"
+#include "FastIfToken.h"
+#include "FastElseToken.h"
+#include "ArgumentPackToken.h"
+#include "InlinePackStructToken.h"
+
 QScriptToken::QScriptToken() {
 
 }
@@ -156,9 +161,17 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
             return new JumpToken();
         case ESCRIPTTOKEN_DOT:
             return new DotToken();
+        case ESCRIPTTOKEN_KEYWORD_FASTIF:
+            return new FastIfToken();
+        case ESCRIPTTOKEN_KEYWORD_FASTELSE:
+            return new FastElseToken();
+        case ESCRIPTTOKEN_ARGUMENTPACK:
+            return new ArgumentPackToken();
+        case ESCRIPTTOKEN_INLINEPACKSTRUCT:
+            return new InlinePackStructToken();
             
     }
-    fprintf(stderr, "Failed to resolve token with id: %d\n", token);
+    fprintf(stderr, "Failed to resolve token with id: %d - %02x\n", token, token);
     assert(false);
     return nullptr;
 }
@@ -172,5 +185,6 @@ std::vector<TokenInjection> QScriptToken::GetInjections() {
     return std::vector<TokenInjection>();
 }
 void QScriptToken::Write(IStream *stream) {
-
+    printf("QScriptToken::Write: %02x\n", GetType());
+    stream->WriteByte(GetType());
  }
