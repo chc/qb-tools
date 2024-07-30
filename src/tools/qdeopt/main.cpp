@@ -32,8 +32,11 @@ void LoadChecksums(const char *path) {
         if(len != 1) {
             break;
         }
-        if(m_checksum_names.find(entry.checksum) == m_checksum_names.end()) {
-            m_checksum_names[entry.checksum] = entry.checksum_name;
+
+        if(m_checksum_names.find(entry.checksum) != m_checksum_names.end()) {
+            if(m_checksum_names[entry.checksum] == NULL) {
+                m_checksum_names[entry.checksum] = strdup(entry.checksum_name);
+            }            
         }
     }
     fclose(fd);
@@ -82,13 +85,20 @@ int main(int argc, const char *argv[]) {
         WriteSymbolAsScriptToken(symbol, &fsout);        
     }
 
-    LoadChecksums("checksums.bin");
+    const char *checksum_path = getenv("QTOOLS_CHECKSUM_PATH");
+    if(checksum_path != NULL) {
+        printf("** loading checksum path: %s\n", checksum_path);
+        LoadChecksums(checksum_path);
+    } else {
+        printf("** checksum path not specified\n");
+    }
+    
 
     std::map<uint32_t, const char *>::iterator it = m_checksum_names.begin();
     while(it != m_checksum_names.end()) {
         std::pair<uint32_t, const char *> p = *it;
         it++;
-        if(p.first == 0)
+        if(p.first == 0 || p.second == NULL)
             continue;
         ChecksumNameToken token(p.first, p.second);
         token.Write(&fsout);

@@ -74,7 +74,7 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
 
 void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream) {
     NameToken nt(symbol->GetNameChecksum());
-    m_checksum_names[symbol->GetNameChecksum()] = "name";
+    m_checksum_names[symbol->GetNameChecksum()] = NULL;
     switch(symbol->GetType()) {
         case ESYMBOLTYPE_INTEGER:
             WriteAsScriptToken<IntegerSymbol, IntegerToken>(reinterpret_cast<IntegerSymbol *>(symbol), stream);
