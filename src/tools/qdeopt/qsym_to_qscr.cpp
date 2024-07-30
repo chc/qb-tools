@@ -1,3 +1,6 @@
+#include <cassert>
+#include <map>
+
 #include <QSymbolToken.h>
 #include <QScriptToken.h>
 #include <IntegerSymbol.h>
@@ -14,7 +17,6 @@
 #include <ArraySymbol.h>
 #include <StructureSymbol.h>
 #include <InlinePackStructToken.h>
-#include <cassert>
 
 #include <MemoryStream.h>
 
@@ -23,6 +25,7 @@ void WriteStructure(StructureSymbol *symbol, IStream *stream, bool packed = fals
 
 extern uint32_t g_last_script_keyword;
 extern uint32_t g_last_script_keyword_write;
+extern std::map<uint32_t, const char *> m_checksum_names;
 
 template<typename T, typename ST> void WriteAsScriptToken(T *symbol, IStream *stream) {
     if(symbol->GetNameChecksum() != 0) {
@@ -41,16 +44,6 @@ template<typename T, typename ST> void WriteAsScriptToken(T *symbol, IStream *st
     eolt.Write(stream);
 }
 
-/*QScriptToken *QStream::NextToken() {
-    uint8_t type = mp_stream->ReadByte();
-
-    QScriptToken *result = nullptr;
-    result = QScriptToken::Resolve(type);
-    if(result) {
-        result->LoadParams(mp_stream);
-    }
-    return result;
-}*/
 void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
     stream->WriteByte(ESCRIPTTOKEN_KEYWORD_SCRIPT);
 
@@ -63,7 +56,6 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
     while(qscript->GetDecompLen() > ms.GetOffset()) {
         uint8_t type = ms.ReadByte();
         QScriptToken *token = QScriptToken::Resolve(type);
-        printf("on token: %02x\n", type);
         if(token) {
             token->LoadParams(&ms);
         }
@@ -81,6 +73,8 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
 }
 
 void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream) {
+    NameToken nt(symbol->GetNameChecksum());
+    m_checksum_names[symbol->GetNameChecksum()] = "name";
     switch(symbol->GetType()) {
         case ESYMBOLTYPE_INTEGER:
             WriteAsScriptToken<IntegerSymbol, IntegerToken>(reinterpret_cast<IntegerSymbol *>(symbol), stream);
@@ -118,6 +112,7 @@ void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream) {
 void WriteArray(ArraySymbol *symbol, IStream *stream) {
     if(symbol->GetNameChecksum() != 0) {
         NameToken nt(symbol->GetNameChecksum());
+        m_checksum_names[symbol->GetNameChecksum()] = "name";
         nt.Write(stream);
 
         EqualsToken et;

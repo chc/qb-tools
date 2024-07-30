@@ -1,14 +1,43 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <map>
 
 #include <FileStream.h>
 #include <ISStream.h>
 #include <QSymbolToken.h>
 #include <SymbolFileStream.h>
 #include <QScriptToken.h>
+#include <ChecksumNameToken.h>
 void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream);
 
 extern int32_t g_last_script_keyword;
+
+std::map<uint32_t, const char *> m_checksum_names;
+
+typedef struct {
+    uint32_t checksum;
+    char checksum_name[64];
+} ChecksumTableEntry;
+void LoadChecksums(const char *path) {
+    ChecksumTableEntry entry;
+    FILE *fd = fopen(path, "rb");
+    if(!fd) {
+        return;
+    }
+    while(true) {
+        if(feof(fd)) {
+            break;
+        }
+        int len = fread(&entry, sizeof(ChecksumTableEntry), 1, fd);
+        if(len != 1) {
+            break;
+        }
+        if(m_checksum_names.find(entry.checksum) == m_checksum_names.end()) {
+            m_checksum_names[entry.checksum] = entry.checksum_name;
+        }
+    }
+    fclose(fd);
+}
 
 int main(int argc, const char *argv[]) {
     if(argc  < 3) {
@@ -50,9 +79,19 @@ int main(int argc, const char *argv[]) {
         if(symbol == nullptr) {
             break;
         }
-        WriteSymbolAsScriptToken(symbol, &fsout);
+        WriteSymbolAsScriptToken(symbol, &fsout);        
+    }
 
-        
+    LoadChecksums("checksums.bin");
+
+    std::map<uint32_t, const char *>::iterator it = m_checksum_names.begin();
+    while(it != m_checksum_names.end()) {
+        std::pair<uint32_t, const char *> p = *it;
+        it++;
+        if(p.first == 0)
+            continue;
+        ChecksumNameToken token(p.first, p.second);
+        token.Write(&fsout);
     }
     fsout.WriteByte(ESCRIPTTOKEN_ENDOFFILE);
 

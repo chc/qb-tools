@@ -6,9 +6,11 @@
 class ChecksumNameToken : public QScriptToken {
     public:
         ChecksumNameToken();
+        ChecksumNameToken(uint32_t checksum, const char *name);
         ~ChecksumNameToken();
         EScriptToken GetType();
         void LoadParams(IStream *stream);
+        void Write(IStream *stream);
         uint32_t GetChecksum();
         const char *GetName();
         std::string ToString();

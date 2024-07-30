@@ -174,7 +174,7 @@ void FileStream::WriteFloat(float v) {
 }
 
 void FileStream::WriteNTS(const char *v) {
-    int len = fwrite(v, strlen(v), 1, mp_fd);
+    int len = fwrite(v, strlen(v) + 1, 1, mp_fd);
     assert(len == 1);
 }
 void FileStream::WriteBuffer(uint8_t *v, uint32_t len) {
