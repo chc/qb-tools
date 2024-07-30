@@ -8,6 +8,9 @@
 StringToken::StringToken() {
 
 }
+StringToken::StringToken(std::string v) : m_value(v) {
+    
+}
 StringToken::~StringToken() {
 
 }
@@ -22,7 +25,11 @@ void StringToken::LoadParams(IStream *stream) {
             break;
         m_value += ch;
     }
-    
+}
+void StringToken::Write(IStream *stream) {
+    stream->WriteByte(ESCRIPTTOKEN_STRING);
+    stream->WriteUInt32(m_value.length()+1);
+    stream->WriteNTS(m_value.c_str());
 }
 std::string StringToken::ToString() {
     std::ostringstream ss;

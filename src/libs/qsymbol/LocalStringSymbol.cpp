@@ -27,13 +27,12 @@ void LocalStringSymbol::LoadParams(IStream *stream) {
     while(true) {
         data[i % MAX_CHARS] = (char16_t)stream->ReadUInt16();
         if(data[i % MAX_CHARS] == 0) {
-            printf("\n");
             break;
         }
-        printf("%c", data[i]);
+        m_value += (uint8_t)data[i];
         i++;
     }
-    
+        
     stream->Align();
 }
 void LocalStringSymbol::LoadParamsFromArray(IStream *stream) {

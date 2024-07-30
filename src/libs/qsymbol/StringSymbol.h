@@ -9,8 +9,9 @@ class StringSymbol : public QSymbolToken {
         ESymbolType GetType();
         void LoadParams(IStream *stream);
         void LoadParamsFromArray(IStream *stream);
+        std::string GetValue() { return m_value; }
         std::string ToString();
     private:
-        //int32_t m_value;
+        std::string m_value;
 };
 #endif //_STRINGSYMBOL_H

@@ -9,6 +9,11 @@
 #include <FloatSymbol.h>
 #include <FloatToken.h>
 
+#include <StringSymbol.h>
+#include <LocalStringSymbol.h>
+#include <StringToken.h>
+#include <LocalStringToken.h>
+
 #include <NameToken.h>
 #include <EqualsToken.h>
 #include <EndOfLineToken.h>
@@ -83,10 +88,10 @@ void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream) {
             WriteAsScriptToken<FloatSymbol, FloatToken>(reinterpret_cast<FloatSymbol *>(symbol), stream);
             break;
         case ESYMBOLTYPE_STRING:
-            assert(false);
+            WriteAsScriptToken<StringSymbol, StringToken>(reinterpret_cast<StringSymbol *>(symbol), stream);
             break;
         case ESYMBOLTYPE_LOCALSTRING:
-            assert(false);
+            WriteAsScriptToken<LocalStringSymbol, LocalStringToken>(reinterpret_cast<LocalStringSymbol *>(symbol), stream);
             break;
         case ESYMBOLTYPE_PAIR:
             assert(false);
@@ -112,7 +117,7 @@ void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream) {
 void WriteArray(ArraySymbol *symbol, IStream *stream) {
     if(symbol->GetNameChecksum() != 0) {
         NameToken nt(symbol->GetNameChecksum());
-        m_checksum_names[symbol->GetNameChecksum()] = "name";
+        m_checksum_names[symbol->GetNameChecksum()] = NULL;
         nt.Write(stream);
 
         EqualsToken et;

@@ -7,10 +7,11 @@ class LocalStringSymbol : public QSymbolToken {
         LocalStringSymbol();
         ~LocalStringSymbol();
         ESymbolType GetType();
+        std::string GetValue() { return m_value; }
         void LoadParams(IStream *stream);
         void LoadParamsFromArray(IStream *stream);
         std::string ToString();
     private:
-        //int32_t m_value;
+        std::string m_value;
 };
 #endif //_LOCALSTRINGSYMBOL_H

@@ -27,12 +27,12 @@ void StringSymbol::LoadParams(IStream *stream) {
     while(true) {
         data[i % MAX_CHARS] = (char)stream->ReadByte();
         if(data[i % MAX_CHARS] == 0) {
-            printf("\n");
             break;
         }
-        printf("%c", data[i]);
         i++;
     }
+
+    m_value = (char *)&data[0];
     
     stream->Align();
 }

@@ -9,6 +9,7 @@
 #include "NameToken.h"
 #include "IntegerToken.h"
 #include "StringToken.h"
+#include "LocalStringToken.h"
 #include "FloatToken.h"
 #include "PairToken.h"
 #include "VectorToken.h"
@@ -79,8 +80,9 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
         case ESCRIPTTOKEN_VECTOR:
             return new VectorToken();
         case ESCRIPTTOKEN_STRING:
-        case ESCRIPTTOKEN_LOCALSTRING:
             return new StringToken();
+        case ESCRIPTTOKEN_LOCALSTRING:
+            return new LocalStringToken();
         case ESCRIPTTOKEN_EQUALS:
             return new EqualsToken();
         case ESCRIPTTOKEN_KEYWORD_SCRIPT:
