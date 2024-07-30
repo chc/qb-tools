@@ -25,6 +25,9 @@
 
 #include <MemoryStream.h>
 
+#include <ReferenceItemSymbol.h>
+#include <ArgumentPackToken.h>
+
 void WriteArray(ArraySymbol *symbol, IStream *stream);
 void WriteStructure(StructureSymbol *symbol, IStream *stream, bool packed = false);
 
@@ -77,6 +80,13 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
     eolt.Write(stream);
 }
 
+void WriteArgumentPack(ReferenceItemSymbol *symbol, IStream *stream) {
+    ArgumentPackToken tok;
+    tok.Write(stream);
+
+    NameToken nt(symbol->GetValue());
+    nt.Write(stream);
+}
 void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream) {
     NameToken nt(symbol->GetNameChecksum());
     m_checksum_names[symbol->GetNameChecksum()] = NULL;
@@ -110,6 +120,9 @@ void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream) {
             break;
         case ESYMBOLTYPE_NAME:
             WriteAsScriptToken<NameSymbol, NameToken>(reinterpret_cast<NameSymbol *>(symbol), stream);
+            break;
+        case ESYMBOLTYPE_INTERNAL_REFERENCE:
+            WriteArgumentPack(reinterpret_cast<ReferenceItemSymbol *>(symbol), stream);
             break;
     }
 }

@@ -39,6 +39,8 @@ enum ESymbolType
 	// New warning! Don't exceed 64 entries, because the top two bits of the symbol
 	// type are used to indicate whether the name checksum has been compressed to
 	// a 8 or 16 bit index, when WriteToBuffer writes out parameter names.
+
+    ESYMBOLTYPE_INTERNAL_REFERENCE, //not real
 };
 
 class QSymbolToken {

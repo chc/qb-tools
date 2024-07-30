@@ -8,6 +8,7 @@ NameToken::NameToken() {
     m_checksum = 0;
 }
 NameToken::NameToken(uint32_t v) {
+    m_checksum_name = NULL;
     m_checksum = v;
 }
 NameToken::~NameToken() {

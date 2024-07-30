@@ -12,6 +12,7 @@ class ReferenceItemSymbol : public QSymbolToken {
         std::string ToString();
         void SetValue(uint32_t v) { m_value = v;}
         uint32_t GetValue() { return m_value; }
+        uint8_t GetRefType() { return m_type; }
         void SetType(uint8_t v) { m_type = v; }
     private:
         uint8_t m_type;
