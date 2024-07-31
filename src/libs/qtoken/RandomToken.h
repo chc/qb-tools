@@ -11,6 +11,7 @@ class RandomToken : public QScriptToken {
         void LoadParams(IStream *stream);
         virtual std::string ToString();
         std::vector<TokenInjection> GetInjections();
+        void Write(IStream *stream);
     private:
         std::vector<TokenInjection> m_injections;
 };

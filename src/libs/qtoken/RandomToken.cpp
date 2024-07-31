@@ -54,6 +54,9 @@ void RandomToken::LoadParams(IStream *stream) {
 
     delete []offsets;
 }
+void RandomToken::Write(IStream *stream) {
+    ///XXX: implement this
+}
 std::string RandomToken::ToString() {
     return "Random(";
 }

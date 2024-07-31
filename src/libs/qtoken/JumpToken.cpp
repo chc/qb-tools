@@ -16,7 +16,10 @@ EScriptToken JumpToken::GetType() {
 }
 void JumpToken::LoadParams(IStream *stream) {
     m_offset = stream->ReadUInt32();
-    
+}
+void JumpToken::Write(IStream *stream) {
+    stream->WriteByte(ESCRIPTTOKEN_JUMP);
+    stream->WriteUInt32(m_offset);
 }
 std::string JumpToken::ToString() {
     /*std::ostringstream ss;

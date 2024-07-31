@@ -82,7 +82,6 @@ void StructureSymbol::LoadParamsNoOffset(IStream *stream) {
     if(offset == 0) { //if 0, emptry struct
         return;
     }
-    
     while(true) {
         uint8_t unk = stream->ReadByte();
         uint8_t type_flags = stream->ReadByte();

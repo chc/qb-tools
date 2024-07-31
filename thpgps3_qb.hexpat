@@ -166,9 +166,9 @@ struct SStructValue {
     }  else if(flags.Type == ESymbolType::ESYMBOLTYPE_LOCALSTRING) {
         SLocalString *data : u32;
     } else if(flags.Type == ESymbolType::ESYMBOLTYPE_PAIR) {
-        SPair data;
+        SPair *data : u32;
     } else if(flags.Type == ESymbolType::ESYMBOLTYPE_VECTOR) {
-        SVector data;
+        SVector *data : u32;
     } else if(flags.Type == ESymbolType::ESYMBOLTYPE_QSCRIPT) {
         SQScript data;
     } else if(flags.Type == ESymbolType::ESYMBOLTYPE_STRUCTURE) {
@@ -404,4 +404,5 @@ fn local_string_length(u32 offset) { //includes null char
 
 
 header_t header @ 0x00;
-root_symbol_t root[while(!std::mem::eof())] @$;
+//root_symbol_t root[31] @$;
+SStructValue sstructvalue_at_0x18C0 @ 0x18C0;

@@ -8,6 +8,9 @@
 PairToken::PairToken() {
 
 }
+PairToken::PairToken(float x, float y) : m_x(x), m_y(y) {
+
+}
 PairToken::~PairToken() {
 
 }
@@ -15,11 +18,16 @@ EScriptToken PairToken::GetType() {
     return ESCRIPTTOKEN_PAIR;
 }
 void PairToken::LoadParams(IStream *stream) {
-    m_values[0] = stream->ReadFloat();
-    m_values[1] = stream->ReadFloat();
+    m_x = stream->ReadFloat();
+    m_y = stream->ReadFloat();
+}
+void PairToken::Write(IStream *stream) {
+    stream->WriteByte(ESCRIPTTOKEN_PAIR);
+    stream->WriteFloat(m_x);
+    stream->WriteFloat(m_y);
 }
 std::string PairToken::ToString() {
     std::ostringstream ss;
-    ss << "(" << m_values[0] << "," << m_values[1] << ") ";
+    ss << "(" << m_x << "," << m_y << ") ";
     return ss.str();
 }

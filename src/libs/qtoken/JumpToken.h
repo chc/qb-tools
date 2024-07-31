@@ -8,6 +8,7 @@ class JumpToken : public QScriptToken {
         ~JumpToken();
         EScriptToken GetType();
         void LoadParams(IStream *stream);
+        void Write(IStream *stream);
         std::string ToString();
         uint32_t GetOffset();
     private:

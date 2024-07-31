@@ -1,40 +1,40 @@
-#include "VectorSymbol.h"
+#include "PairSymbol.h"
 
 #include <sstream>
 #include <iomanip>
 #include <cassert>
 
-VectorSymbol::VectorSymbol() {
+PairSymbol::PairSymbol() {
 
 }
-VectorSymbol::~VectorSymbol() {
+PairSymbol::~PairSymbol() {
 
 }
-ESymbolType VectorSymbol::GetType() {
-    return ESYMBOLTYPE_VECTOR;
+PairSymbol::PairSymbol(float x, float y) : m_x(x), m_y(y) {
+
 }
-void VectorSymbol::LoadParams(IStream *stream) {
+ESymbolType PairSymbol::GetType() {
+    return ESYMBOLTYPE_PAIR;
+}
+void PairSymbol::LoadParams(IStream *stream) {
     uint32_t offset = stream->ReadUInt32();
     if(m_struct_item) {
         m_next_offset = stream->ReadUInt32();
     }
     stream->SetCursor(offset);
-    
+
     uint32_t hdr = stream->ReadUInt32();
     assert(hdr == 65536);
     
     m_x = stream->ReadFloat();
     m_y = stream->ReadFloat();
-    m_z = stream->ReadFloat();
-    
 }
-void VectorSymbol::LoadParamsFromArray(IStream *stream) {
+void PairSymbol::LoadParamsFromArray(IStream *stream) {
     m_x = stream->ReadFloat();
     m_y = stream->ReadFloat();
-    m_z = stream->ReadFloat();
 }
-std::string VectorSymbol::ToString() {
+std::string PairSymbol::ToString() {
     std::ostringstream ss;
-    ss << "(" << m_x << "," << m_y << "," << m_z << ")";
+    ss << "(" << m_x << "," << m_y << ")";
     return ss.str();
 }

@@ -5,11 +5,14 @@
 class PairToken : public QScriptToken {
     public:
         PairToken();
+        PairToken(float x, float y);
         ~PairToken();
         EScriptToken GetType();
         void LoadParams(IStream *stream);
+        void Write(IStream *stream);
         std::string ToString();
     private:
-        float m_values[2];
+        float m_x;
+        float m_y;
 };
 #endif //_PAIRTOKEN_H

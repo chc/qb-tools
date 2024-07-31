@@ -6,6 +6,7 @@
 #include "LocalStringSymbol.h"
 #include "StringSymbol.h"
 #include "FloatSymbol.h"
+#include "PairSymbol.h"
 #include "VectorSymbol.h"
 #include "ArraySymbol.h"
 #include "StructureSymbol.h"
@@ -33,6 +34,8 @@ QSymbolToken* QSymbolToken::Resolve(uint8_t token) {
             return new LocalStringSymbol();
         case ESYMBOLTYPE_FLOAT:
             return new FloatSymbol();
+        case ESYMBOLTYPE_PAIR:
+            return new PairSymbol();
         case ESYMBOLTYPE_VECTOR:
             return new VectorSymbol();
         case ESYMBOLTYPE_QSCRIPT:
