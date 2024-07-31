@@ -24,3 +24,10 @@ include_directories("src/libs/qtoken" "src/libs/qsymbol")
 source_group("Sources" FILES ${QDEOPT_SRCS})
 add_executable (qdeopt ${QDEOPT_SRCS})
 target_link_libraries(qdeopt qtoken qsymbol)
+
+file (GLOB UNPAK_SRCS "src/tools/unpak/*.cpp")
+
+include_directories("src/libs/qtoken" "src/libs/qsymbol")
+source_group("Sources" FILES ${UNPAK_SRCS})
+add_executable (unpak ${UNPAK_SRCS})
+target_link_libraries(unpak qtoken qsymbol)

@@ -404,5 +404,4 @@ fn local_string_length(u32 offset) { //includes null char
 
 
 header_t header @ 0x00;
-//root_symbol_t root[31] @$;
-SStructValue sstructvalue_at_0x18C0 @ 0x18C0;
+root_symbol_t root[while(!std::mem::eof())] @$;
