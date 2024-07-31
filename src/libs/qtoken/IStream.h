@@ -32,5 +32,7 @@ class IStream {
         
         virtual void SetReadEndian(uint8_t endian_mode) = 0;
         virtual void SetWriteEndian(uint8_t endian_mode) = 0;
+        virtual uint8_t GetReadEndianMode() = 0;
+        virtual uint8_t GetWriteEndianMode() = 0;
 };
 #endif // _ISTREAM_H

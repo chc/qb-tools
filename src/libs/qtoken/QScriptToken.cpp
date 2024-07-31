@@ -56,6 +56,7 @@
 #include "FastElseToken.h"
 #include "ArgumentPackToken.h"
 #include "InlinePackStructToken.h"
+#include "WideStringToken.h"
 
 QScriptToken::QScriptToken() {
 
@@ -171,6 +172,8 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
             return new ArgumentPackToken();
         case ESCRIPTTOKEN_INLINEPACKSTRUCT:
             return new InlinePackStructToken();
+        case ESCRIPTTOKEN_WIDESTRING:
+            return new WideStringToken();
             
     }
     fprintf(stderr, "Failed to resolve token with id: %d - %02x\n", token, token);
@@ -187,6 +190,5 @@ std::vector<TokenInjection> QScriptToken::GetInjections() {
     return std::vector<TokenInjection>();
 }
 void QScriptToken::Write(IStream *stream) {
-    printf("QScriptToken::Write: %02x\n", GetType());
     stream->WriteByte(GetType());
  }

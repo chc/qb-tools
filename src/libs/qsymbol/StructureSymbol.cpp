@@ -61,11 +61,11 @@ void StructureSymbol::LoadParamsFromArray(IStream *stream) {
         if(next == 0) {
             break;
         }
+        stream->SetCursor(next);
     }
 }
 void StructureSymbol::LoadParams(IStream *stream) {
     uint32_t struct_offset = stream->ReadUInt32();
-    printf("struct_offset: %08x %d\n", struct_offset, stream->GetOffset());
     stream->SetCursor(struct_offset);
 
     LoadParamsNoOffset(stream);

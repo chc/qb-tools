@@ -48,6 +48,11 @@ QSymbolToken* QSymbolToken::Resolve(uint8_t token) {
     return nullptr;
 }
 void QSymbolToken::ReadSymbolsFromArray(IStream *stream, uint8_t type, uint32_t num_items, QSymbolToken **output_tokens) {
+    if(num_items == 0) {
+        uint32_t v = stream->ReadUInt32(); //skip null data
+        assert(v == 0);
+        return;
+    }
     int readmode = 0;
     if(type == ESYMBOLTYPE_INTEGER || type == ESYMBOLTYPE_FLOAT || type == ESYMBOLTYPE_NAME) {
         readmode = 1;

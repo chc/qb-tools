@@ -18,7 +18,7 @@ struct AlignTo<auto Alignment> {
 } [[hidden]];
 
 struct Offset<T> {
-    u32 offset;   
+    u32 offset;
     if(offset > 0) {
         T data @offset;
     }
@@ -196,63 +196,76 @@ struct SArray {
     StructFlags flags;
     u8 unk_a2;
     u32 num_items;
-    if(flags.Type == ESymbolType::ESYMBOLTYPE_INTEGER) {
-        if(num_items == 1) {
-            SInteger data[num_items];
-        } else {
-            u32 offset;
-            SInteger data[num_items] @offset;
-        }
-    } else if(flags.Type == ESymbolType::ESYMBOLTYPE_FLOAT) {
-        if(num_items == 1) {
-            SFloat data[num_items];
-        } else {
-            u32 offset;
-            SFloat data[num_items] @offset;
-        }
-    } else if(flags.Type == ESymbolType::ESYMBOLTYPE_NAME) {
-        if(num_items == 1) {
-            SChecksumName data[num_items];
-        } else {
-            u32 offset;
-            SChecksumName data[num_items] @offset;
-        }
-
-    } else if(flags.Type == ESymbolType::ESYMBOLTYPE_STRING) {
-        Offset<SString> *data[num_items] : u32;
-        AlignTo<4>;
-    } else if(flags.Type == ESymbolType::ESYMBOLTYPE_LOCALSTRING) {
-        Offset<SLocalString> *data[num_items] : u32;
-        AlignTo<4>;
-    } else if(flags.Type == ESymbolType::ESYMBOLTYPE_PAIR) {
-        SPair data;
-    } else if(flags.Type == ESymbolType::ESYMBOLTYPE_VECTOR) {
-        SVector data;
-    } else if(flags.Type == ESymbolType::ESYMBOLTYPE_QSCRIPT) {
-        SQScript data[num_items];
-    } else if(flags.Type == ESymbolType::ESYMBOLTYPE_STRUCTURE) {
-    
-        if(flags.IsReference) {
-            u32 offset;
-            SChecksumName data[num_items] @ offset;
-        } else {
+    if(num_items > 0) {
+        if(flags.Type == ESymbolType::ESYMBOLTYPE_INTEGER) {
             if(num_items == 1) {
-                Offset<SStruct> data[num_items];
+                SInteger data[num_items];
             } else {
                 u32 offset;
-                Offset<SStruct> data[num_items] @offset;
+                SInteger data[num_items] @offset;
             }
-            
-        }     
-    } else if(flags.Type == ESymbolType::ESYMBOLTYPE_ARRAY) {
-        u32 offset;
-        if(flags.IsReference) {
-            Offset<SChecksumName> data[num_items] @offset;
+        } else if(flags.Type == ESymbolType::ESYMBOLTYPE_FLOAT) {
+            if(num_items == 1) {
+                SFloat data[num_items];
+            } else {
+                u32 offset;
+                SFloat data[num_items] @offset;
+            }
+        } else if(flags.Type == ESymbolType::ESYMBOLTYPE_NAME) {
+            if(num_items == 1) {
+                SChecksumName data[num_items];
+            } else {
+                u32 offset;
+                SChecksumName data[num_items] @offset;
+            }
 
-        } else {
-            Offset<SArray> data[num_items] @offset;
+        } else if(flags.Type == ESymbolType::ESYMBOLTYPE_STRING) {
+            if(num_items == 1) {
+                Offset<SString> data[num_items];
+            } else {
+                u32 offset;
+                Offset<SString> data[num_items] @offset;
+            }
+            AlignTo<4>;
+        } else if(flags.Type == ESymbolType::ESYMBOLTYPE_LOCALSTRING) {
+            if(num_items == 1) {
+                Offset<SLocalString> data[num_items];
+            } else {
+                u32 offset;
+                Offset<SLocalString> data[num_items] @offset;
+            }
+            AlignTo<4>;
+        } else if(flags.Type == ESymbolType::ESYMBOLTYPE_PAIR) {
+            SPair data;
+        } else if(flags.Type == ESymbolType::ESYMBOLTYPE_VECTOR) {
+            SVector data;
+        } else if(flags.Type == ESymbolType::ESYMBOLTYPE_QSCRIPT) {
+            SQScript data[num_items];
+        } else if(flags.Type == ESymbolType::ESYMBOLTYPE_STRUCTURE) {
+        
+            if(flags.IsReference) {
+                u32 offset;
+                SChecksumName data[num_items] @ offset;
+            } else {
+                if(num_items == 1) {
+                    Offset<SStruct> data[num_items];
+                } else {
+                    u32 offset;
+                    Offset<SStruct> data[num_items] @offset;
+                }
+                
+            }     
+        } else if(flags.Type == ESymbolType::ESYMBOLTYPE_ARRAY) {
+            u32 offset;
+            if(flags.IsReference) {
+                Offset<SChecksumName> data[num_items] @offset;
+
+            } else {
+                Offset<SArray> data[num_items] @offset;
+            }
         }
-
+    } else {
+       u32 data; //padding or otherwise null data
     }
 };
 
@@ -336,7 +349,7 @@ fn find_end_of_struct(u32 root_value_offset) {
     } else if(value.flags.Type == ESymbolType::ESYMBOLTYPE_STRING) {
         return std::mem::align_to(4, addressof(value.next_offset) + sizeof(value.next_offset) + string_length(addressof(value.data)));
     } else if(value.flags.Type == ESymbolType::ESYMBOLTYPE_LOCALSTRING) {
-        return std::mem::align_to(4, addressof(value.next_offset) + sizeof(value.next_offset) + local_string_length(addressof(value.data)));
+        return std::mem::align_to(4, addressof(value.next_offset) + sizeof(value.next_offset) + local_string_length(addressof(value.data))*2);
     }
     
     return addressof(value.next_offset) + sizeof(value.next_offset);
@@ -345,10 +358,18 @@ fn find_end_of_struct(u32 root_value_offset) {
 fn find_end_of_array(u32 array_offset) {
     SArray arr @array_offset;
     
+    if(arr.num_items == 0) {
+        return addressof(arr.data) + 4;
+    }
+    
     if(arr.flags.Type == ESymbolType::ESYMBOLTYPE_STRUCTURE && !arr.flags.IsReference) {
         return find_end_of_struct(arr.data[arr.num_items-1].offset);
     } else if(arr.flags.Type == ESymbolType::ESYMBOLTYPE_ARRAY) {
         return find_end_of_array(arr.data[arr.num_items-1].offset);
+    } else if(arr.flags.Type == ESymbolType::ESYMBOLTYPE_STRING) {
+        return addressof(arr.data[arr.num_items-1].data) + string_length(addressof(arr.data[arr.num_items-1].data));
+    }  else if(arr.flags.Type == ESymbolType::ESYMBOLTYPE_LOCALSTRING) {
+        return addressof(arr.data[arr.num_items-1].data) + (local_string_length(addressof(arr.data[arr.num_items-1].data))*2);
     } else {
         return addressof(arr.data[arr.num_items-1]) + sizeof(arr.data[arr.num_items-1]);
     }
