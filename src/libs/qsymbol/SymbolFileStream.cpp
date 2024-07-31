@@ -1,4 +1,5 @@
 #include "SymbolFileStream.h"
+#include <cassert>
 
 SymbolFileStream::SymbolFileStream(IStream *data_stream) {
     mp_stream = data_stream;
@@ -10,9 +11,7 @@ QSymbolToken *SymbolFileStream::NextSymbol() {
     uint16_t flags = mp_stream->ReadUInt16();
     //printf("flags: %04x - %d\n", flags, mp_stream->GetOffset());
 
-    if(flags == 0) {
-        return nullptr;
-    }
+    assert(flags & 0x20);
 
     uint8_t type = mp_stream->ReadByte();
     //printf("type: %d\n", type);

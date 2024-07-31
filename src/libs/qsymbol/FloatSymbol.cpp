@@ -14,6 +14,7 @@ ESymbolType FloatSymbol::GetType() {
 }
 void FloatSymbol::LoadParams(IStream *stream) {
     m_value = stream->ReadFloat();
+
     if(m_struct_item) {
         m_next_offset = stream->ReadUInt32();
     } else {
