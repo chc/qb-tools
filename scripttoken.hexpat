@@ -158,6 +158,13 @@ fn string_length(u32 offset) { //includes null char
 
 fn is_single_byte_token(EScriptToken token) {
  if(token == EScriptToken::ESCRIPTTOKEN_EQUALS) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_LESSTHAN) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_ARG) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_ADD) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_MINUS) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_MULTIPLY) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_DIVIDE) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_DOT) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_SCRIPT) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_ENDSCRIPT) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_STARTSTRUCT) {
@@ -172,6 +179,9 @@ fn is_single_byte_token(EScriptToken token) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_CLOSEPARENTH) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_ARGUMENTPACK) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_ENDIF) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_BEGIN) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_REPEAT) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_NOT) {
     } else {    
         return 0;
     }
@@ -204,6 +214,14 @@ struct ScriptToken {
     } else if(token == EScriptToken::ESCRIPTTOKEN_STRING) {
         u32 len;
         char data[len];
+    }  else if(token == EScriptToken::ESCRIPTTOKEN_LOCALSTRING) {
+        u32 len;
+        char16 data[len/2];
+
+    }   else if(token == EScriptToken::ESCRIPTTOKEN_WIDESTRING) {
+        u32 len;
+        char16 data[len/2];
+
     }  else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_FASTIF) {
         u16 offset;
     } else if(token == EScriptToken::ESCRIPTTOKEN_INLINEPACKSTRUCT) {

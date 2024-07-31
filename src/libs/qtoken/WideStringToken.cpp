@@ -37,9 +37,7 @@ void WideStringToken::LoadParams(IStream *stream) {
         
         len -= 2;
     }
-    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> converter;
-    std::cout << converter.to_bytes(m_value) << std::endl;
-    
+
     stream->SetReadEndian(mode);
 }
 void WideStringToken::Write(IStream *stream) {

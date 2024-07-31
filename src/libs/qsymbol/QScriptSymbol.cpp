@@ -38,6 +38,7 @@ void QScriptSymbol::LoadParams(IStream *stream) {
         for(int i=0;i<compressed_size;i++) {
             m_decomp_buff[i] = stream->ReadByte();
         }
+        m_decomp_len = uncompressed_size;
     } else {
         m_decomp_buff = new uint8_t[uncompressed_size];
         uint8_t *comp_buff = new uint8_t[compressed_size];
