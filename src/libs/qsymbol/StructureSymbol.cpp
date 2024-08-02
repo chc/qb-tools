@@ -42,18 +42,12 @@ void StructureSymbol::LoadParamsFromArray(IStream *stream) {
 
         QSymbolToken *token = NULL;
         if(type_flags & 0x10) { //is reference
-            ReferenceItemSymbol *ref = new ReferenceItemSymbol();
-            ref->SetIsStructItem(true);
-            ref->SetType(type_flags & 0xF);
-            ref->SetValue(stream->ReadUInt32());
-            ref->SetNextOffset(stream->ReadUInt32());
-            
-            token = ref;
+            token = new ReferenceItemSymbol(type_flags & 0xF);
         } else {
             token = QSymbolToken::Resolve(type);
-            token->SetIsStructItem(true);
-            token->LoadParams(stream);
         }
+        token->SetIsStructItem(true);
+        token->LoadParams(stream);
         token->SetNameChecksum(name);
         m_children.push_back(token);
 
@@ -95,9 +89,8 @@ void StructureSymbol::LoadParamsNoOffset(IStream *stream) {
 
         QSymbolToken *token = NULL;
         if(type_flags & 0x10) { //is reference
-            ReferenceItemSymbol *ref = new ReferenceItemSymbol();
+            ReferenceItemSymbol *ref = new ReferenceItemSymbol(type_flags & 0xF);
             ref->SetIsStructItem(true);
-            ref->SetType(type_flags & 0xF);
             ref->SetValue(stream->ReadUInt32());
             ref->SetNextOffset(stream->ReadUInt32());
             token = ref;

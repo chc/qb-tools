@@ -44,3 +44,10 @@ include_directories("src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak" "src/lib
 source_group("Sources" FILES ${QRESOLVE_SRCS})
 add_executable (qresolve ${QRESOLVE_SRCS})
 target_link_libraries(qresolve qtoken qsymbol pak dbginfo)
+
+
+file (GLOB QGENNAME_SRCS "src/tools/qgenname/*.cpp")
+include_directories("src/libs/qtoken")
+source_group("Sources" FILES ${QGENNAME_SRCS})
+add_executable (qgenname ${QGENNAME_SRCS})
+target_link_libraries(qgenname qtoken)

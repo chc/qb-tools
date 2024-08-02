@@ -11,6 +11,7 @@
 #include "ArraySymbol.h"
 #include "StructureSymbol.h"
 #include "QScriptSymbol.h"
+#include "ReferenceItemSymbol.h"
 QSymbolToken::QSymbolToken() {
     m_next_offset = 0;
     m_name_checksum = 0;
@@ -50,14 +51,18 @@ QSymbolToken* QSymbolToken::Resolve(uint8_t token) {
     assert(false);
     return nullptr;
 }
-void QSymbolToken::ReadSymbolsFromArray(IStream *stream, uint8_t type, uint32_t num_items, QSymbolToken **output_tokens) {
+void QSymbolToken::ReadSymbolsFromArray(IStream *stream, uint8_t type_flags, uint32_t num_items, QSymbolToken **output_tokens) {
+    uint8_t type = type_flags & 0xF;
+    bool is_reference = type_flags & 0x10;
+
     if(num_items == 0) {
         uint32_t v = stream->ReadUInt32(); //skip null data
         assert(v == 0);
         return;
     }
     int readmode = 0;
-    if(type == ESYMBOLTYPE_INTEGER || type == ESYMBOLTYPE_FLOAT || type == ESYMBOLTYPE_NAME) {
+    
+    if(type == ESYMBOLTYPE_INTEGER || type == ESYMBOLTYPE_FLOAT || type == ESYMBOLTYPE_NAME || is_reference) {
         readmode = 1;
     } else if(type == ESYMBOLTYPE_STRUCTURE || type == ESYMBOLTYPE_ARRAY || type == ESYMBOLTYPE_STRING || type == ESYMBOLTYPE_LOCALSTRING || type == ESYMBOLTYPE_PAIR || type == ESYMBOLTYPE_VECTOR) {
         //probably vector and pair go into here too... but let them asert for now
@@ -70,7 +75,11 @@ void QSymbolToken::ReadSymbolsFromArray(IStream *stream, uint8_t type, uint32_t 
             stream->SetCursor(data_offset);
         }
         for(int i=0;i<num_items;i++) {
-            output_tokens[i] = Resolve(type);
+            if(is_reference) {
+                output_tokens[i] = new ReferenceItemSymbol(type);
+            } else {
+                output_tokens[i] = Resolve(type);
+            }            
             output_tokens[i]->LoadParamsFromArray(stream);
         }
     } else if(readmode == 2) {
@@ -85,7 +94,11 @@ void QSymbolToken::ReadSymbolsFromArray(IStream *stream, uint8_t type, uint32_t 
         }
         for(int i=0;i<num_items;i++) {
             stream->SetCursor(offsets[i]);
-            output_tokens[i] = Resolve(type);
+            if(is_reference) {
+                output_tokens[i] = new ReferenceItemSymbol(type);
+            } else {
+                output_tokens[i] = Resolve(type);
+            }            
             output_tokens[i]->LoadParamsFromArray(stream);
         }
         delete offsets;

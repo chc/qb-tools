@@ -53,7 +53,7 @@ class QSymbolToken {
         uint32_t GetNextOffset();
         void SetNextOffset(uint32_t v) { m_next_offset = v; }
 		static QSymbolToken *Resolve(uint8_t token);
-        static void ReadSymbolsFromArray(IStream *stream, uint8_t type, uint32_t num_items, QSymbolToken **output_tokens);
+        static void ReadSymbolsFromArray(IStream *stream, uint8_t type_flags, uint32_t num_items, QSymbolToken **output_tokens);
 		virtual std::string ToString() = 0;
         void SetNameChecksum(uint32_t name) { m_name_checksum = name; }
         uint32_t GetNameChecksum() { return m_name_checksum; }

@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cassert>
-ReferenceItemSymbol::ReferenceItemSymbol() {
+ReferenceItemSymbol::ReferenceItemSymbol(uint8_t type) : m_type(type) {
 
 }
 ReferenceItemSymbol::~ReferenceItemSymbol() {
@@ -13,10 +13,11 @@ ESymbolType ReferenceItemSymbol::GetType() {
     return ESYMBOLTYPE_INTERNAL_REFERENCE;
 }
 void ReferenceItemSymbol::LoadParams(IStream *stream) {
-    assert(false);
+    SetValue(stream->ReadUInt32());
+    SetNextOffset(stream->ReadUInt32());
 }
 void ReferenceItemSymbol::LoadParamsFromArray(IStream *stream) {
-    assert(false);
+    SetValue(stream->ReadUInt32());
 }
 std::string ReferenceItemSymbol::ToString() {
     return "";
