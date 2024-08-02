@@ -8,39 +8,12 @@
 #include <SymbolFileStream.h>
 #include <QScriptToken.h>
 #include <ChecksumNameToken.h>
+#include <dbginfo.h>
 void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream);
 
 extern int32_t g_last_script_keyword;
 
 std::map<uint32_t, const char *> m_checksum_names;
-
-typedef struct {
-    uint32_t checksum;
-    char checksum_name[64];
-} ChecksumTableEntry;
-void LoadChecksums(const char *path) {
-    ChecksumTableEntry entry;
-    FILE *fd = fopen(path, "rb");
-    if(!fd) {
-        return;
-    }
-    while(true) {
-        if(feof(fd)) {
-            break;
-        }
-        int len = fread(&entry, sizeof(ChecksumTableEntry), 1, fd);
-        if(len != 1) {
-            break;
-        }
-
-        if(m_checksum_names.find(entry.checksum) != m_checksum_names.end()) {
-            if(m_checksum_names[entry.checksum] == NULL) {
-                m_checksum_names[entry.checksum] = strdup(entry.checksum_name);
-            }            
-        }
-    }
-    fclose(fd);
-}
 
 int main(int argc, const char *argv[]) {
     if(argc  < 3) {
@@ -85,10 +58,10 @@ int main(int argc, const char *argv[]) {
         WriteSymbolAsScriptToken(symbol, &fsout);        
     }
 
-    const char *checksum_path = getenv("QTOOLS_CHECKSUM_PATH");
-    if(checksum_path != NULL) {
-        printf("** loading checksum path: %s\n", checksum_path);
-        LoadChecksums(checksum_path);
+    const char *dbginfo_path = getenv("QTOOLS_DBGPAK_PATH");
+    if(dbginfo_path != NULL) {
+        printf("** loading dbginfo path: %s\n", dbginfo_path);
+        dbginfo_load(dbginfo_path);
     } else {
         printf("** checksum path not specified\n");
     }
@@ -96,11 +69,11 @@ int main(int argc, const char *argv[]) {
 
     std::map<uint32_t, const char *>::iterator it = m_checksum_names.begin();
     while(it != m_checksum_names.end()) {
-        std::pair<uint32_t, const char *> p = *it;
         it++;
-        if(p.first == 0 || p.second == NULL)
+        it->second = dbginfo_resolve(it->first);
+        if(it->first == 0 || it->second == NULL)
             continue;
-        ChecksumNameToken token(p.first, p.second);
+        ChecksumNameToken token(it->first, it->second);
         token.Write(&fsout);
     }
     fsout.WriteByte(ESCRIPTTOKEN_ENDOFFILE);

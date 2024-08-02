@@ -6,56 +6,13 @@
 #include <vector>
 
 #include <string.h>
-std::map<uint32_t, const char*> m_checksum_names;
+#include <pak.h>
+#include <dbginfo.h>
 
-typedef struct {
-    uint32_t checksum;
-    char checksum_name[64];
-} ChecksumTableEntry;
-void LoadChecksums(const char* path) {
-    ChecksumTableEntry entry;
-    FILE* fd = fopen(path, "rb");
-    if (!fd) {
-        return;
-    }
-    while (true) {
-        if (feof(fd)) {
-            break;
-        }
-        int len = fread(&entry, sizeof(ChecksumTableEntry), 1, fd);
-        if (len != 1) {
-            break;
-        }
-
-        if (m_checksum_names.find(entry.checksum) == m_checksum_names.end()) {
-            if (m_checksum_names[entry.checksum] == NULL) {
-                m_checksum_names[entry.checksum] = strdup(entry.checksum_name);
-            }
-        }
-    }
-    fclose(fd);
-}
-
-
-typedef struct _PakItem {
-    uint32_t type;
-    uint32_t offset;
-    uint32_t size;
-    uint32_t fullname;
-    uint32_t pakname;
-    uint32_t short_name;
-    uint32_t fileNameKey;
-    uint32_t flags;    
-    uint32_t file_offset;
-} PakItem;
 std::vector<PakItem> pak_items;
 
-
 const char* get_checksum(uint32_t key) {
-    if (m_checksum_names.find(key) != m_checksum_names.end()) {
-        return m_checksum_names[key];
-    }
-    return NULL;
+    return dbginfo_resolve(key);
 }
 
 #define PRINT_FIELD(name, var) c = get_checksum(var); \
@@ -88,107 +45,53 @@ void print_pak_item(PakItem* item) {
 }
 
 
-void dump_pak_item(PakItem item, int pak_size, FILE* fd) {
-    int offset = item.offset + item.file_offset - pak_size;
+bool unpak_file_info_callback(PakItem item) {
+    print_pak_item(&item);
 
-    fseek(fd, offset, SEEK_SET);
+    uint8_t* buf = new uint8_t[item.size];
+    unpak_read_file(item, buf);
 
-    uint8_t* d = new uint8_t[item.size];
-    fread(d, item.size, 1, fd);
-
-    const char* path = get_checksum(item.short_name);
+    const char* path = get_checksum(item.pakname);
 
     if (path) {
-        FILE* out = fopen(path, "wb");
+        char *name = strdup(path);
+        for(int i=0;i<strlen(name);i++) {
+            if(name[i] == '\\') {
+                name[i] = '_';
+            }
+        }
+
+        FILE* out = fopen(name, "wb");
         if (out) {
-            fwrite(d, item.size, 1, out);
+            fwrite(buf, item.size, 1, out);
             fclose(out);
         }
+        free(name);
+    } else {
+        assert(false);
     }
 
+    delete[] buf;
 
-
-    delete[] d;
+    return true;
 }
 
 int main(int argc, const char* argv[]) {
-    if (argc < 3) {
-        fprintf(stderr, "usage: %s [pak_path] [pab_path]\n", argv[0]);
+    if (argc < 2) {
+        fprintf(stderr, "usage: %s [pak_path] (pab_path)\n", argv[0]);
         return -1;
     }
 
-
-    FileStream pak_fd(argv[1]);
-
-    if (!pak_fd.IsFileOpened()) {
-        fprintf(stderr, "Failed to open PAK: %s\n", argv[1]);
-        return -1;
-    }
-
-    pak_fd.SetReadEndian(ISTREAM_BIG_ENDIAN);
-
-    const char* checksum_path = getenv("QTOOLS_CHECKSUM_PATH");
-    if (checksum_path != NULL) {
-        printf("** loading checksum path: %s\n", checksum_path);
-        LoadChecksums(checksum_path);
-    }
-    else {
+    const char *dbginfo_path = getenv("QTOOLS_DBGPAK_PATH");
+    if(dbginfo_path != NULL) {
+        printf("** loading dbginfo path: %s\n", dbginfo_path);
+        dbginfo_load(dbginfo_path);
+    } else {
         printf("** checksum path not specified\n");
     }
 
 
-    PakItem item;
-    while (true) {
-        item.file_offset = pak_fd.GetOffset();
-        item.type = pak_fd.ReadUInt32();
-        item.offset = pak_fd.ReadUInt32();
-        item.size = pak_fd.ReadUInt32();
-        item.fullname = pak_fd.ReadUInt32();
-        item.pakname = pak_fd.ReadUInt32();
-        item.short_name = pak_fd.ReadUInt32();
-        item.fileNameKey = pak_fd.ReadUInt32();
-        item.flags = pak_fd.ReadUInt32();
-
-        pak_items.push_back(item);
-
-        if (item.type == 749989691) {
-            break;
-        }
-    }
-
-    FILE* fd = pak_fd.GetHandle();
-    while (!feof(fd)) {
-        char c;
-        fread(&c, 1, 1, fd);
-    }
-
-    int offset = ftell(fd);
-
-    FILE* pab_fd = NULL;
-    bool created = false;
-    if (strcmp(argv[1], argv[2]) == 0) {
-        offset = 0;
-        pab_fd = pak_fd.GetHandle();
-    }
-    else {
-        pab_fd = fopen(argv[2], "rb");
-    }
-   
-
-
-    std::vector<PakItem>::iterator it = pak_items.begin();
-    while (it != pak_items.end()) {
-        PakItem item = *it;
-        print_pak_item(&item);
-        dump_pak_item(item, offset, pab_fd);
-        it++;
-    }
-
-    
-
-    if (pab_fd != pak_fd.GetHandle()) {
-        fclose(pab_fd);
-    }
+    unpak_iterate_files(argv[1], argv[2], unpak_file_info_callback);
     
     
     return 0;

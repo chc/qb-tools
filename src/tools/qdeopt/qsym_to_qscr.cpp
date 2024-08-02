@@ -43,6 +43,7 @@ extern std::map<uint32_t, const char *> m_checksum_names;
 
 template<typename T, typename ST> void WriteAsScriptToken(T *symbol, IStream *stream) {
     if(symbol->GetNameChecksum() != 0) {
+        m_checksum_names[symbol->GetNameChecksum()] = NULL;
         NameToken nt(symbol->GetNameChecksum());
         nt.Write(stream);
 
@@ -60,6 +61,7 @@ template<typename T, typename ST> void WriteAsScriptToken(T *symbol, IStream *st
 
 void WritePair(PairSymbol *symbol, IStream *stream) {
     if(symbol->GetNameChecksum() != 0) {
+        m_checksum_names[symbol->GetNameChecksum()] = NULL;
         NameToken nt(symbol->GetNameChecksum());
         nt.Write(stream);
 
@@ -75,6 +77,7 @@ void WritePair(PairSymbol *symbol, IStream *stream) {
 }
 void WriteVector(VectorSymbol *symbol, IStream *stream) {
     if(symbol->GetNameChecksum() != 0) {
+        m_checksum_names[symbol->GetNameChecksum()] = NULL;
         NameToken nt(symbol->GetNameChecksum());
         nt.Write(stream);
 
@@ -110,6 +113,8 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
         if(token->GetType() == ESCRIPTTOKEN_INLINEPACKSTRUCT) {
             StructureSymbol sym = reinterpret_cast<InlinePackStructToken*>(token)->GetValue();
             WriteStructure(&sym, stream, true);
+        } else if(token->GetType() == ESCRIPTTOKEN_NAME) {
+            m_checksum_names[reinterpret_cast<NameToken *>(token)->GetChecksum()] = NULL;
         }
     }
 
@@ -120,6 +125,8 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
 void WriteArgumentPack(ReferenceItemSymbol *symbol, IStream *stream) {
     ArgumentPackToken tok;
     tok.Write(stream);
+
+    m_checksum_names[symbol->GetValue()] = NULL;
 
     NameToken nt(symbol->GetValue());
     nt.Write(stream);
@@ -156,6 +163,7 @@ void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream) {
             WriteArray(reinterpret_cast<ArraySymbol *>(symbol), stream);
             break;
         case ESYMBOLTYPE_NAME:
+            m_checksum_names[reinterpret_cast<NameSymbol *>(symbol)->GetValue()] = NULL;
             WriteAsScriptToken<NameSymbol, NameToken>(reinterpret_cast<NameSymbol *>(symbol), stream);
             break;
         case ESYMBOLTYPE_INTERNAL_REFERENCE:
@@ -191,6 +199,7 @@ void WriteArray(ArraySymbol *symbol, IStream *stream) {
 void WriteStructure(StructureSymbol *symbol, IStream *stream, bool packed) {
     if(!packed) {
         if(symbol->GetNameChecksum() != 0) {
+            m_checksum_names[symbol->GetNameChecksum()] = NULL;
             NameToken nt(symbol->GetNameChecksum());
             nt.Write(stream);
 

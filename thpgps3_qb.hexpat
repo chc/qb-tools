@@ -236,9 +236,19 @@ struct SArray {
             }
             AlignTo<4>;
         } else if(flags.Type == ESymbolType::ESYMBOLTYPE_PAIR) {
-            SPair data;
+            if(num_items == 1) {
+                Offset<SPair> data[num_items];
+            } else {
+                u32 offset;
+                Offset<SPair> data[num_items] @offset;
+            }
         } else if(flags.Type == ESymbolType::ESYMBOLTYPE_VECTOR) {
-            SVector data;
+            if(num_items == 1) {
+                SVector data[num_items];
+            } else {
+                u32 offset;
+                SVector data[num_items] @offset;
+            }
         } else if(flags.Type == ESymbolType::ESYMBOLTYPE_QSCRIPT) {
             SQScript data[num_items];
         } else if(flags.Type == ESymbolType::ESYMBOLTYPE_STRUCTURE) {

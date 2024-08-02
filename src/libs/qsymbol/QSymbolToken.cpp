@@ -59,7 +59,7 @@ void QSymbolToken::ReadSymbolsFromArray(IStream *stream, uint8_t type, uint32_t 
     int readmode = 0;
     if(type == ESYMBOLTYPE_INTEGER || type == ESYMBOLTYPE_FLOAT || type == ESYMBOLTYPE_NAME) {
         readmode = 1;
-    } else if(type == ESYMBOLTYPE_STRUCTURE || type == ESYMBOLTYPE_ARRAY || type == ESYMBOLTYPE_STRING || type == ESYMBOLTYPE_LOCALSTRING) {
+    } else if(type == ESYMBOLTYPE_STRUCTURE || type == ESYMBOLTYPE_ARRAY || type == ESYMBOLTYPE_STRING || type == ESYMBOLTYPE_LOCALSTRING || type == ESYMBOLTYPE_PAIR || type == ESYMBOLTYPE_VECTOR) {
         //probably vector and pair go into here too... but let them asert for now
         readmode = 2;
     }

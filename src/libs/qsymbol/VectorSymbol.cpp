@@ -29,6 +29,9 @@ void VectorSymbol::LoadParams(IStream *stream) {
     
 }
 void VectorSymbol::LoadParamsFromArray(IStream *stream) {
+    uint32_t hdr = stream->ReadUInt32();
+    assert(hdr == 65536);
+    
     m_x = stream->ReadFloat();
     m_y = stream->ReadFloat();
     m_z = stream->ReadFloat();

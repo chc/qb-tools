@@ -57,6 +57,10 @@
 #include "ArgumentPackToken.h"
 #include "InlinePackStructToken.h"
 #include "WideStringToken.h"
+#include "ShortJumpToken.h"
+#include "ElseIfToken.h"
+#include "LessThanEqualToken.h"
+#include "GreaterThanEqualToken.h"
 
 QScriptToken::QScriptToken() {
 
@@ -94,6 +98,8 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
             return new IfToken();
         case ESCRIPTTOKEN_KEYWORD_ELSE:
             return new ElseToken();
+        case ESCRIPTTOKEN_KEYWORD_ELSEIF:
+            return new ElseIfToken();
         case ESCRIPTTOKEN_KEYWORD_ENDIF:
             return new EndIfToken();
         case ESCRIPTTOKEN_KEYWORD_NOT:
@@ -104,8 +110,12 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
             return new OrToken();
         case ESCRIPTTOKEN_LESSTHAN:
             return new LessThanToken();
+        case ESCRIPTTOKEN_LESSTHANEQUAL:
+            return new LessThanEqualToken();
         case ESCRIPTTOKEN_GREATERTHAN:
             return new GreaterThanToken();
+        case ESCRIPTTOKEN_GREATERTHANEQUAL:
+            return new GreaterThanEqualToken();
         case ESCRIPTTOKEN_MINUS:
             return new MinusToken();
         case ESCRIPTTOKEN_ADD:
@@ -174,6 +184,8 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
             return new InlinePackStructToken();
         case ESCRIPTTOKEN_WIDESTRING:
             return new WideStringToken();
+        case ESCRIPTTOKEN_SHORTJUMP:
+            return new ShortJumpToken();
             
     }
     fprintf(stderr, "Failed to resolve token with id: %d - %02x\n", token, token);

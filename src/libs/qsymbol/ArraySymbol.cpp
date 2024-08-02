@@ -43,8 +43,17 @@ void ArraySymbol::LoadParams(IStream *stream) {
 }
 
 void ArraySymbol::LoadParamsFromArray(IStream *stream) {
-    printf("IMPLEMENT ArraySymbol::LoadParamsFromArray\n");
-    assert(false);
+    uint16_t hdr = stream->ReadUInt16();
+    assert(hdr == 1);
+
+    uint8_t type = stream->ReadByte();
+    stream->ReadByte();
+
+    m_num_items = stream->ReadUInt32();
+
+    m_tokens = new QSymbolToken*[m_num_items];
+
+    ReadSymbolsFromArray(stream, type, m_num_items, m_tokens);
 }
 std::string ArraySymbol::ToString() {
     return "";
