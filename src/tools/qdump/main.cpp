@@ -12,7 +12,9 @@
 std::vector<QScriptToken *> token_list;
 void dump_token_list(std::vector<QScriptToken *> token_list, FILE *out);
 
-extern uint32_t g_last_script_keyword;
+extern "C" {
+    extern int32_t g_last_script_keyword;
+}
 
 ChecksumNameToken *resolve_name(uint32_t checksum) {
     std::vector<QScriptToken *>::iterator it = token_list.begin();

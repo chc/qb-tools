@@ -33,6 +33,7 @@ class FileStream : public IStream {
         void SetWriteEndian(uint8_t endian_mode);
         uint8_t GetReadEndianMode() { return m_read_endian_mode; }
         uint8_t GetWriteEndianMode() { return m_write_endian_mode; }
+        FILE* GetHandle() { return mp_fd; }
     private:
         FILE *mp_fd;
         uint8_t m_read_endian_mode;

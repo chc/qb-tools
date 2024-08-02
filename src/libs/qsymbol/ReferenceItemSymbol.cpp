@@ -19,5 +19,5 @@ void ReferenceItemSymbol::LoadParamsFromArray(IStream *stream) {
     assert(false);
 }
 std::string ReferenceItemSymbol::ToString() {
-
+    return "";
 }

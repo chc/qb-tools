@@ -35,8 +35,10 @@
 void WriteArray(ArraySymbol *symbol, IStream *stream);
 void WriteStructure(StructureSymbol *symbol, IStream *stream, bool packed = false);
 
-extern uint32_t g_last_script_keyword;
-extern uint32_t g_last_script_keyword_write;
+extern "C" {
+    extern int32_t g_last_script_keyword;
+    extern int32_t g_last_script_keyword_write;
+}
 extern std::map<uint32_t, const char *> m_checksum_names;
 
 template<typename T, typename ST> void WriteAsScriptToken(T *symbol, IStream *stream) {

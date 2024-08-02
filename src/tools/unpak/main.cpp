@@ -2,134 +2,194 @@
 #include <stdlib.h>
 #include <cassert>
 #include <FileStream.h>
-
+#include <map>
+#include <vector>
 
 #include <string.h>
+std::map<uint32_t, const char*> m_checksum_names;
 
-
-
-void show_dump(unsigned char *data, unsigned int len, FILE *stream) {
-    static const char       hex[] = "0123456789abcdef";
-    static unsigned char    buff[67];   /* HEX  CHAR\n */
-    unsigned char           chr,
-                            *bytes,
-                            *p,
-                            *limit,
-                            *glimit = data + len;
-
-    memset(buff + 2, ' ', 48);
-
-    while(data < glimit) {
-        limit = data + 16;
-        if(limit > glimit) {
-            limit = glimit;
-            memset(buff, ' ', 48);
-        }
-
-        p     = buff;
-        bytes = p + 50;
-        while(data < limit) {
-            chr = *data;
-            *p++ = hex[chr >> 4];
-            *p++ = hex[chr & 15];
-            p++;
-            *bytes++ = ((chr < ' ') || (chr >= 0x7f)) ? '.' : chr;
-            data++;
-        }
-        *bytes++ = '\n';
-
-        fwrite(buff, bytes - buff, 1, stream);
+typedef struct {
+    uint32_t checksum;
+    char checksum_name[64];
+} ChecksumTableEntry;
+void LoadChecksums(const char* path) {
+    ChecksumTableEntry entry;
+    FILE* fd = fopen(path, "rb");
+    if (!fd) {
+        return;
     }
+    while (true) {
+        if (feof(fd)) {
+            break;
+        }
+        int len = fread(&entry, sizeof(ChecksumTableEntry), 1, fd);
+        if (len != 1) {
+            break;
+        }
+
+        if (m_checksum_names.find(entry.checksum) == m_checksum_names.end()) {
+            if (m_checksum_names[entry.checksum] == NULL) {
+                m_checksum_names[entry.checksum] = strdup(entry.checksum_name);
+            }
+        }
+    }
+    fclose(fd);
 }
+
 
 typedef struct _PakItem {
     uint32_t type;
     uint32_t offset;
     uint32_t size;
-    uint32_t unk2;
-    uint32_t name;
+    uint32_t fullname;
+    uint32_t pakname;
     uint32_t short_name;
-    uint32_t unk[2];
+    uint32_t fileNameKey;
+    uint32_t flags;    
+    uint32_t file_offset;
 } PakItem;
+std::vector<PakItem> pak_items;
 
-int decompress_lzss(unsigned char *g_infile, int g_infilesz, unsigned char *g_outfile);
 
-
-void dump_buffer(const char *path, uint8_t *b, int len) {
-    FILE *fd = fopen(path, "wb");
-    assert(fd);
-    int wlen = fwrite(b, len, 1, fd);
-    assert(wlen == 1);
-    fclose(fd);
-}
-void dump_pab_item(PakItem item, FILE *pab_fd) {
-    
-    uint8_t *data = new uint8_t[item.size];
-    int len = fread(data, item.size, 1, pab_fd);
-    assert(len == 1);
-
-    //uint8_t *decomp_buff = new uint8_t[item.size * 2];
-    //int decomp_len = decompress_lzss(data, item.size, decomp_buff);
-
-    fseek(pab_fd, SEEK_SET, item.offset);
-
-    //printf("decomp: %d - %08x - %d\n", decomp_len, item.offset, item.size);
-    //dump_buffer("test.qb", data, item.size);
-    //show_dump(decomp_buff, decomp_len, stdout);
-
-    show_dump(data, item.size, stdout);
-
-    int next = (item.offset & 0xFFFFFF00) >> 4;
-
-    printf("offset: %08x\n", next);
-    fseek(pab_fd, SEEK_SET,next);
-
-    static int idx = 0;
-    if(++idx == 3) {
-        exit(-1);
+const char* get_checksum(uint32_t key) {
+    if (m_checksum_names.find(key) != m_checksum_names.end()) {
+        return m_checksum_names[key];
     }
-    
-
-    
-
-    //delete[] data;
+    return NULL;
 }
-int main(int argc, const char *argv[]) {
-    if(argc  < 3) {
-        fprintf(stderr, "usage: %s [pak_path] [pab_path]\n",argv[0]);
-        return -1;
+
+#define PRINT_FIELD(name, var) c = get_checksum(var); \
+if(c) { \
+    printf("%s: %s\n", name, c); \
+} \
+else {\
+    printf("%s: %d\n",name,var); \
+} 
+
+
+void print_pak_item(PakItem* item) {
+
+
+    const char* c = NULL;
+    printf("**** BEGIN ITEM ****\n");
+    PRINT_FIELD("Type", item->type);
+    PRINT_FIELD("Fullname", item->fullname);
+    PRINT_FIELD("Pak Name", item->pakname);
+    PRINT_FIELD("Short Name Name", item->short_name);
+    PRINT_FIELD("fileNameKey", item->fileNameKey);
+    PRINT_FIELD("flags", item->flags);
+    printf("Offset: %08x - %d\n", item->offset, item->offset);
+    printf("Expected End Offset: %08x - %d\n", item->size + item->offset, item->size + item->offset);
+    printf("Size: %08x - %d\n", item->size, item->size);
+
+    printf("\n");
+
+    assert(item->flags == 0);
+}
+
+
+void dump_pak_item(PakItem item, int pak_size, FILE* fd) {
+    int offset = item.offset + item.file_offset - pak_size;
+
+    fseek(fd, offset, SEEK_SET);
+
+    uint8_t* d = new uint8_t[item.size];
+    fread(d, item.size, 1, fd);
+
+    const char* path = get_checksum(item.short_name);
+
+    if (path) {
+        FILE* out = fopen(path, "wb");
+        if (out) {
+            fwrite(d, item.size, 1, out);
+            fclose(out);
+        }
     }
 
 
-    FILE *pab_fd = fopen(argv[2], "rb");
-    if(!pab_fd) {
-        fprintf(stderr, "Failed to open PAB: %s\n", argv[2]);
+
+    delete[] d;
+}
+
+int main(int argc, const char* argv[]) {
+    if (argc < 3) {
+        fprintf(stderr, "usage: %s [pak_path] [pab_path]\n", argv[0]);
         return -1;
     }
 
 
     FileStream pak_fd(argv[1]);
 
-    if(!pak_fd.IsFileOpened()) {
+    if (!pak_fd.IsFileOpened()) {
         fprintf(stderr, "Failed to open PAK: %s\n", argv[1]);
         return -1;
     }
 
     pak_fd.SetReadEndian(ISTREAM_BIG_ENDIAN);
 
+    const char* checksum_path = getenv("QTOOLS_CHECKSUM_PATH");
+    if (checksum_path != NULL) {
+        printf("** loading checksum path: %s\n", checksum_path);
+        LoadChecksums(checksum_path);
+    }
+    else {
+        printf("** checksum path not specified\n");
+    }
+
+
     PakItem item;
-    while(true) {
+    while (true) {
+        item.file_offset = pak_fd.GetOffset();
         item.type = pak_fd.ReadUInt32();
         item.offset = pak_fd.ReadUInt32();
         item.size = pak_fd.ReadUInt32();
-        item.unk2 = pak_fd.ReadUInt32();
-        item.name = pak_fd.ReadUInt32();
+        item.fullname = pak_fd.ReadUInt32();
+        item.pakname = pak_fd.ReadUInt32();
         item.short_name = pak_fd.ReadUInt32();
-        item.unk[0] = pak_fd.ReadUInt32();
-        item.unk[1] = pak_fd.ReadUInt32();
+        item.fileNameKey = pak_fd.ReadUInt32();
+        item.flags = pak_fd.ReadUInt32();
 
-  
-        dump_pab_item(item, pab_fd);
+        pak_items.push_back(item);
+
+        if (item.type == 749989691) {
+            break;
+        }
     }
-    return 0;
+
+    FILE* fd = pak_fd.GetHandle();
+    while (!feof(fd)) {
+        char c;
+        fread(&c, 1, 1, fd);
+    }
+
+    int offset = ftell(fd);
+
+    FILE* pab_fd = NULL;
+    bool created = false;
+    if (strcmp(argv[1], argv[2]) == 0) {
+        offset = 0;
+        pab_fd = pak_fd.GetHandle();
+    }
+    else {
+        pab_fd = fopen(argv[2], "rb");
+    }
+   
+
+
+    std::vector<PakItem>::iterator it = pak_items.begin();
+    while (it != pak_items.end()) {
+        PakItem item = *it;
+        print_pak_item(&item);
+        dump_pak_item(item, offset, pab_fd);
+        it++;
+    }
+
+    
+
+    if (pab_fd != pak_fd.GetHandle()) {
+        fclose(pab_fd);
+    }
+    
+    
+i'    return 0;
 }

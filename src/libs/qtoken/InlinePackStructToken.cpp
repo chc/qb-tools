@@ -12,8 +12,10 @@
 #include <StructureSymbol.h>
 #include "MemoryStream.h"
 
-extern int32_t g_last_script_keyword;
-extern int32_t g_last_script_keyword_write;
+extern "C" {
+    extern int32_t g_last_script_keyword;
+    extern int32_t g_last_script_keyword_write;
+}
 
 void WriteStructure(StructureSymbol *symbol, IStream *stream, bool packed);
 
