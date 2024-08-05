@@ -11,6 +11,7 @@ class FastElseToken : public QScriptToken {
         std::string ToString();
         int GetPreTabOffset();
         int GetPostTabOffset();
+        std::vector<TokenInjection> GetInjections();
     private:
         uint16_t m_offset;
 };

@@ -65,6 +65,8 @@ bool unpak_file_info_callback(PakItem item) {
         if (out) {
             fwrite(buf, item.size, 1, out);
             fclose(out);
+        } else {
+            fprintf(stderr, "Failed to open for writing: %s\n", name);
         }
         free(name);
     } else {

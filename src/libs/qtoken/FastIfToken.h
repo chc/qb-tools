@@ -10,6 +10,7 @@ class FastIfToken : public QScriptToken {
         void Write(IStream *stream);
         std::string ToString();
         int GetPostTabOffset();
+        std::vector<TokenInjection> GetInjections();
     private:
         uint16_t m_offset;
 };

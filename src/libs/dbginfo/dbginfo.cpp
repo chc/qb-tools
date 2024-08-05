@@ -18,7 +18,7 @@ void handle_line(const char *line) {
 
     line_info.checksum = strtol(line, NULL, 0);
 
-    line += 11;
+    line += 11; //skip checksum (fixed length)
 
     line_info.name = strdup(line);
     loaded_checksums.push_back(line_info);
@@ -26,20 +26,12 @@ void handle_line(const char *line) {
 
 void handle_dbgfile(uint8_t *data, uint32_t len) {
     const char *match = "[Checksums]\r\n";
-    int match_idx = 0;
 
-    uint8_t *p = data;
-    while(len--) {
-        if(match[match_idx] == 0) {
-            break; //found expected data
-        }
-        if(*p == match[match_idx]) {
-            match_idx++;
-        }
-        p++;
-    }
+    uint8_t *p = (uint8_t*)strnstr((const char *)data, match, len);
 
-    assert(match_idx != 0);
+    assert(p != nullptr);
+
+    len -= (p - data);
 
     while(len) {
         char *end = strchr((char *)p, '\r');

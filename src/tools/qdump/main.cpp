@@ -85,7 +85,9 @@ void perform_injections(IStream &fs) {
 
             //its assumed there will only be 1 injection at a given offset
             active_injections.erase(it);
-            break;
+            it = active_injections.begin();
+            continue;
+            //break;
         }
         it++;
     }

@@ -15,7 +15,6 @@ EScriptToken EndIfToken::GetType() {
     return ESCRIPTTOKEN_KEYWORD_ENDIF;
 }
 void EndIfToken::LoadParams(IStream *stream) {
-
 }
 std::string EndIfToken::ToString() {
     return "endif";
