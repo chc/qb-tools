@@ -14,6 +14,7 @@ EScriptToken EqualsToken::GetType() {
 void EqualsToken::LoadParams(IStream *stream) {
 }
 void EqualsToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
     stream->WriteByte(ESCRIPTTOKEN_EQUALS);
 }
 std::string EqualsToken::ToString() {

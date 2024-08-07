@@ -21,6 +21,7 @@ void NameToken::LoadParams(IStream *stream) {
     m_checksum = stream->ReadUInt32();
 }
 void NameToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
     stream->WriteByte(ESCRIPTTOKEN_NAME);
     stream->WriteUInt32(m_checksum);
 }

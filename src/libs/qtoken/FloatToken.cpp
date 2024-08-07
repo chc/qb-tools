@@ -21,6 +21,7 @@ void FloatToken::LoadParams(IStream *stream) {
     m_value = stream->ReadFloat();
 }
 void FloatToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
     stream->WriteByte(ESCRIPTTOKEN_FLOAT);
     stream->WriteFloat(m_value);
 }

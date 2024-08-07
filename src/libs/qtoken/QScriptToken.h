@@ -154,5 +154,9 @@ class QScriptToken {
 		virtual int	GetPreTabOffset();
 		virtual int GetPostTabOffset();
 		virtual std::vector<TokenInjection> GetInjections();
+		size_t GetFileOffset() { return m_file_offset; }
+		void SetFileOffset(size_t offset) { m_file_offset = offset; }
+	protected:
+        size_t m_file_offset;
 };
 #endif //_QSCRTIPTTOKEN_H

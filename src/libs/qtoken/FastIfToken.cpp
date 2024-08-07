@@ -10,10 +10,21 @@ EScriptToken FastIfToken::GetType() {
 }
 void FastIfToken::LoadParams(IStream *stream) {
     m_offset = stream->ReadUInt16();
+    printf("FastIf offset: %08x (%08x) = %08x\n", m_offset, stream->GetOffset(), m_offset + stream->GetOffset());
 }
 void FastIfToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
     stream->WriteByte(ESCRIPTTOKEN_KEYWORD_FASTIF);
-    stream->WriteUInt16(m_offset);
+    
+    stream->WriteUInt16(0xFFFF);
+}
+void FastIfToken::RewriteOffset(IStream *stream, size_t diff) {
+    size_t cursor = stream->GetOffset();
+
+    stream->SetCursor(m_file_offset+1);
+    stream->WriteUInt16(diff);
+
+    stream->SetCursor(cursor);
 }
 std::string FastIfToken::ToString() {
     return "if2 ";

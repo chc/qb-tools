@@ -202,5 +202,6 @@ std::vector<TokenInjection> QScriptToken::GetInjections() {
     return std::vector<TokenInjection>();
 }
 void QScriptToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
     stream->WriteByte(GetType());
  }

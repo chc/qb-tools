@@ -56,6 +56,7 @@ void InlinePackStructToken::LoadParams(IStream *stream) {
     }
 }
 void InlinePackStructToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
 
     //don't write the actual pack struct data, the qdumper will dump the inner struct (this should be refactored)
     stream->WriteByte(ESCRIPTTOKEN_INLINEPACKSTRUCT);

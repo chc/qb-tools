@@ -223,7 +223,8 @@ struct ScriptToken {
         char16 data[len/2];
 
     }  else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_FASTIF) {
-        u16 offset;
+        u16 offset;        
+        ScriptToken jump_token @(addressof(offset) + offset);
     } else if(token == EScriptToken::ESCRIPTTOKEN_INLINEPACKSTRUCT) {
         u16 len;
         u32 offset = $ - last_start_script;
@@ -232,6 +233,7 @@ struct ScriptToken {
         char data[len];
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_FASTELSE) {
         u16 offset;
+        ScriptToken jump_token @(addressof(offset) + offset);
     }
      else {
         std::error(std::format("Unhandled Token: {}", token));

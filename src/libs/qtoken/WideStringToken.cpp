@@ -41,6 +41,8 @@ void WideStringToken::LoadParams(IStream *stream) {
     stream->SetReadEndian(mode);
 }
 void WideStringToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
+    
     stream->WriteByte(ESCRIPTTOKEN_WIDESTRING);
     uint32_t len = m_value.length();
     len++; //include null byte

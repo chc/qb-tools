@@ -8,6 +8,7 @@ class EndIfToken : public QScriptToken {
         ~EndIfToken();
         EScriptToken GetType();
         void LoadParams(IStream *stream);
+        void Write(IStream *stream);
         std::string ToString();
         int GetPreTabOffset();
     private:

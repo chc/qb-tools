@@ -22,6 +22,7 @@ void PairToken::LoadParams(IStream *stream) {
     m_y = stream->ReadFloat();
 }
 void PairToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
     stream->WriteByte(ESCRIPTTOKEN_PAIR);
     stream->WriteFloat(m_x);
     stream->WriteFloat(m_y);

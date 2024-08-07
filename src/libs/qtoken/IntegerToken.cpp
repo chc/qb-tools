@@ -21,6 +21,7 @@ void IntegerToken::LoadParams(IStream *stream) {
     m_value = stream->ReadInt32();
 }
 void IntegerToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
     stream->WriteByte(ESCRIPTTOKEN_INTEGER);
     stream->WriteInt32(m_value);
 }

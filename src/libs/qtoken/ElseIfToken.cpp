@@ -18,6 +18,7 @@ void ElseIfToken::LoadParams(IStream *stream) {
     m_offset = stream->ReadUInt32();
 }
 void ElseIfToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
     stream->WriteByte(ESCRIPTTOKEN_KEYWORD_ELSEIF);
     stream->WriteUInt32(m_offset);
 }

@@ -23,6 +23,7 @@ void VectorToken::LoadParams(IStream *stream) {
     m_z = stream->ReadFloat();
 }
 void VectorToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
     stream->WriteByte(ESCRIPTTOKEN_VECTOR);
     stream->WriteFloat(m_x);
     stream->WriteFloat(m_y);

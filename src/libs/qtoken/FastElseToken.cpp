@@ -12,8 +12,18 @@ void FastElseToken::LoadParams(IStream *stream) {
     m_offset = stream->ReadUInt16();
 }
 void FastElseToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
     stream->WriteByte(ESCRIPTTOKEN_KEYWORD_FASTELSE);
-    stream->WriteUInt16(m_offset);
+    
+    stream->WriteUInt16(0xFFFF);
+}
+void FastElseToken::RewriteOffset(IStream *stream, size_t diff) {
+    size_t cursor = stream->GetOffset();
+
+    stream->SetCursor(m_file_offset+1);
+    stream->WriteUInt16(diff);
+
+    stream->SetCursor(cursor);
 }
 std::string FastElseToken::ToString() {
     return "else2 ";

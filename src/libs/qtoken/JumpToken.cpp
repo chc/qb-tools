@@ -18,6 +18,7 @@ void JumpToken::LoadParams(IStream *stream) {
     m_offset = stream->ReadUInt32();
 }
 void JumpToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
     stream->WriteByte(ESCRIPTTOKEN_JUMP);
     stream->WriteUInt32(m_offset);
 }

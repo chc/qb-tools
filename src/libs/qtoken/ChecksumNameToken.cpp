@@ -23,6 +23,7 @@ void ChecksumNameToken::LoadParams(IStream *stream) {
     m_name = stream->ReadNTS();
 }
 void ChecksumNameToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
     stream->WriteByte(ESCRIPTTOKEN_CHECKSUM_NAME);
     stream->WriteUInt32(m_checksum);
     stream->WriteNTS(m_name);

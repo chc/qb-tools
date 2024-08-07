@@ -27,6 +27,7 @@ void StringToken::LoadParams(IStream *stream) {
     }
 }
 void StringToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
     stream->WriteByte(ESCRIPTTOKEN_STRING);
     stream->WriteUInt32(m_value.length()+1);
     stream->WriteNTS(m_value.c_str());
