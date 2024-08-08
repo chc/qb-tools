@@ -26,6 +26,7 @@ void ElseIfToken::Write(IStream *stream) {
     stream->WriteUInt16(m_endif_offset);
 }
 void ElseIfToken::SetNextOffset(IStream *stream, uint16_t offset) {
+    m_next_offset = offset;
     size_t cursor = stream->GetOffset();
 
     stream->SetCursor(m_file_offset+sizeof(uint8_t));
@@ -34,6 +35,8 @@ void ElseIfToken::SetNextOffset(IStream *stream, uint16_t offset) {
     stream->SetCursor(cursor);
 }
 void ElseIfToken::SetEndIfOffset(IStream *stream, uint16_t offset) {
+    m_endif_offset = offset;
+
     size_t cursor = stream->GetOffset();
 
     stream->SetCursor(m_file_offset+sizeof(uint8_t)+sizeof(uint16_t));

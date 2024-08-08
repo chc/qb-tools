@@ -170,9 +170,8 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             }
         } else if(token->GetType() == ESCRIPTTOKEN_KEYWORD_ELSEIF) {
             ElseIfToken *t = reinterpret_cast<ElseIfToken*>(token);
-            uint32_t offset = original_offsets[t] + t->GetNextOffset();
+            uint32_t offset = original_offsets[t] + t->GetNextOffset() + 1;
             QScriptToken *r = token_at_offset(offset, original_offsets);
-            printf("token at offset: %08x - %08x - %p\n", offset, original_offsets[t], r);
             if(r) {
                 size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint32_t);
                 t->SetNextOffset(stream, offset);
@@ -180,14 +179,14 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
                 assert(false);
             }
 
-            /*offset = original_offsets[t] + sizeof(uint32_t) + t->GetEndIfOffset();
+            offset = original_offsets[t] + sizeof(uint32_t) + t->GetEndIfOffset();
             r = token_at_offset(offset, original_offsets);
             if(r) {
                 size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint32_t);
                 t->SetEndIfOffset(stream, offset);
             } else {
                 assert(false);
-            }*/
+            }
         } else if(is_random_token(token->GetType())) {
             RandomToken *t = reinterpret_cast<RandomToken*>(token);
             for(int i=0;i<t->GetNumItems();i++) {
@@ -224,8 +223,6 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
     g_last_script_keyword_write = stream->GetOffset();
 
     MemoryStream ms(qscript->GetDecompBuff(), qscript->GetDecompLen());
-
-    printf("on qscript: %08x\n", qscript->GetNameChecksum());
 
     //iterate through all tokens... emit token
     while(qscript->GetDecompLen() > ms.GetOffset()) {
