@@ -27,6 +27,7 @@
 #include <PairToken.h>
 #include <VectorToken.h>
 #include <FastIfToken.h>
+#include <ElseIfToken.h>
 #include <FastElseToken.h>
 #include <RandomToken.h>
 #include <JumpToken.h>
@@ -115,8 +116,8 @@ bool is_random_token(EScriptToken type) {
         case ESCRIPTTOKEN_KEYWORD_RANDOM:
         //case ESCRIPTTOKEN_KEYWORD_RANDOM2:
         case ESCRIPTTOKEN_KEYWORD_RANDOM_PERMUTE:
-        case ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE2:
-        case ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE:
+        //case ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE2:
+        //case ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE:
             return true;
         break;
     }
@@ -127,10 +128,9 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
     while(it != original_offsets.end()) {
         QScriptToken *token = it->first;
 
-        if(token->GetType() == ESCRIPTTOKEN_KEYWORD_FASTIF) {
-            
+        if(token->GetType() == ESCRIPTTOKEN_KEYWORD_FASTIF) {            
             FastIfToken *t = reinterpret_cast<FastIfToken*>(token);
-            uint32_t offset = original_offsets[t] + sizeof(uint16_t) + t->GetOffset();
+            uint32_t offset = original_offsets[t] + sizeof(uint16_t) + t->GetOffset() - 1;
             QScriptToken *r = token_at_offset(offset, original_offsets);
             if(r) {
                 size_t diff = r->GetFileOffset() - token->GetFileOffset() - 1;
@@ -169,17 +169,31 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
                 assert(false);
             }
         } else if(token->GetType() == ESCRIPTTOKEN_KEYWORD_ELSEIF) {
-            assert(false);
+            ElseIfToken *t = reinterpret_cast<ElseIfToken*>(token);
+            uint32_t offset = original_offsets[t] + t->GetNextOffset();
+            QScriptToken *r = token_at_offset(offset, original_offsets);
+            printf("token at offset: %08x - %08x - %p\n", offset, original_offsets[t], r);
+            if(r) {
+                size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint32_t);
+                t->SetNextOffset(stream, offset);
+            } else {
+                assert(false);
+            }
+
+            /*offset = original_offsets[t] + sizeof(uint32_t) + t->GetEndIfOffset();
+            r = token_at_offset(offset, original_offsets);
+            if(r) {
+                size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint32_t);
+                t->SetEndIfOffset(stream, offset);
+            } else {
+                assert(false);
+            }*/
         } else if(is_random_token(token->GetType())) {
             RandomToken *t = reinterpret_cast<RandomToken*>(token);
             for(int i=0;i<t->GetNumItems();i++) {
                 uint32_t offset = original_offsets[t] + t->CalculateTokenOffset(i) +  t->GetRandomOffset(i);
-                printf("find offset: %08x - %08x\n", offset, original_offsets[t]);
                 QScriptToken *r = token_at_offset(offset, original_offsets);
-                printf("random found: %p\n", r);
-                if(r) {
-                    printf("type: %08x\n", r->GetType());
-                }
+                
                 assert(r);
                 
                 size_t diff = (r->GetFileOffset() - token->GetFileOffset() - prescript_offset) - t->CalculateTokenOffset(i);

@@ -183,6 +183,8 @@ fn is_single_byte_token(EScriptToken token) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_REPEAT) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_NOT) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_GREATERTHAN) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_ALLARGS) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_BREAK) {
     } else {    
         return 0;
     }
@@ -251,6 +253,10 @@ struct ScriptToken {
         char data[len];
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_FASTELSE) {
         u16 offset;
+        //ScriptToken jump_token @(addressof(offset) + offset);
+    } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_ELSEIF) {
+        u16 next;
+        u16 end;
         //ScriptToken jump_token @(addressof(offset) + offset);
     }
      else {

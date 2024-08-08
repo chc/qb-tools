@@ -50,11 +50,11 @@ void QScriptSymbol::LoadParams(IStream *stream) {
 
         m_decomp_len = decompress_lzss((unsigned char *)comp_buff, compressed_size, (unsigned char *)m_decomp_buff);
 
-        /*char temp[256];
+        char temp[256];
         sprintf(temp, "%08x.bin", GetNameChecksum());
         FILE *fd = fopen(temp, "wb");
         fwrite(m_decomp_buff, m_decomp_len, 1, fd);
-        fclose(fd);*/
+        fclose(fd);
 
         uint32_t checksum = crc32(0, (void *)m_decomp_buff, uncompressed_size);
         delete[] comp_buff;

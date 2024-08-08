@@ -15,12 +15,31 @@ EScriptToken ElseIfToken::GetType() {
     return ESCRIPTTOKEN_KEYWORD_ELSEIF;
 }
 void ElseIfToken::LoadParams(IStream *stream) {
-    m_offset = stream->ReadUInt32();
+    m_file_offset = stream->GetOffset()-1;
+    m_next_offset = stream->ReadUInt16();
+    m_endif_offset = stream->ReadUInt16();
 }
 void ElseIfToken::Write(IStream *stream) {
     m_file_offset = stream->GetOffset();
     stream->WriteByte(ESCRIPTTOKEN_KEYWORD_ELSEIF);
-    stream->WriteUInt32(m_offset);
+    stream->WriteUInt16(m_next_offset);
+    stream->WriteUInt16(m_endif_offset);
+}
+void ElseIfToken::SetNextOffset(IStream *stream, uint16_t offset) {
+    size_t cursor = stream->GetOffset();
+
+    stream->SetCursor(m_file_offset+sizeof(uint8_t));
+    stream->WriteUInt16(offset);
+
+    stream->SetCursor(cursor);
+}
+void ElseIfToken::SetEndIfOffset(IStream *stream, uint16_t offset) {
+    size_t cursor = stream->GetOffset();
+
+    stream->SetCursor(m_file_offset+sizeof(uint8_t)+sizeof(uint16_t));
+    stream->WriteUInt16(offset);
+
+    stream->SetCursor(cursor);
 }
 std::string ElseIfToken::ToString() {
     return "elseif";

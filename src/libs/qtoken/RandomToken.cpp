@@ -4,9 +4,11 @@
 #include <stdio.h>
 #include <sstream>
 #include <iomanip>
+#include <cassert>
 
 RandomToken::RandomToken() {
     m_offsets = nullptr;
+    m_num_items = 0;
 
 }
 RandomToken::~RandomToken() {
