@@ -9,6 +9,7 @@ EScriptToken FastElseToken::GetType() {
     return ESCRIPTTOKEN_KEYWORD_FASTELSE;
 }
 void FastElseToken::LoadParams(IStream *stream) {
+    m_file_offset = stream->GetOffset() - 1;
     m_offset = stream->ReadUInt16();
 }
 void FastElseToken::Write(IStream *stream) {
@@ -35,11 +36,11 @@ int FastElseToken::GetPostTabOffset() {
     return 1;
 }
 std::vector<TokenInjection> FastElseToken::GetInjections() {
-    TokenInjection i;
+    std::vector<TokenInjection> v;
+    /*TokenInjection i;
     i.use_next_jump_offset = false;
     i.offset = m_offset - 2;
-    i.token = "**END ELSE2**";
-    std::vector<TokenInjection> v;
-    v.push_back(i);
+    i.token = "**END ELSE2**";    
+    v.push_back(i);*/
     return v;
 }

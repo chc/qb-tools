@@ -9,8 +9,8 @@ EScriptToken FastIfToken::GetType() {
     return ESCRIPTTOKEN_KEYWORD_FASTIF;
 }
 void FastIfToken::LoadParams(IStream *stream) {
+    m_file_offset = stream->GetOffset() - 1;
     m_offset = stream->ReadUInt16();
-    printf("FastIf offset: %08x (%08x) = %08x\n", m_offset, stream->GetOffset(), m_offset + stream->GetOffset());
 }
 void FastIfToken::Write(IStream *stream) {
     m_file_offset = stream->GetOffset();
@@ -33,11 +33,12 @@ int FastIfToken::GetPostTabOffset() {
     return 1;
 }
 std::vector<TokenInjection> FastIfToken::GetInjections() {
-    TokenInjection i;
+    std::vector<TokenInjection> v;
+
+    /*TokenInjection i;
     i.use_next_jump_offset = false;
     i.offset = m_offset - 2;
     i.token = "**END IF2**";
-    std::vector<TokenInjection> v;
-    v.push_back(i);
+    v.push_back(i);*/
     return v;
 }

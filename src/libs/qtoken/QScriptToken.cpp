@@ -46,6 +46,7 @@
 #include "RandomToken.h"
 #include "RandomRangeToken.h"
 #include "RandomNoRepeatToken.h"
+#include "RandomPermuteToken.h"
 #include "MinusToken.h"
 #include "AddToken.h"
 #include "MultiplyToken.h"
@@ -170,6 +171,8 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
             return new RandomRangeToken();
         case ESCRIPTTOKEN_KEYWORD_RANDOM_NO_REPEAT:
             return new RandomNoRepeatToken();
+        case ESCRIPTTOKEN_KEYWORD_RANDOM_PERMUTE:
+            return new RandomPermuteToken();            
         case ESCRIPTTOKEN_JUMP:
             return new JumpToken();
         case ESCRIPTTOKEN_DOT:

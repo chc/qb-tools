@@ -6,62 +6,74 @@
 #include <iomanip>
 
 RandomToken::RandomToken() {
+    m_offsets = nullptr;
 
 }
 RandomToken::~RandomToken() {
-
+    if(m_offsets) {
+        delete[] m_offsets;
+    }
 }
 EScriptToken RandomToken::GetType() {
     return ESCRIPTTOKEN_KEYWORD_RANDOM;
 }
 void RandomToken::LoadParams(IStream *stream) {
-    size_t initial_offset = stream->GetOffset();
-    uint32_t num_items = stream->ReadUInt32();
-    RandomOffset *offsets = new RandomOffset[num_items];
+    m_file_offset = stream->GetOffset();
+    m_num_items = stream->ReadUInt32();
+    m_offsets = new RandomOffset[m_num_items];
     
-    for(int i=0;i<num_items;i++) {
+    for(int i=0;i<m_num_items;i++) {
         uint16_t weight = stream->ReadUInt16();
-        offsets[i].weight = weight;
+        m_offsets[i].weight = weight;
     }
     
     std::ostringstream ss;
-    for(int i=0;i<num_items;i++) {
+    for(int i=0;i<m_num_items;i++) {
         uint32_t o = stream->ReadUInt32();
-        uint32_t diff = stream->GetOffset() - initial_offset;
-        offsets[i].offset = o + diff;
+        m_offsets[i].offset = o;
     }
-    int total_size = stream->GetOffset() - initial_offset;
+    m_end_offset = stream->GetOffset();
+    m_total_size = m_end_offset - m_file_offset;
 
-    for(int i=0;i<num_items;i++) {
+}
+void RandomToken::Write(IStream *stream) {
+    m_file_offset = stream->GetOffset();
+    stream->WriteByte(GetType());
+    stream->WriteUInt32(m_num_items);
+    for(int i=0;i<m_num_items;i++) {
+        stream->WriteUInt16(m_offsets[i].weight);
+    }
+
+    for(int i=0;i<m_num_items;i++) {
+        stream->WriteUInt32(m_offsets[i].offset);
+    }
+    m_end_offset = stream->GetOffset();
+    m_total_size = m_end_offset - m_file_offset;
+}
+std::string RandomToken::ToString() {
+    return "Random(";
+}
+std::vector<TokenInjection> RandomToken::GetInjections() {
+    std::vector<TokenInjection> injections;
+
+    for(int i=0;i<m_num_items;i++) {
         std::ostringstream ss;
         TokenInjection injection;
         injection.use_next_jump_offset = false;
-        injection.offset = offsets[i].offset - total_size;
+        injection.offset = m_offsets[i].offset + CalculateTokenOffset(i) - m_total_size - 1; //-1 for skip token type byte
 
         ss << "@";
-        if(offsets[i].weight != 1) {
-            ss << "*" << offsets[i].weight;
+        if(m_offsets[i].weight != 1) {
+            ss << "*" << m_offsets[i].weight;
         }
         injection.token = ss.str();
-        m_injections.push_back(injection);
+        injections.push_back(injection);
     }
 
     TokenInjection injection;
     injection.offset = 0;
     injection.use_next_jump_offset = true;
     injection.token = ")";
-    m_injections.push_back(injection);
-
-    delete []offsets;
-}
-void RandomToken::Write(IStream *stream) {
-    ///XXX: implement this
-    //m_file_offset = stream->GetOffset();
-    m_file_offset = 0;
-}
-std::string RandomToken::ToString() {
-    return "Random(";
-}
-std::vector<TokenInjection> RandomToken::GetInjections() {
-    return m_injections;
+    injections.push_back(injection);
+    return injections;
 }

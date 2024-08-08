@@ -16,7 +16,7 @@ struct AlignToPos<auto Alignment, auto Position> {
     padding[Alignment- (((Position - 1) % Alignment) + 1)];
 } [[hidden]];
 
-
+ using ScriptToken;
 
 enum EScriptToken : u8
 {
@@ -182,10 +182,16 @@ fn is_single_byte_token(EScriptToken token) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_BEGIN) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_REPEAT) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_NOT) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_GREATERTHAN) {
     } else {    
         return 0;
     }
     return 1;
+};
+
+struct RandomOffset {
+    u32 offset;
+    ScriptToken randomJump @ (addressof(offset)+ sizeof(offset)+ offset);
 };
 
 u32 last_start_script;
@@ -211,6 +217,10 @@ struct ScriptToken {
     } else if(token == EScriptToken::ESCRIPTTOKEN_PAIR) {
         float x;
         float y;
+    }  else if(token == EScriptToken::ESCRIPTTOKEN_VECTOR) {
+        float x;
+        float y;
+        float z;
     } else if(token == EScriptToken::ESCRIPTTOKEN_STRING) {
         u32 len;
         char data[len];
@@ -224,7 +234,15 @@ struct ScriptToken {
 
     }  else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_FASTIF) {
         u16 offset;        
-        ScriptToken jump_token @(addressof(offset) + offset);
+        //ScriptToken jump_token @(addressof(offset) + offset);
+    }  else if(token == EScriptToken::ESCRIPTTOKEN_JUMP) {
+        u32 offset;
+        ScriptToken jump_token @(addressof(offset) + sizeof(offset) + offset);
+    }   else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_RANDOM) {
+        u32 num_items;
+        u16 weights[num_items];
+        //u32 offsets[num_items];
+        RandomOffset offsets[num_items];
     } else if(token == EScriptToken::ESCRIPTTOKEN_INLINEPACKSTRUCT) {
         u16 len;
         u32 offset = $ - last_start_script;
@@ -233,7 +251,7 @@ struct ScriptToken {
         char data[len];
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_FASTELSE) {
         u16 offset;
-        ScriptToken jump_token @(addressof(offset) + offset);
+        //ScriptToken jump_token @(addressof(offset) + offset);
     }
      else {
         std::error(std::format("Unhandled Token: {}", token));

@@ -28,11 +28,17 @@
 #include <VectorToken.h>
 #include <FastIfToken.h>
 #include <FastElseToken.h>
+#include <RandomToken.h>
+#include <JumpToken.h>
+#include <ShortJumpToken.h>
 
 #include <MemoryStream.h>
 
 #include <ReferenceItemSymbol.h>
 #include <ArgumentPackToken.h>
+
+
+#include <string>
 
 void WriteArray(ArraySymbol *symbol, IStream *stream);
 void WriteStructure(StructureSymbol *symbol, IStream *stream, bool packed = false);
@@ -116,37 +122,79 @@ bool is_random_token(EScriptToken type) {
     }
     return false;
 }
-void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, std::map<QScriptToken *, uint32_t> &updated_offsets, IStream *stream, uint32_t prescript_offset) {
+void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStream *stream, uint32_t prescript_offset) {
     std::map<QScriptToken *, uint32_t>::iterator it = original_offsets.begin();
     while(it != original_offsets.end()) {
         QScriptToken *token = it->first;
 
         if(token->GetType() == ESCRIPTTOKEN_KEYWORD_FASTIF) {
+            
             FastIfToken *t = reinterpret_cast<FastIfToken*>(token);
-            uint32_t u = updated_offsets[token];
-            QScriptToken *r = token_at_offset(t->GetOffset() + t->GetFileOffset() + 1 - prescript_offset, original_offsets);
+            uint32_t offset = original_offsets[t] + sizeof(uint16_t) + t->GetOffset();
+            QScriptToken *r = token_at_offset(offset, original_offsets);
             uint8_t type = 0;
             if(r) {
                 type = r->GetType();
                 size_t diff = r->GetFileOffset() - token->GetFileOffset() - 1;
                 t->RewriteOffset(stream, diff);
             } else {
-                //assert(false);
+                assert(false);
             }
         } else if(token->GetType() == ESCRIPTTOKEN_KEYWORD_FASTELSE) {
             FastElseToken *t = reinterpret_cast<FastElseToken*>(token);
-            uint32_t u = updated_offsets[token];
-            QScriptToken *r = token_at_offset(t->GetOffset() + t->GetFileOffset() + 1 - prescript_offset, original_offsets);
+            uint32_t offset = original_offsets[t] + sizeof(uint16_t) + t->GetOffset();
+            QScriptToken *r = token_at_offset(offset, original_offsets);
             uint8_t type = 0;
             if(r) {
                 type = r->GetType();
                 size_t diff = r->GetFileOffset() - token->GetFileOffset() - 1;
                 t->RewriteOffset(stream, diff);
             } else {
-                //assert(false);
+                assert(false);
             }
-        } else if(is_random_token(token->GetType())) {
+        } else if(token->GetType() == ESCRIPTTOKEN_JUMP) {
+            JumpToken *t = reinterpret_cast<JumpToken*>(token);
+            uint32_t offset = original_offsets[t] + sizeof(uint32_t) + t->GetOffset();
+            QScriptToken *r = token_at_offset(offset, original_offsets);
+            uint8_t type = 0;
+            if(r) {
+                type = r->GetType();
+                size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint32_t);
+                t->RewriteOffset(stream, diff);
+            } else {
+                assert(false);
+            }
+        } else if(token->GetType() == ESCRIPTTOKEN_SHORTJUMP) {
+            ShortJumpToken *t = reinterpret_cast<ShortJumpToken*>(token);
+            uint32_t offset = original_offsets[t] + sizeof(uint32_t) + t->GetOffset();
+            QScriptToken *r = token_at_offset(offset, original_offsets);
+            uint8_t type = 0;
+            if(r) {
+                type = r->GetType();
+                size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint16_t);
+                t->RewriteOffset(stream, diff);
+            } else {
+                assert(false);
+            }
+        } else if(token->GetType() == ESCRIPTTOKEN_KEYWORD_ELSEIF) {
             assert(false);
+        } else if(is_random_token(token->GetType())) {
+            RandomToken *t = reinterpret_cast<RandomToken*>(token);
+            for(int i=0;i<t->GetNumItems();i++) {
+                uint32_t offset = original_offsets[t] + t->CalculateTokenOffset(i) +  t->GetRandomOffset(i);
+
+                QScriptToken *r = token_at_offset(offset, original_offsets);
+                assert(r);
+                
+                size_t diff = (r->GetFileOffset() - token->GetFileOffset() - prescript_offset) - t->CalculateTokenOffset(i);
+                t->SetRandomOffset(i, diff);
+            }
+
+            //rewrite random data
+            size_t cursor = stream->GetOffset();
+            stream->SetCursor(t->GetFileOffset());
+            t->Write(stream);
+            stream->SetCursor(cursor);
         }
 
         it++;
@@ -155,8 +203,6 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, std::
 
 void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
     std::map<QScriptToken *, uint32_t> original_offsets;
-    std::map<QScriptToken *, uint32_t> updated_offsets;
-
 
     stream->WriteByte(ESCRIPTTOKEN_KEYWORD_SCRIPT);
 
@@ -169,24 +215,23 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
 
     MemoryStream ms(qscript->GetDecompBuff(), qscript->GetDecompLen());
 
+    printf("on qscript: %08x\n", qscript->GetNameChecksum());
 
     //iterate through all tokens... emit token
     while(qscript->GetDecompLen() > ms.GetOffset()) {
+        uint32_t read_offset = ms.GetOffset(); //skip type(1) + keyword script byte(1), name type(1)+value(4)
         uint8_t type = ms.ReadByte();
         QScriptToken *token = QScriptToken::Resolve(type);
         if(!token) {
             assert(false);
             break;
         }
+        
         token->SetFileOffset(ms.GetOffset()-1);
         token->LoadParams(&ms);
         token->Write(stream);
 
-        uint32_t read_offset = ms.GetOffset() -1; //skip type(1) + keyword script byte(1), name type(1)+value(4)
-        uint32_t write_offset = stream->GetOffset();
-
         original_offsets[token] = read_offset;
-        updated_offsets[token] = ms.GetOffset();
 
         if(token->GetType() == ESCRIPTTOKEN_INLINEPACKSTRUCT) {
             StructureSymbol sym = reinterpret_cast<InlinePackStructToken*>(token)->GetValue();
@@ -199,7 +244,7 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
     EndOfLineToken eolt;
     eolt.Write(stream);
 
-    rewrite_offsets(original_offsets, updated_offsets, stream, prescript_offset);
+    rewrite_offsets(original_offsets, stream, prescript_offset);
 }
 
 void WriteArgumentPack(ReferenceItemSymbol *symbol, IStream *stream) {
