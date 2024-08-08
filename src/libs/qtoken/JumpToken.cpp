@@ -18,7 +18,6 @@ void JumpToken::LoadParams(IStream *stream) {
     m_file_offset = stream->GetOffset() - 1;
     
     m_offset = stream->ReadUInt32();
-    printf("reading jump at: %08x : %08x\n", m_file_offset, m_offset);
 }
 void JumpToken::Write(IStream *stream) {
     m_file_offset = stream->GetOffset();
