@@ -132,9 +132,7 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             FastIfToken *t = reinterpret_cast<FastIfToken*>(token);
             uint32_t offset = original_offsets[t] + sizeof(uint16_t) + t->GetOffset();
             QScriptToken *r = token_at_offset(offset, original_offsets);
-            uint8_t type = 0;
             if(r) {
-                type = r->GetType();
                 size_t diff = r->GetFileOffset() - token->GetFileOffset() - 1;
                 t->RewriteOffset(stream, diff);
             } else {
@@ -144,9 +142,7 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             FastElseToken *t = reinterpret_cast<FastElseToken*>(token);
             uint32_t offset = original_offsets[t] + sizeof(uint16_t) + t->GetOffset();
             QScriptToken *r = token_at_offset(offset, original_offsets);
-            uint8_t type = 0;
             if(r) {
-                type = r->GetType();
                 size_t diff = r->GetFileOffset() - token->GetFileOffset() - 1;
                 t->RewriteOffset(stream, diff);
             } else {
@@ -154,11 +150,9 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             }
         } else if(token->GetType() == ESCRIPTTOKEN_JUMP) {
             JumpToken *t = reinterpret_cast<JumpToken*>(token);
-            uint32_t offset = original_offsets[t] + sizeof(uint32_t) + t->GetOffset();
+            uint32_t offset = original_offsets[t] + sizeof(uint32_t) + sizeof(uint8_t) + t->GetOffset();
             QScriptToken *r = token_at_offset(offset, original_offsets);
-            uint8_t type = 0;
             if(r) {
-                type = r->GetType();
                 size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint32_t);
                 t->RewriteOffset(stream, diff);
             } else {
@@ -166,11 +160,9 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             }
         } else if(token->GetType() == ESCRIPTTOKEN_SHORTJUMP) {
             ShortJumpToken *t = reinterpret_cast<ShortJumpToken*>(token);
-            uint32_t offset = original_offsets[t] + sizeof(uint32_t) + t->GetOffset();
+            uint32_t offset = original_offsets[t] + sizeof(uint16_t) + t->GetOffset();
             QScriptToken *r = token_at_offset(offset, original_offsets);
-            uint8_t type = 0;
             if(r) {
-                type = r->GetType();
                 size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint16_t);
                 t->RewriteOffset(stream, diff);
             } else {
@@ -182,8 +174,12 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             RandomToken *t = reinterpret_cast<RandomToken*>(token);
             for(int i=0;i<t->GetNumItems();i++) {
                 uint32_t offset = original_offsets[t] + t->CalculateTokenOffset(i) +  t->GetRandomOffset(i);
-
+                printf("find offset: %08x - %08x\n", offset, original_offsets[t]);
                 QScriptToken *r = token_at_offset(offset, original_offsets);
+                printf("random found: %p\n", r);
+                if(r) {
+                    printf("type: %08x\n", r->GetType());
+                }
                 assert(r);
                 
                 size_t diff = (r->GetFileOffset() - token->GetFileOffset() - prescript_offset) - t->CalculateTokenOffset(i);
