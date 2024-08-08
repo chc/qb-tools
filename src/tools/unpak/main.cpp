@@ -41,7 +41,7 @@ void print_pak_item(PakItem* item) {
 
     printf("\n");
 
-    assert(item->flags == 0);
+    //assert(item->flags == 0);
 }
 
 
@@ -53,25 +53,28 @@ bool unpak_file_info_callback(PakItem item) {
 
     const char* path = get_checksum(item.pakname);
 
+    char *name;
     if (path) {
-        char *name = strdup(path);
+        name = strdup(path);
         for(int i=0;i<strlen(name);i++) {
             if(name[i] == '\\') {
                 name[i] = '_';
             }
         }
-
-        FILE* out = fopen(name, "wb");
-        if (out) {
-            fwrite(buf, item.size, 1, out);
-            fclose(out);
-        } else {
-            fprintf(stderr, "Failed to open for writing: %s\n", name);
-        }
-        free(name);
     } else {
-        assert(false);
+        char tmp[32];
+        snprintf(tmp, sizeof(tmp), "%08x.bin", item.fileNameKey);
+        name = strdup(tmp);
     }
+
+    FILE* out = fopen(name, "wb");
+    if (out) {
+        fwrite(buf, item.size, 1, out);
+        fclose(out);
+    } else {
+        fprintf(stderr, "Failed to open for writing: %s\n", name);
+    }
+    free(name);
 
     delete[] buf;
 
