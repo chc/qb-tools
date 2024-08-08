@@ -38,7 +38,6 @@
 #include <ReferenceItemSymbol.h>
 #include <ArgumentPackToken.h>
 
-
 #include <string>
 
 void WriteArray(ArraySymbol *symbol, IStream *stream);

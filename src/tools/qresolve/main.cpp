@@ -28,7 +28,7 @@ int main(int argc, const char* argv[]) {
 
     dbginfo_load(checksum_path);
 
-    printf("Checksum: %08x / %d\n", checksum, checksum);
+    printf("Checksum: 0x%08x / %d\n", checksum, checksum);
     printf("Name: %s\n", dbginfo_resolve(checksum));
     return 0;
 }
