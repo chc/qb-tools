@@ -87,14 +87,15 @@ void pak_append_file(PakContext *ctx, const char *path) {
     
     PakItem *item = new PakItem;
     memset(item, 0, sizeof(item));
-    item->pab_fd = fd;
+    item->file_path = strdup(path);
 
-    fseek((FILE *)item->pab_fd, 0, SEEK_END);
+    fseek((FILE *)fd, 0, SEEK_END);
 
-    size_t total_size = ftell((FILE *)item->pab_fd);
+    size_t total_size = ftell(fd);
     item->size = total_size;
     
-    fseek((FILE *)item->pab_fd, 0, SEEK_SET);
+    fseek(fd, 0, SEEK_SET);
+    fclose(fd);
     
     calculate_pak_name_checksums(item, path);
 
@@ -130,7 +131,11 @@ void pak_close(PakContext *ctx) {
     //write pak data & store offset
     current_item = ctx->first_pak_item;
     while(current_item != nullptr) {
-        FILE *fd = (FILE *)current_item->pab_fd;
+        FILE *fd = NULL;
+        if(current_item->file_path != NULL) { //if null, its a padding item (like .last)
+            fd = (FILE *)fopen(current_item->file_path, "rb");
+        }
+        
         current_item->offset = ctx->pab_fd->GetOffset();
         if(fd) {
            uint8_t *tmp = new uint8_t[current_item->size];
@@ -138,6 +143,7 @@ void pak_close(PakContext *ctx) {
            assert(len == 1);
            ctx->pab_fd->WriteBuffer(tmp, current_item->size);
            delete[] tmp; 
+           fclose(fd);
         } else {
             while(current_item->size--) {
                 ctx->pab_fd->WriteByte(0xAB);

@@ -18,7 +18,7 @@ void handle_directory(PakContext *ctx, const char *dir_name, int initial_len) {
     dp = opendir(dir_name);
 
     while(entry = readdir(dp)) {
-        const int expected_len = (strlen(dir_name) + entry->d_namlen) + 2;
+        const int expected_len = (strlen(dir_name) + entry->d_namlen) + 2; // +2 for "/" and null byte
         char *temp_str = (char *)malloc(expected_len);
         snprintf(temp_str, expected_len, "%s/%s", dir_name, entry->d_name);
 
@@ -30,7 +30,7 @@ void handle_directory(PakContext *ctx, const char *dir_name, int initial_len) {
         } else if (entry->d_type & DT_REG){
             if(entry->d_name[0] != '.') {
                 printf("Adding file to pak: %s\n", temp_str + initial_len);
-                pak_append_file(ctx, temp_str + initial_len); // +2 to skip "./"     
+                pak_append_file(ctx, temp_str + initial_len);  
             }           
         }
         free((void *)temp_str);
