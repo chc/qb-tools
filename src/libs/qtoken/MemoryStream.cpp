@@ -113,6 +113,10 @@ void MemoryStream::Align() {
     }
 }
 
+void MemoryStream::WriteAlign(int alignment) {
+
+}
+
 void MemoryStream::WriteByte(uint8_t v) {
 
 }

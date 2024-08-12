@@ -19,6 +19,7 @@ class IStream {
         virtual void Seek(int32_t offset) = 0;
         virtual void SetCursor(int32_t offset) = 0;
         virtual void Align() = 0;
+        virtual void WriteAlign(int alignment = 4) = 0;
 
 
         virtual void WriteByte(uint8_t) = 0;

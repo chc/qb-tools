@@ -39,6 +39,13 @@ source_group("Sources" FILES ${UNPAK_SRCS})
 add_executable (unpak ${UNPAK_SRCS})
 target_link_libraries(unpak qtoken qsymbol pak dbginfo)
 
+
+file (GLOB PAK_SRCS "src/tools/pak/*.cpp")
+include_directories("src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak")
+source_group("Sources" FILES ${PAK_SRCS})
+add_executable (pakdir ${PAK_SRCS})
+target_link_libraries(pakdir qtoken qsymbol pak dbginfo)
+
 file (GLOB QRESOLVE_SRCS "src/tools/qresolve/*.cpp")
 include_directories("src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak" "src/libs/dbginfo")
 source_group("Sources" FILES ${QRESOLVE_SRCS})

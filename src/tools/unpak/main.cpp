@@ -9,6 +9,8 @@
 #include <pak.h>
 #include <dbginfo.h>
 
+#include <sys/stat.h>
+
 std::vector<PakItem> pak_items;
 
 const char* get_checksum(uint32_t key) {
@@ -17,7 +19,7 @@ const char* get_checksum(uint32_t key) {
 
 #define PRINT_FIELD(name, var) c = get_checksum(var); \
 if(c) { \
-    printf("%s: %s\n", name, c); \
+    printf("%s: %s / %d\n", name, c, var); \
 } \
 else {\
     printf("%s: %d\n",name,var); \
@@ -44,6 +46,22 @@ void print_pak_item(PakItem* item) {
     //assert(item->flags == 0);
 }
 
+void create_dir(char *path) {
+    char *p = (char *)path;
+    while(true) {
+        char *x = strchr(p, '\\');
+        if(x == NULL) {
+            break;
+        }
+        *x = 0;
+        mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        p = x+1;
+        *x = '/';
+
+        
+    }
+}
+
 
 bool unpak_file_info_callback(PakItem item) {
     print_pak_item(&item);
@@ -56,16 +74,14 @@ bool unpak_file_info_callback(PakItem item) {
     char *name;
     if (path) {
         name = strdup(path);
-        for(int i=0;i<strlen(name);i++) {
-            if(name[i] == '\\') {
-                name[i] = '_';
-            }
-        }
+        create_dir(name);
     } else {
         char tmp[32];
-        snprintf(tmp, sizeof(tmp), "%08x.bin", item.fileNameKey);
+        snprintf(tmp, sizeof(tmp), "%08x.bin", item.pakname);
         name = strdup(tmp);
     }
+
+
 
     FILE* out = fopen(name, "wb");
     if (out) {

@@ -18,7 +18,8 @@ class FileStream : public IStream {
         bool IsFileOpened();
         void Seek(int32_t offset);
         void SetCursor(int32_t offset);
-        void Align();
+        void Align(); //this is read align
+        void WriteAlign(int alignment = 4); 
 
         void WriteByte(uint8_t);
         void WriteUInt16(uint16_t);

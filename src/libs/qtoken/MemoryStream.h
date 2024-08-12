@@ -19,6 +19,7 @@ class MemoryStream : public IStream {
         void Seek(int32_t offset);
         void SetCursor(int32_t offset);
         void Align();
+        void WriteAlign(int alignment = 4);
 
         void WriteByte(uint8_t);
         void WriteUInt16(uint16_t);

@@ -126,6 +126,11 @@ void FileStream::Align() {
         ReadByte();
     }
 }
+void FileStream::WriteAlign(int alignment) {
+    while((GetOffset() % alignment)) {
+        WriteByte(0);
+    }
+}
 
 void FileStream::WriteByte(uint8_t v) {
     int len = fwrite(&v, sizeof(uint8_t), 1, mp_fd);
