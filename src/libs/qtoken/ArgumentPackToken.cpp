@@ -18,5 +18,9 @@ void ArgumentPackToken::LoadParams(IStream *stream) {
 
 }
 std::string ArgumentPackToken::ToString() {
-    return " &";
+    // this token is $ based on a printf in THP8
+    // printf "UI WARNING: $ui_current_zone_index = %d ($ui_num_zones = %l)" d = $ui_current_zone_index l = $ui_num_zones
+    
+    // THDJ Wii: 4B is followed by an untokenized integer pointer into a dict
+    return "$";
 }

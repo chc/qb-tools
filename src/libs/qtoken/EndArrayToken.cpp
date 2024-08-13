@@ -18,5 +18,5 @@ void EndArrayToken::LoadParams(IStream *stream) {
 
 }
 std::string EndArrayToken::ToString() {
-    return "] ";
+    return AppendSpaceToString ? "] " : "]";
 }

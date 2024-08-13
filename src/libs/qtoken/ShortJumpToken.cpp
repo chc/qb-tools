@@ -34,5 +34,5 @@ void ShortJumpToken::RewriteOffset(IStream *stream, size_t diff) {
     stream->SetCursor(cursor);
 }
 std::string ShortJumpToken::ToString() {
-    return "sjmp ";
+    return "";// "sjmp ";
 }

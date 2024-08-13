@@ -18,5 +18,5 @@ void MinusToken::LoadParams(IStream *stream) {
 
 }
 std::string MinusToken::ToString() {
-    return " - ";
+    return AppendSpaceToString ? "- " : "-";
 }

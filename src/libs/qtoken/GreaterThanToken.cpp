@@ -18,5 +18,5 @@ void GreaterThanToken::LoadParams(IStream *stream) {
 
 }
 std::string GreaterThanToken::ToString() {
-    return " > ";
+    return AppendSpaceToString ? "> " : ">";
 }

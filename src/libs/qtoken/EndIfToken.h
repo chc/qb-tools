@@ -10,7 +10,7 @@ class EndIfToken : public QScriptToken {
         void LoadParams(IStream *stream);
         void Write(IStream *stream);
         std::string ToString();
-        int GetPreTabOffset();
+        int GetPreTabOffset() { return -1; }
     private:
 };
 #endif //_ENDIFTOKEN_H

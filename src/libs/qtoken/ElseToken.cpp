@@ -20,9 +20,3 @@ void ElseToken::LoadParams(IStream *stream) {
 std::string ElseToken::ToString() {
     return "else";
 }
-int ElseToken::GetPreTabOffset() {
-    return -1;
-}
-int ElseToken::GetPostTabOffset() {
-    return 1;
-}

@@ -63,6 +63,6 @@ std::string WideStringToken::ToString() {
     std::string v = converter.to_bytes(m_value);
 
     std::ostringstream ss;
-    ss << "'" << v << "' ";
+    ss << "$'" << v << "'" << (AppendSpaceToString ? " " : "");
     return ss.str();
 }

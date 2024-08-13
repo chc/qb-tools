@@ -9,8 +9,8 @@ class ElseToken : public QScriptToken {
         EScriptToken GetType();
         void LoadParams(IStream *stream);
         std::string ToString();
-        int GetPreTabOffset();
-        int GetPostTabOffset();
+        int GetPreTabOffset() { return -1; }
+        int GetPostTabOffset() { return 1; }
     private:
 };
 #endif //_ELSETOKEN_H

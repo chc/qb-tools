@@ -18,5 +18,5 @@ void NotToken::LoadParams(IStream *stream) {
 
 }
 std::string NotToken::ToString() {
-    return "not ";
+    return AppendSpaceToString ? "NOT " : "NOT";
 }

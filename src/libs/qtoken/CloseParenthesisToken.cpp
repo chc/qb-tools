@@ -18,5 +18,5 @@ void CloseParenthesisToken::LoadParams(IStream *stream) {
 
 }
 std::string CloseParenthesisToken::ToString() {
-    return ")";
+    return AppendSpaceToString ? ") " : ")";
 }

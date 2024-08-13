@@ -18,5 +18,5 @@ void AddToken::LoadParams(IStream *stream) {
 
 }
 std::string AddToken::ToString() {
-    return " + ";
+    return AppendSpaceToString ? "+ " : "+";
 }

@@ -18,5 +18,5 @@ void DivideToken::LoadParams(IStream *stream) {
 
 }
 std::string DivideToken::ToString() {
-    return " / ";
+    return AppendSpaceToString ? "/ " : "/";
 }

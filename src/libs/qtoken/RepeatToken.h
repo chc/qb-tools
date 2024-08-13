@@ -9,6 +9,7 @@ class RepeatToken : public QScriptToken {
         EScriptToken GetType();
         void LoadParams(IStream *stream);
         std::string ToString();
+        int GetPreTabOffset() { return -1; }
     private:
 };
 #endif //_REPEATTOKEN_H

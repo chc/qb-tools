@@ -18,5 +18,5 @@ void SwitchToken::LoadParams(IStream *stream) {
 
 }
 std::string SwitchToken::ToString() {
-    return "switch ";
+    return AppendSpaceToString ? "switch " : "switch";
 }

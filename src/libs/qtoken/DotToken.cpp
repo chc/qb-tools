@@ -18,5 +18,5 @@ void DotToken::LoadParams(IStream *stream) {
 
 }
 std::string DotToken::ToString() {
-    return " . ";
+    return ".";
 }

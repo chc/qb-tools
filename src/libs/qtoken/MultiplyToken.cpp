@@ -18,5 +18,5 @@ void MultiplyToken::LoadParams(IStream *stream) {
 
 }
 std::string MultiplyToken::ToString() {
-    return " * ";
+    return AppendSpaceToString ? "* " : "*";
 }

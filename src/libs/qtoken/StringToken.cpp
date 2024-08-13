@@ -34,6 +34,9 @@ void StringToken::Write(IStream *stream) {
 }
 std::string StringToken::ToString() {
     std::ostringstream ss;
-    ss << "\"" << m_value << "\" ";
+    
+    // fix this to place backslash before " and before backslash
+    
+    ss << "\"" << m_value << "\"" << (AppendSpaceToString ? " " : "");
     return ss.str();
 }

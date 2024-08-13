@@ -123,10 +123,10 @@ enum EScriptToken
 	ESCRIPTTOKEN_INLINEPACKSTRUCT, // 74
 	ESCRIPTTOKEN_ARGUMENTPACK, // 75
 	ESCRIPTTOKEN_WIDESTRING, // 76
-	ESCRIPTTOKEN_NOTEQUAL, // 78
-	ESCRIPTTOKEN_STRINGQS, // 79
-	ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT, // 80
-	ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER, // 90
+	ESCRIPTTOKEN_NOTEQUAL, // 77
+	ESCRIPTTOKEN_STRINGQS, // 78
+	ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT, // 79
+	ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER, // 80
 	
 	// Warning! Do not exceed 256 entries, since these are stored in bytes.
 };
@@ -156,6 +156,7 @@ class QScriptToken {
 		virtual std::vector<TokenInjection> GetInjections();
 		size_t GetFileOffset() { return m_file_offset; }
 		void SetFileOffset(size_t offset) { m_file_offset = offset; }
+        bool AppendSpaceToString = false;
 	protected:
         size_t m_file_offset;
 };

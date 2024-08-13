@@ -9,7 +9,7 @@ class ScriptToken : public QScriptToken {
         EScriptToken GetType();
         void LoadParams(IStream *stream);
         std::string ToString();
-        int GetPostTabOffset();
+        int GetPostTabOffset() { return 1; }
     private:
 };
 #endif //_SCRIPTTOKEN_H

@@ -3,6 +3,7 @@
 #include "QStream.h"
 #include <QScriptToken.h>
 
+#include <ArgToken.h>
 #include <NameToken.h>
 #include <ChecksumNameToken.h>
 #include <JumpToken.h>
@@ -39,6 +40,12 @@ void map_checksum_names() {
             NameToken *name = reinterpret_cast<NameToken *>(token);
             ChecksumNameToken *c = resolve_name(name->GetChecksum());
             if(c) {
+                name->SetChecksumName(c);
+            }
+        } else if (token->GetType() == ESCRIPTTOKEN_ARG) {
+            ArgToken *name = reinterpret_cast<ArgToken *>(token);
+            ChecksumNameToken *c = resolve_name(name->GetChecksum());
+            if (c) {
                 name->SetChecksumName(c);
             }
         }

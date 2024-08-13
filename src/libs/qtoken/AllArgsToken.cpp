@@ -18,5 +18,5 @@ void AllArgsToken::LoadParams(IStream *stream) {
 
 }
 std::string AllArgsToken::ToString() {
-    return "<...>";
+    return AppendSpaceToString ? "<...> " : "<...>";
 }

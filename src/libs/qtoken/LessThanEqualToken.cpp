@@ -18,5 +18,5 @@ void LessThanEqualToken::LoadParams(IStream *stream) {
 
 }
 std::string LessThanEqualToken::ToString() {
-    return " <= ";
+    return AppendSpaceToString ? "<= " : "<=";
 }

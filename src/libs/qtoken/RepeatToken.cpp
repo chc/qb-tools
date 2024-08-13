@@ -18,5 +18,5 @@ void RepeatToken::LoadParams(IStream *stream) {
 
 }
 std::string RepeatToken::ToString() {
-    return "repeat";
+    return AppendSpaceToString ? "repeat " : "repeat";
 }

@@ -45,7 +45,7 @@ void ElseIfToken::SetEndIfOffset(IStream *stream, uint16_t offset) {
     stream->SetCursor(cursor);
 }
 std::string ElseIfToken::ToString() {
-    return "elseif";
+    return AppendSpaceToString ? "elseif " : "elseif";
 }
 int ElseIfToken::GetPreTabOffset() {
     return -1;

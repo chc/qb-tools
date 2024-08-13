@@ -28,7 +28,11 @@ void FloatToken::Write(IStream *stream) {
 std::string FloatToken::ToString() {
     std::ostringstream ss;
     ss << std::setprecision(2);
+    ss << std::showpoint;
     ss << std::fixed;
-    ss << m_value << " ";
+    ss << m_value;
+    if (AppendSpaceToString) {
+        ss << " ";
+    }
     return ss.str();
 }

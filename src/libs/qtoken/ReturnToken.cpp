@@ -18,5 +18,5 @@ void ReturnToken::LoadParams(IStream *stream) {
 
 }
 std::string ReturnToken::ToString() {
-    return "return ";
+    return AppendSpaceToString ? "return " : "return";
 }

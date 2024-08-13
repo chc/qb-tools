@@ -20,6 +20,3 @@ void EndScriptToken::LoadParams(IStream *stream) {
 std::string EndScriptToken::ToString() {
     return "endscript";
 }
-int	EndScriptToken::GetPreTabOffset() {
-    return -1;
-}

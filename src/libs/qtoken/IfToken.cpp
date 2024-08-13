@@ -20,6 +20,3 @@ void IfToken::LoadParams(IStream *stream) {
 std::string IfToken::ToString() {
     return "if ";
 }
-int IfToken::GetPostTabOffset() {
-    return 1;
-}

@@ -18,5 +18,5 @@ void CommaToken::LoadParams(IStream *stream) {
 
 }
 std::string CommaToken::ToString() {
-    return ",";
+    return AppendSpaceToString ? ", " : ",";
 }

@@ -24,6 +24,3 @@ void ScriptToken::LoadParams(IStream *stream) {
 std::string ScriptToken::ToString() {
     return "script ";
 }
-int	ScriptToken::GetPostTabOffset() {
-    return 1;
-}

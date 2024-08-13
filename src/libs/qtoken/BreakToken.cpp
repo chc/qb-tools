@@ -18,5 +18,5 @@ void BreakToken::LoadParams(IStream *stream) {
 
 }
 std::string BreakToken::ToString() {
-    return "break";
+    return AppendSpaceToString ? "break " : "break";
 }

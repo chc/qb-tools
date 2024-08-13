@@ -18,5 +18,5 @@ void InjectedToken::LoadParams(IStream *stream) {
 
 }
 std::string InjectedToken::ToString() {
-    return m_token;
+    return AppendSpaceToString ? (m_token + " ") : m_token;
 }

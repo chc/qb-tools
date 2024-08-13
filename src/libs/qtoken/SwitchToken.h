@@ -9,7 +9,7 @@ class SwitchToken : public QScriptToken {
         EScriptToken GetType();
         void LoadParams(IStream *stream);
         std::string ToString();
-        int GetPostTabOffset() { return 1; }
+        int GetPostTabOffset() { return 2; }
     private:
 };
 #endif //_SWITCHTOKEN_H

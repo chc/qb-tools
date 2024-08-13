@@ -27,6 +27,6 @@ void IntegerToken::Write(IStream *stream) {
 }
 std::string IntegerToken::ToString() {
     std::ostringstream ss;
-    ss << m_value << " ";
+    ss << m_value << (AppendSpaceToString ? " " : "");
     return ss.str();
 }

@@ -18,5 +18,5 @@ void CaseToken::LoadParams(IStream *stream) {
 
 }
 std::string CaseToken::ToString() {
-    return "case ";
+    return AppendSpaceToString ? "case " : "case";
 }

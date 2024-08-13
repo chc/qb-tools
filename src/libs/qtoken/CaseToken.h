@@ -9,8 +9,8 @@ class CaseToken : public QScriptToken {
         EScriptToken GetType();
         void LoadParams(IStream *stream);
         std::string ToString();
-        int GetPostTabOffset() { return 1; }
         int GetPreTabOffset() { return -1; }
+        int GetPostTabOffset() { return 1; }
     private:
 };
 #endif //_CASETOKEN_H

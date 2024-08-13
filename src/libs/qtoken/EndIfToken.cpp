@@ -23,6 +23,3 @@ void EndIfToken::Write(IStream *stream) {
 std::string EndIfToken::ToString() {
     return "endif";
 }
-int EndIfToken::GetPreTabOffset() {
-    return -1;
-}

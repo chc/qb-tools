@@ -18,5 +18,5 @@ void DefaultToken::LoadParams(IStream *stream) {
 
 }
 std::string DefaultToken::ToString() {
-    return "default ";
+    return AppendSpaceToString ? "default " : "default";
 }

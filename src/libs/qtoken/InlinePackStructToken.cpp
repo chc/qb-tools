@@ -70,5 +70,5 @@ void InlinePackStructToken::Write(IStream *stream) {
 
 }
 std::string InlinePackStructToken::ToString() {
-    return "*";
+    return "$";
 }

@@ -18,5 +18,5 @@ void EndStructToken::LoadParams(IStream *stream) {
 
 }
 std::string EndStructToken::ToString() {
-    return "} ";
+    return AppendSpaceToString ? "} " : "}";
 }
