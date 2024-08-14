@@ -35,5 +35,6 @@ extern Deopt g_Deopt;
 
 void emit_symbol();
 void emit_script();
+void emit_array();
 
 #endif //_QOPT_H

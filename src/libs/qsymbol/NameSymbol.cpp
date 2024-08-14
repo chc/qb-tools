@@ -32,7 +32,6 @@ void NameSymbol::Write(IStream *stream) {
 }
 void NameSymbol::WriteToArray(IStream *stream) {
     stream->WriteInt32(m_value);
-    stream->WriteUInt32(0);
 }
 std::string NameSymbol::ToString() {
     std::ostringstream ss;

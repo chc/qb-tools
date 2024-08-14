@@ -106,6 +106,37 @@ void QSymbolToken::ReadSymbolsFromArray(IStream *stream, uint8_t type_flags, uin
         assert(false);
     }
 }
+void QSymbolToken::WriteSymbolsToArray(IStream *stream, uint8_t type_flags, uint32_t num_items, QSymbolToken **output_tokens) {
+    uint8_t type = type_flags & 0xF;
+    bool is_reference = type_flags & 0x10;
+
+    if(num_items == 0) {
+        stream->WriteUInt32(0);
+        return;
+    }
+    int writemode = 0;
+    
+    if(type == ESYMBOLTYPE_INTEGER || type == ESYMBOLTYPE_FLOAT || type == ESYMBOLTYPE_NAME || is_reference) {
+        writemode = 1;
+    } else if(type == ESYMBOLTYPE_STRUCTURE || type == ESYMBOLTYPE_ARRAY || type == ESYMBOLTYPE_STRING || type == ESYMBOLTYPE_LOCALSTRING || type == ESYMBOLTYPE_PAIR || type == ESYMBOLTYPE_VECTOR) {
+        //probably vector and pair go into here too... but let them asert for now
+        writemode = 2;
+    }
+
+   if(writemode == 1) {
+        if(num_items > 1) {
+            uint32_t data_offset = stream->GetOffset() + sizeof(uint32_t);
+            stream->WriteUInt32(data_offset);
+        }
+        for(int i=0;i<num_items;i++) {
+            if(is_reference) {
+                assert(false);
+            } else {
+                output_tokens[i]->WriteToArray(stream);
+            }
+        }
+   }
+}
 void QSymbolToken::LoadParamsFromArray(IStream *stream) {
     assert(false);
 }

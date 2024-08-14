@@ -8,6 +8,9 @@ ArraySymbol::ArraySymbol() {
     m_struct_item = false;
 
 }
+ArraySymbol::ArraySymbol(QSymbolToken **tokens, uint32_t num_tokens) : m_tokens(tokens), m_num_items(num_tokens) {
+    m_struct_item = false;
+}
 ArraySymbol::~ArraySymbol() {
 
 }
@@ -56,10 +59,22 @@ void ArraySymbol::LoadParamsFromArray(IStream *stream) {
     ReadSymbolsFromArray(stream, type_flags, m_num_items, m_tokens);
 }
 void ArraySymbol::Write(IStream *stream) {
+    uint32_t offset = stream->GetOffset() + sizeof(uint32_t) + sizeof(uint32_t);
+    stream->WriteUInt32(offset); //offset
+    stream->WriteUInt32(0);
+    stream->WriteUInt16(1);
 
+    uint8_t type = 0;
+    type = m_tokens[0]->GetType();
+    stream->WriteByte(type);
+    stream->WriteByte(0);
+
+    stream->WriteUInt32(m_num_items);
+
+    WriteSymbolsToArray(stream, type, m_num_items, m_tokens);
 }
 void ArraySymbol::WriteToArray(IStream *stream) {
-    
+    assert(false);
 }
 std::string ArraySymbol::ToString() {
     return "";

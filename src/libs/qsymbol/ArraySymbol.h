@@ -6,6 +6,7 @@
 class ArraySymbol : public QSymbolToken {
     public:
         ArraySymbol();
+        ArraySymbol(QSymbolToken **tokens, uint32_t num_tokens);
         ~ArraySymbol();
         ESymbolType GetType();
         void LoadParams(IStream *stream);

@@ -88,10 +88,16 @@ void handle_read_root_array(QScriptToken *token) {
         g_Deopt.depth_index--;
     } else if(token->GetType() == ESCRIPTTOKEN_STARTARRAY) {
         g_Deopt.depth_index++;
+    } else if(token->GetType() == ESCRIPTTOKEN_ENDOFLINE || token->GetType() == ESCRIPTTOKEN_ENDOFLINENUMBER) {
+
+    }
+    else {
+        g_Deopt.script_tokens.push_back(token);
     }
 
     if(g_Deopt.depth_index == 0) {
         printf("Got end of array\n");
+        emit_array();
         g_Deopt.currentState = DeoptState_ReadNextGlobalToken;
     }
 }
