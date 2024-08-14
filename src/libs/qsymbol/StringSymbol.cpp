@@ -52,6 +52,13 @@ void StringSymbol::LoadParamsFromArray(IStream *stream) {
     m_value = (char *)&data[0];
     stream->Align();
 }
+#include <cassert>
+void StringSymbol::Write(IStream *stream) {
+    assert(0);
+}
+void StringSymbol::WriteToArray(IStream *stream) {
+    assert(0);
+}
 std::string StringSymbol::ToString() {
     return "";
 }

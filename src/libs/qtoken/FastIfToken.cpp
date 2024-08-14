@@ -21,7 +21,7 @@ void FastIfToken::Write(IStream *stream) {
 void FastIfToken::RewriteOffset(IStream *stream, size_t diff) {
     size_t cursor = stream->GetOffset();
 
-    stream->SetCursor(m_file_offset+1);
+    stream->SetCursor(m_file_offset+sizeof(uint8_t));
     stream->WriteUInt16(diff);
 
     stream->SetCursor(cursor);

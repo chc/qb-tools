@@ -6,6 +6,9 @@
 FloatSymbol::FloatSymbol() {
 
 }
+FloatSymbol::FloatSymbol(float v) : m_value(v) {
+
+}
 FloatSymbol::~FloatSymbol() {
 
 }
@@ -24,6 +27,14 @@ void FloatSymbol::LoadParams(IStream *stream) {
 }
 void FloatSymbol::LoadParamsFromArray(IStream *stream) {
     m_value = stream->ReadFloat();
+}
+void FloatSymbol::Write(IStream *stream) {
+    stream->WriteFloat(m_value);
+    stream->WriteUInt32(0);
+
+}
+void FloatSymbol::WriteToArray(IStream *stream) {
+    stream->WriteFloat(m_value);
 }
 std::string FloatSymbol::ToString() {
     std::ostringstream ss;

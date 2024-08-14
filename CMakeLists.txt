@@ -25,6 +25,12 @@ source_group("Sources" FILES ${QDEOPT_SRCS})
 add_executable (qdeopt ${QDEOPT_SRCS})
 target_link_libraries(qdeopt qtoken qsymbol dbginfo pak)
 
+file (GLOB QOPT_SRCS "src/tools/qopt/*.cpp")
+include_directories("src/libs/qtoken" "src/libs/qsymbol")
+source_group("Sources" FILES ${QOPT_SRCS})
+add_executable (qopt ${QOPT_SRCS})
+target_link_libraries(qopt qtoken qsymbol dbginfo pak)
+
 file (GLOB LIBPAK_SRCS "src/libs/pak/*.cpp")
 include_directories("src/libs/pak")
 add_library(pak ${LIBPAK_SRCS})

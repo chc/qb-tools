@@ -6,6 +6,9 @@
 IntegerSymbol::IntegerSymbol() {
 
 }
+IntegerSymbol::IntegerSymbol(int32_t v) : m_value(v) {
+
+}
 IntegerSymbol::~IntegerSymbol() {
 
 }
@@ -22,6 +25,14 @@ void IntegerSymbol::LoadParams(IStream *stream) {
 }
 void IntegerSymbol::LoadParamsFromArray(IStream *stream) {
     m_value = stream->ReadInt32();
+}
+void IntegerSymbol::Write(IStream *stream) {
+    stream->WriteInt32(m_value);
+    stream->WriteUInt32(0);
+
+}
+void IntegerSymbol::WriteToArray(IStream *stream) {
+    stream->WriteInt32(m_value);
 }
 std::string IntegerSymbol::ToString() {
     std::ostringstream ss;

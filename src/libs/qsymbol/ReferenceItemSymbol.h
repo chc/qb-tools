@@ -13,6 +13,8 @@ class ReferenceItemSymbol : public QSymbolToken {
         void SetValue(uint32_t v) { m_value = v;}
         uint32_t GetValue() { return m_value; }
         uint8_t GetRefType() { return m_type; }
+        void Write(IStream *stream);
+        void WriteToArray(IStream *stream);
     private:
         uint8_t m_type;
         uint32_t m_value;

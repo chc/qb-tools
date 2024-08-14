@@ -36,6 +36,13 @@ void VectorSymbol::LoadParamsFromArray(IStream *stream) {
     m_y = stream->ReadFloat();
     m_z = stream->ReadFloat();
 }
+#include <cassert>
+void VectorSymbol::Write(IStream *stream) {
+    assert(0);
+}
+void VectorSymbol::WriteToArray(IStream *stream) {
+    assert(0);
+}
 std::string VectorSymbol::ToString() {
     std::ostringstream ss;
     ss << "(" << m_x << "," << m_y << "," << m_z << ")";

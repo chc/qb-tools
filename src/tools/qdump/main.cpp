@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "QStream.h"
+#include <QStream.h>
 #include <QScriptToken.h>
 
 #include <ArgToken.h>

@@ -19,6 +19,13 @@ void ReferenceItemSymbol::LoadParams(IStream *stream) {
 void ReferenceItemSymbol::LoadParamsFromArray(IStream *stream) {
     SetValue(stream->ReadUInt32());
 }
+#include <cassert>
+void ReferenceItemSymbol::Write(IStream *stream) {
+    assert(0);
+}
+void ReferenceItemSymbol::WriteToArray(IStream *stream) {
+    assert(0);
+}
 std::string ReferenceItemSymbol::ToString() {
     return "";
 }

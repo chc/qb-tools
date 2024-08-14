@@ -6,5 +6,6 @@ class QSymbolToken;
 class ISStream {
     public:
         virtual QSymbolToken *NextSymbol() = 0;
+        virtual void WriteSymbol(QSymbolToken *symbol) = 0;
 };
 #endif //_ISSTREAM_H

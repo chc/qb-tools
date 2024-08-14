@@ -114,38 +114,100 @@ void MemoryStream::Align() {
 }
 
 void MemoryStream::WriteAlign(int alignment) {
-
+    while((GetOffset() % 4)) {
+        WriteByte(0);
+    }
 }
 
 void MemoryStream::WriteByte(uint8_t v) {
-
+    uint8_t *end = (uint8_t*)((ptrdiff_t)mp_cursor + sizeof(uint8_t));
+    if(end > mp_end) {
+        assert(false);
+        return;
+    }
+    *(uint8_t*)mp_cursor = v;
+    mp_cursor = end;
 }
 
 void MemoryStream::WriteUInt16(uint16_t v) {
+    uint16_t *end = (uint16_t*)((ptrdiff_t)mp_cursor + sizeof(uint16_t));
+    if(end > mp_end) {
+        assert(false);
+        return;
+    }
 
+    if(m_write_endian_mode == ISTREAM_BIG_ENDIAN) {
+        v = SWAP_UINT16(v);
+    }
+    *(uint16_t*)mp_cursor = v;
+    mp_cursor = end;
 }
 
 void MemoryStream::WriteUInt32(uint32_t v) {
+    uint32_t *end = (uint32_t*)((ptrdiff_t)mp_cursor + sizeof(uint32_t));
+    if(end > mp_end) {
+        assert(false);
+        return;
+    }
 
+    if(m_write_endian_mode == ISTREAM_BIG_ENDIAN) {
+        v = SWAP_UINT32(v);
+    }
+    *(uint32_t*)mp_cursor = v;
+    mp_cursor = end;
 }
 
 void MemoryStream::WriteInt16(int16_t v) {
+    int16_t *end = (int16_t*)((ptrdiff_t)mp_cursor + sizeof(int16_t));
+    if(end > mp_end) {
+        assert(false);
+        return;
+    }
 
+    if(m_write_endian_mode == ISTREAM_BIG_ENDIAN) {
+        v = SWAP_INT16(v);
+    }
+    *(int16_t*)mp_cursor = v;
+    mp_cursor = end;
 }
 
 void MemoryStream::WriteInt32(int32_t v) {
+    int32_t *end = (int32_t*)((ptrdiff_t)mp_cursor + sizeof(int32_t));
+    if(end > mp_end) {
+        assert(false);
+        return;
+    }
 
+    if(m_write_endian_mode == ISTREAM_BIG_ENDIAN) {
+        v = SWAP_INT32(v);
+    }
+    *(int32_t*)mp_cursor = v;
+    mp_cursor = end;
 }
-
 void MemoryStream::WriteFloat(float v) {
-
+    float *end = (float*)((ptrdiff_t)mp_cursor + sizeof(float));
+    if(end > mp_end) {
+        assert(false);
+        return;
+    }
+    if(m_read_endian_mode == ISTREAM_BIG_ENDIAN) {
+        SWAP_FLOAT(v)
+    }
+    *(float*)mp_cursor = v;
+    mp_cursor = end;
 }
 
 void MemoryStream::WriteNTS(const char *v) {
-
+    assert(false);
 }
 void MemoryStream::WriteBuffer(uint8_t *v, uint32_t len) {
-
+    void *end = (int32_t*)((ptrdiff_t)mp_cursor + len);
+    if(end > mp_end) {
+        assert(false);
+        return;
+    }
+    memcpy(mp_cursor, v, len);
+    mp_cursor = end;
 }
 void MemoryStream::SetReadEndian(uint8_t endian_mode) {
     m_read_endian_mode = endian_mode;

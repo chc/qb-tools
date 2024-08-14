@@ -5,12 +5,12 @@
 #include <IQStream.h>
 #include <IStream.h>
 
-class QScriptToken;
 class QStream : public IQStream {
     public:
         QStream(IStream *data_stream);
         ~QStream();
         QScriptToken *NextToken();
+        void WriteToken(IStream *stream, QScriptToken *token);
         private:
             IStream *mp_stream;
 };

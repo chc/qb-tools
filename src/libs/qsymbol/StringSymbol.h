@@ -11,6 +11,8 @@ class StringSymbol : public QSymbolToken {
         void LoadParamsFromArray(IStream *stream);
         std::string GetValue() { return m_value; }
         std::string ToString();
+        void Write(IStream *stream);
+        void WriteToArray(IStream *stream);
     private:
         std::string m_value;
 };

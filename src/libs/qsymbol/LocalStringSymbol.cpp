@@ -51,6 +51,13 @@ void LocalStringSymbol::LoadParamsFromArray(IStream *stream) {
         
     stream->Align();
 }
+#include <cassert>
+void LocalStringSymbol::Write(IStream *stream) {
+    assert(0);
+}
+void LocalStringSymbol::WriteToArray(IStream *stream) {
+    assert(0);
+}
 std::string LocalStringSymbol::ToString() {
     return "";
 }

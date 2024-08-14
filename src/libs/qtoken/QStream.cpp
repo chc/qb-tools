@@ -18,3 +18,6 @@ QScriptToken *QStream::NextToken() {
     }
     return result;
 }
+void QStream::WriteToken(IStream *stream, QScriptToken *token) {
+
+}

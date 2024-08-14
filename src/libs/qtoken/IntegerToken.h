@@ -11,6 +11,7 @@ class IntegerToken : public QScriptToken {
         void LoadParams(IStream *stream);
         void Write(IStream *stream);
         std::string ToString();
+        int32_t GetValue() { return m_value; }
     private:
         int32_t m_value;
 };

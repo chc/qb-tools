@@ -7,10 +7,15 @@
 #include "crc32.h"
 #include "lzss.h"
 
+// #define NO_LZSS_COMPRESS
+
 
 QScriptSymbol::QScriptSymbol() {
     m_decomp_buff = NULL;
     m_decomp_len = 0;
+
+}
+QScriptSymbol::QScriptSymbol(uint8_t *decomp_buff, uint32_t decomp_len) : m_decomp_buff(decomp_buff), m_decomp_len(decomp_len) {
 
 }
 QScriptSymbol::~QScriptSymbol() {
@@ -50,17 +55,39 @@ void QScriptSymbol::LoadParams(IStream *stream) {
 
         m_decomp_len = decompress_lzss((unsigned char *)comp_buff, compressed_size, (unsigned char *)m_decomp_buff);
 
-        /*char temp[256];
-        snprintf(temp, sizeof(temp), "%08x.bin", GetNameChecksum());
-        FILE *fd = fopen(temp, "wb");
-        fwrite(m_decomp_buff, m_decomp_len, 1, fd);
-        fclose(fd);*/
 
         uint32_t checksum = crc32(0, (void *)m_decomp_buff, uncompressed_size);
         delete[] comp_buff;
     }
 
     stream->Align();
+}
+
+void QScriptSymbol::Write(IStream *stream) {
+    stream->WriteUInt32( stream->GetOffset() + sizeof(uint32_t) + sizeof(uint32_t));
+    stream->WriteUInt32(0);
+
+    uint32_t checksum = crc32(0, m_decomp_buff, m_decomp_len);
+    stream->WriteUInt32(checksum);
+
+    stream->WriteUInt32(m_decomp_len);
+
+    uint8_t *comp_buff = new uint8_t[m_decomp_len];
+    int comp_len = compress_lzss(m_decomp_buff, m_decomp_len, comp_buff);
+    #ifdef NO_LZSS_COMPRESS
+        comp_len = m_decomp_len;
+    #endif
+    if(comp_len < m_decomp_len) { //compression was smaller, write
+        stream->WriteUInt32(comp_len);
+        stream->WriteBuffer(comp_buff, comp_len);
+    } else {
+        stream->WriteUInt32(m_decomp_len);
+        stream->WriteBuffer(m_decomp_buff, m_decomp_len);
+    }
+    stream->WriteAlign();
+}
+void QScriptSymbol::WriteToArray(IStream *stream) {
+    assert(0);
 }
 std::string QScriptSymbol::ToString() {
     return "";

@@ -55,6 +55,12 @@ void ArraySymbol::LoadParamsFromArray(IStream *stream) {
 
     ReadSymbolsFromArray(stream, type_flags, m_num_items, m_tokens);
 }
+void ArraySymbol::Write(IStream *stream) {
+
+}
+void ArraySymbol::WriteToArray(IStream *stream) {
+    
+}
 std::string ArraySymbol::ToString() {
     return "";
 }

@@ -60,6 +60,9 @@ class QSymbolToken {
         void SetSourceChecksum(uint32_t name) { m_source_checksum = name; }
         void SetIsStructItem(bool active) { m_struct_item = active; }
         bool GetIsStructItem() { return m_struct_item; }
+
+        virtual void Write(IStream *stream) = 0;
+        virtual void WriteToArray(IStream *stream) = 0;
     protected:
         bool m_struct_item;
         uint32_t m_name_checksum;

@@ -13,6 +13,8 @@ class PairSymbol : public QSymbolToken {
         std::string ToString();
         float GetX() { return m_x; }
         float GetY() { return m_y; }
+        void Write(IStream *stream);
+        void WriteToArray(IStream *stream);
     private:
         float m_x;
         float m_y;

@@ -11,6 +11,8 @@ class LocalStringSymbol : public QSymbolToken {
         void LoadParams(IStream *stream);
         void LoadParamsFromArray(IStream *stream);
         std::string ToString();
+        void Write(IStream *stream);
+        void WriteToArray(IStream *stream);
     private:
         std::string m_value;
 };

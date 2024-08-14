@@ -30,3 +30,29 @@ QSymbolToken *SymbolFileStream::NextSymbol() {
 
     return token;
 }
+
+void SymbolFileStream::WriteHeader() {
+    mp_stream->WriteUInt32(0);
+    mp_stream->WriteUInt32(0);
+
+    mp_stream->WriteUInt32(470286852);
+    mp_stream->WriteUInt32(268699660);
+    mp_stream->WriteUInt32(201851396);
+    mp_stream->WriteUInt32(335676428);
+    mp_stream->WriteUInt32(269487104);
+}
+void SymbolFileStream::UpdateHeaderSize() {
+    uint32_t offset = mp_stream->GetOffset();
+    mp_stream->SetCursor(sizeof(uint32_t));
+    mp_stream->WriteUInt32(offset);
+}
+void SymbolFileStream::WriteSymbol(QSymbolToken *symbol) {
+    mp_stream->WriteUInt16(0x20);
+
+    mp_stream->WriteByte(symbol->GetType());
+    mp_stream->WriteByte(0);
+    mp_stream->WriteUInt32(symbol->GetNameChecksum());
+    mp_stream->WriteUInt32(m_source_checksum);
+
+    symbol->Write(mp_stream);
+}

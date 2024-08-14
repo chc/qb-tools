@@ -11,6 +11,7 @@ class FloatToken : public QScriptToken {
         void LoadParams(IStream *stream);
         void Write(IStream *stream);
         std::string ToString();
+        float GetValue() { return m_value; }
     private:
         float m_value;
 };

@@ -6,6 +6,9 @@
 NameSymbol::NameSymbol() {
 
 }
+NameSymbol::NameSymbol(uint32_t v) : m_value(v){
+
+}
 NameSymbol::~NameSymbol() {
 
 }
@@ -22,6 +25,14 @@ void NameSymbol::LoadParams(IStream *stream) {
 }
 void NameSymbol::LoadParamsFromArray(IStream *stream) {
     m_value = stream->ReadUInt32();
+}
+void NameSymbol::Write(IStream *stream) {
+    stream->WriteInt32(m_value);
+    stream->WriteUInt32(0);
+}
+void NameSymbol::WriteToArray(IStream *stream) {
+    stream->WriteInt32(m_value);
+    stream->WriteUInt32(0);
 }
 std::string NameSymbol::ToString() {
     std::ostringstream ss;

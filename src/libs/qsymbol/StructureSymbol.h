@@ -15,6 +15,8 @@ class StructureSymbol : public QSymbolToken {
         static QSymbolToken *NextSymbol(IStream *stream);
         std::vector<QSymbolToken *> GetTokens() { return m_children; }
         void SetTokens(std::vector<QSymbolToken *> c) { m_children = c;}
+        void Write(IStream *stream);
+        void WriteToArray(IStream *stream);
     private:
         std::vector<QSymbolToken *> m_children;
 };

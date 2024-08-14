@@ -111,6 +111,13 @@ void StructureSymbol::LoadParamsNoOffset(IStream *stream) {
         stream->SetCursor(next);
     }
 }
+#include <cassert>
+void StructureSymbol::Write(IStream *stream) {
+    assert(0);
+}
+void StructureSymbol::WriteToArray(IStream *stream) {
+    assert(0);
+}
 std::string StructureSymbol::ToString() {
     std::ostringstream ss;
     

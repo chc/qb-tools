@@ -36,6 +36,13 @@ void PairSymbol::LoadParamsFromArray(IStream *stream) {
     m_x = stream->ReadFloat();
     m_y = stream->ReadFloat();
 }
+#include <cassert>
+void PairSymbol::Write(IStream *stream) {
+    assert(0);
+}
+void PairSymbol::WriteToArray(IStream *stream) {
+    assert(0);
+}
 std::string PairSymbol::ToString() {
     std::ostringstream ss;
     ss << "(" << m_x << "," << m_y << ")";
