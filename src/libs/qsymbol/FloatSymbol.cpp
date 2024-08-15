@@ -35,6 +35,15 @@ void FloatSymbol::Write(IStream *stream) {
 }
 void FloatSymbol::WriteToArray(IStream *stream) {
     stream->WriteFloat(m_value);
+    if(m_struct_item) {
+        //set next_offset
+        uint32_t cursor = stream->GetOffset();
+        if(m_next_offset == 1) {
+            stream->WriteUInt32(cursor + sizeof(float));   
+        } else {
+            stream->WriteUInt32(0);
+        }
+    }
 }
 std::string FloatSymbol::ToString() {
     std::ostringstream ss;

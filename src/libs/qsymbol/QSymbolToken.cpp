@@ -123,19 +123,49 @@ void QSymbolToken::WriteSymbolsToArray(IStream *stream, uint8_t type_flags, uint
         writemode = 2;
     }
 
+
    if(writemode == 1) {
         if(num_items > 1) {
             uint32_t data_offset = stream->GetOffset() + sizeof(uint32_t);
             stream->WriteUInt32(data_offset);
         }
         for(int i=0;i<num_items;i++) {
+                assert(output_tokens[i]);
+                output_tokens[i]->WriteToArray(stream);
+        }
+   } else if(writemode == 2) {
+        if(num_items > 1) {
+            uint32_t data_offset = stream->GetOffset() + sizeof(uint32_t);
+            stream->WriteUInt32(data_offset);
+        }
+        size_t *item_offsets = new size_t[num_items];
+        uint32_t *offsets = new uint32_t[num_items];
+        for(int i=0;i<num_items;i++) {
+            item_offsets[i] = stream->GetOffset();
+            stream->WriteUInt32(0);
+        }
+        for(int i=0;i<num_items;i++) {
             if(is_reference) {
                 assert(false);
             } else {
+                offsets[i] = stream->GetOffset();
+                if(output_tokens[i]->GetIsStructItem()) {
+                    offsets[i] += sizeof(uint32_t);
+                }
                 output_tokens[i]->WriteToArray(stream);
             }
         }
+        size_t cursor = stream->GetOffset();
+        for(int i=0;i<num_items;i++) {
+            stream->SetCursor(item_offsets[i]);
+            stream->WriteUInt32(offsets[i]); //write data pointer
+        }
+        stream->SetCursor(cursor);
+
+        delete[] item_offsets;
+        delete[] offsets;
    }
+
 }
 void QSymbolToken::LoadParamsFromArray(IStream *stream) {
     assert(false);

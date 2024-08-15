@@ -5,6 +5,7 @@
 class LocalStringSymbol : public QSymbolToken {
     public:
         LocalStringSymbol();
+        LocalStringSymbol(std::string value);
         ~LocalStringSymbol();
         ESymbolType GetType();
         std::string GetValue() { return m_value; }

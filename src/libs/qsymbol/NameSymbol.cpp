@@ -32,6 +32,15 @@ void NameSymbol::Write(IStream *stream) {
 }
 void NameSymbol::WriteToArray(IStream *stream) {
     stream->WriteInt32(m_value);
+    if(m_struct_item) {
+        //set next_offset
+        uint32_t cursor = stream->GetOffset();
+        if(m_next_offset == 1) {
+            stream->WriteUInt32(cursor + sizeof(uint32_t));   
+        } else {
+            stream->WriteUInt32(0);
+        }
+    }
 }
 std::string NameSymbol::ToString() {
     std::ostringstream ss;

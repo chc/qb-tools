@@ -15,7 +15,7 @@ EScriptToken ArgumentPackToken::GetType() {
     return ESCRIPTTOKEN_ARGUMENTPACK;
 }
 void ArgumentPackToken::LoadParams(IStream *stream) {
-
+    m_file_offset = stream->GetOffset()-sizeof(uint8_t);
 }
 std::string ArgumentPackToken::ToString() {
     // this token is $ based on a printf in THP8

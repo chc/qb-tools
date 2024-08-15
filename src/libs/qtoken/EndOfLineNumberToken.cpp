@@ -13,6 +13,7 @@ EScriptToken EndOfLineNumberToken::GetType() {
     return ESCRIPTTOKEN_ENDOFLINENUMBER;
 }
 void EndOfLineNumberToken::LoadParams(IStream *stream) {
+    m_file_offset = stream->GetOffset() - sizeof(uint8_t);
     m_line_number = stream->ReadUInt32();
 }
 uint32_t EndOfLineNumberToken::GetLineNumber() {

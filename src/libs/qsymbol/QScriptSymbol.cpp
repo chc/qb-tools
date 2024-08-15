@@ -7,7 +7,7 @@
 #include "crc32.h"
 #include "lzss.h"
 
-// #define NO_LZSS_COMPRESS
+//#define NO_LZSS_COMPRESS
 
 
 QScriptSymbol::QScriptSymbol() {
@@ -27,6 +27,7 @@ QScriptSymbol::~QScriptSymbol() {
 ESymbolType QScriptSymbol::GetType() {
     return ESYMBOLTYPE_QSCRIPT;
 }
+
 void QScriptSymbol::LoadParams(IStream *stream) {
     
     uint32_t size  = stream->ReadInt32();

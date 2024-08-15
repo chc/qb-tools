@@ -20,6 +20,7 @@ extern "C" {
 void WriteStructure(StructureSymbol *symbol, IStream *stream, bool packed);
 
 InlinePackStructToken::InlinePackStructToken() {
+    m_inner_struct = NULL;
 
 }
 InlinePackStructToken::~InlinePackStructToken() {
@@ -30,16 +31,24 @@ EScriptToken InlinePackStructToken::GetType() {
 }
 
 void InlinePackStructToken::LoadParams(IStream *stream) {
+    assert(m_inner_struct == NULL);
+    m_inner_struct = new StructureSymbol();
+    m_file_offset = stream->GetOffset() - 1;
     uint16_t len = stream->ReadUInt16();    
 
+    //calculat required alignment
     int offset = stream->GetOffset() - g_last_script_keyword;
     offset += 5;
     offset -= 2; //len
     
+    int idx = 0;
     while((offset % 4)) {
         offset++;
+        idx++;
         stream->ReadByte();
     }
+    printf("inline idx: %d\n", idx);
+    //
 
     if(len > 0) {
         uint8_t *buff = new uint8_t[len];
@@ -50,24 +59,45 @@ void InlinePackStructToken::LoadParams(IStream *stream) {
         MemoryStream ms(buff, len);
         ms.SetReadEndian(ISTREAM_BIG_ENDIAN);
 
-        m_inner_struct.LoadParamsNoOffset(&ms);
+        m_inner_struct->LoadParamsNoOffset(&ms);
 
         delete[] buff;
     }
 }
 void InlinePackStructToken::Write(IStream *stream) {
     m_file_offset = stream->GetOffset();
-
     //don't write the actual pack struct data, the qdumper will dump the inner struct (this should be refactored)
     stream->WriteByte(ESCRIPTTOKEN_INLINEPACKSTRUCT);
-    stream->WriteUInt16(0);
+    uint32_t len = 0;
+
+    const int STRUCT_BUFF_SIZE = 1024;
+    uint8_t struct_buff[STRUCT_BUFF_SIZE];
+
+    if(m_inner_struct == NULL) {
+        len = 0;
+    } else {
+
+        MemoryStream ms(&struct_buff, STRUCT_BUFF_SIZE);
+        ms.SetWriteEndian(ISTREAM_BIG_ENDIAN);
+        m_inner_struct->WriteNoOffset(&ms);
+        len = ms.GetOffset();
+    }
+    stream->WriteUInt16(len);
 
     int offset = stream->GetOffset() - g_last_script_keyword_write;
     while((offset % 4)) {
         offset++;
         stream->WriteByte(0);
     }
-
+    if(len > 0) {
+        stream->WriteBuffer(struct_buff, len);
+    }
+}
+void InlinePackStructToken::WriteStructure(IStream* stream, StructureSymbol *symbol) {
+    assert(false);
+}
+void InlinePackStructToken::SetValue(StructureSymbol *sym) {
+    m_inner_struct = sym;
 }
 std::string InlinePackStructToken::ToString() {
     return "$";

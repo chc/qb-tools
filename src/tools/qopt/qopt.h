@@ -35,6 +35,12 @@ extern Deopt g_Deopt;
 
 void emit_symbol();
 void emit_script();
+
+void emit_struct();
+
 void emit_array();
+void emit_array_of_structs();
+
+QSymbolToken *ConvertToken(QScriptToken *token, bool make_reference = false);
 
 #endif //_QOPT_H

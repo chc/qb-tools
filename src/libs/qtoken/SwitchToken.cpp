@@ -15,7 +15,7 @@ EScriptToken SwitchToken::GetType() {
     return ESCRIPTTOKEN_KEYWORD_SWITCH;
 }
 void SwitchToken::LoadParams(IStream *stream) {
-
+    m_file_offset = stream->GetOffset() - sizeof(uint8_t);
 }
 std::string SwitchToken::ToString() {
     return AppendSpaceToString ? "switch " : "switch";

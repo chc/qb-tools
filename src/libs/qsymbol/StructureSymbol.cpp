@@ -1,11 +1,15 @@
 #include "StructureSymbol.h"
 #include "ReferenceItemSymbol.h"
 
+
 #include <sstream>
 #include <iomanip>
 #include <cassert>
 
 StructureSymbol::StructureSymbol() {
+
+}
+StructureSymbol::StructureSymbol(std::vector<QSymbolToken *> children) : m_children(children) {
 
 }
 StructureSymbol::~StructureSymbol() {
@@ -111,12 +115,50 @@ void StructureSymbol::LoadParamsNoOffset(IStream *stream) {
         stream->SetCursor(next);
     }
 }
-#include <cassert>
-void StructureSymbol::Write(IStream *stream) {
-    assert(0);
+void StructureSymbol::WriteSymbol(IStream *stream, QSymbolToken *sym) {
+    uint8_t flags = 0x80;
+    if(sym->GetType() == ESYMBOLTYPE_INTERNAL_REFERENCE) {
+        flags |= 0x10;
+        flags |= reinterpret_cast<ReferenceItemSymbol*>(sym)->GetRefType();
+    } else {
+        flags |= sym->GetType();
+    }
+    stream->WriteByte(0);
+    stream->WriteByte(flags);
+    stream->WriteUInt16(0);
+    stream->WriteUInt32(sym->GetNameChecksum());
+
+    QSymbolToken *tokens[1] = {sym};
+    WriteSymbolsToArray(stream, sym->GetType(), 1, tokens);
 }
+void StructureSymbol::Write(IStream *stream) {
+
+    stream->WriteUInt32(stream->GetOffset() + sizeof(uint32_t));
+    WriteNoOffset(stream);
+}
+void StructureSymbol::WriteNoOffset(IStream *stream) {
+    stream->WriteUInt32(256);
+
+    if(m_children.empty()) {
+        stream->WriteUInt32(0);
+        return;
+    }
+   stream->WriteUInt32(stream->GetOffset() + sizeof(uint32_t));
+
+    std::vector<QSymbolToken *>::iterator it = m_children.begin();
+    while(it != m_children.end()) {
+        QSymbolToken *sym = *it;
+        it++;
+        bool has_next = it != m_children.end();
+        if(has_next) {
+            sym->SetNextOffset(1);
+        }
+        WriteSymbol(stream, sym);
+    }
+}
+
 void StructureSymbol::WriteToArray(IStream *stream) {
-    assert(0);
+    WriteNoOffset(stream);
 }
 std::string StructureSymbol::ToString() {
     std::ostringstream ss;

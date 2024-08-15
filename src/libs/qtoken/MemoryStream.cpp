@@ -105,6 +105,11 @@ void MemoryStream::Seek(int32_t offset) {
 
 }
 void MemoryStream::SetCursor(int32_t offset) {
+    void *new_addr = (void*)((ptrdiff_t)mp_head + (ptrdiff_t)offset);
+    if(new_addr > mp_end) {
+        return;
+    }
+    mp_cursor = new_addr;
 
 }
 void MemoryStream::Align() {
@@ -198,7 +203,7 @@ void MemoryStream::WriteFloat(float v) {
 }
 
 void MemoryStream::WriteNTS(const char *v) {
-    assert(false);
+    WriteBuffer((uint8_t*)v, strlen(v)+1);
 }
 void MemoryStream::WriteBuffer(uint8_t *v, uint32_t len) {
     void *end = (int32_t*)((ptrdiff_t)mp_cursor + len);

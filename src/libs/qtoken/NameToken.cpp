@@ -19,6 +19,7 @@ EScriptToken NameToken::GetType() {
     return ESCRIPTTOKEN_NAME;
 }
 void NameToken::LoadParams(IStream *stream) {
+    m_file_offset = stream->GetOffset()-sizeof(uint8_t);
     m_checksum = stream->ReadUInt32();
 }
 void NameToken::Write(IStream *stream) {

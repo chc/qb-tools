@@ -15,7 +15,7 @@ EScriptToken BreakToken::GetType() {
     return ESCRIPTTOKEN_KEYWORD_BREAK;
 }
 void BreakToken::LoadParams(IStream *stream) {
-
+    m_file_offset = stream->GetOffset() - sizeof(uint8_t);
 }
 std::string BreakToken::ToString() {
     return AppendSpaceToString ? "break " : "break";

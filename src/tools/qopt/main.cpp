@@ -9,27 +9,40 @@
 
 #include <SymbolFileStream.h>
 #include <cassert>
+#include <crc32.h>
 
 Deopt g_Deopt;
+
+extern "C" {
+    extern int32_t g_last_script_keyword;
+    extern int32_t g_last_script_keyword_write;
+}
+
 
 void handle_read_token_value(QScriptToken *token) {
     g_Deopt.currentState = DeoptState_ReadNextGlobalToken;
     g_Deopt.currentToken = token;
     switch(token->GetType()) {
+        case ESCRIPTTOKEN_ARGUMENTPACK:
+            assert(false);
+        break;
         case ESCRIPTTOKEN_INTEGER:
         case ESCRIPTTOKEN_FLOAT:
         case ESCRIPTTOKEN_NAME:
+        case ESCRIPTTOKEN_STRING:
+        case ESCRIPTTOKEN_LOCALSTRING:
             emit_symbol();
             break;
         case ESCRIPTTOKEN_STARTARRAY:
             g_Deopt.currentState = DeoptState_ReadArrayTokens;
             g_Deopt.depth_index = 1;
-            printf("root start array\n");
+            //printf("root start array\n");
             break;
         case ESCRIPTTOKEN_STARTSTRUCT:
             g_Deopt.currentState = DeoptState_ReadStructTokens;
             g_Deopt.depth_index = 1;
-            printf("root start struct\n");
+            g_Deopt.script_tokens.push_back(token);
+            //printf("root start struct\n");
             break;
         case ESCRIPTTOKEN_ENDOFLINE:
         case ESCRIPTTOKEN_ENDOFLINENUMBER:
@@ -46,6 +59,7 @@ void handle_global_token_state(QScriptToken *token) {
             g_Deopt.currentState = DeoptState_ReadEqualsToken;
         break;
         case ESCRIPTTOKEN_KEYWORD_SCRIPT:
+            g_last_script_keyword = token->GetFileOffset() + 5;
             g_Deopt.currentState = DeoptState_ReadScriptName;
             break;
         break;
@@ -86,8 +100,10 @@ void handle_equals_token_state(QScriptToken *token) {
 void handle_read_root_array(QScriptToken *token) {
     if(token->GetType() == ESCRIPTTOKEN_ENDARRAY) {
         g_Deopt.depth_index--;
+        g_Deopt.script_tokens.push_back(token);
     } else if(token->GetType() == ESCRIPTTOKEN_STARTARRAY) {
         g_Deopt.depth_index++;
+        g_Deopt.script_tokens.push_back(token);
     } else if(token->GetType() == ESCRIPTTOKEN_ENDOFLINE || token->GetType() == ESCRIPTTOKEN_ENDOFLINENUMBER) {
 
     }
@@ -96,8 +112,9 @@ void handle_read_root_array(QScriptToken *token) {
     }
 
     if(g_Deopt.depth_index == 0) {
-        printf("Got end of array\n");
+        //printf("Got end of array, %08x\n", g_Deopt.root_name_checksum);
         emit_array();
+        g_Deopt.script_tokens.clear();
         g_Deopt.currentState = DeoptState_ReadNextGlobalToken;
     }
 }
@@ -107,23 +124,26 @@ void handle_read_root_struct(QScriptToken *token) {
     } else if(token->GetType() == ESCRIPTTOKEN_STARTSTRUCT) {
         g_Deopt.depth_index++;
     }
+    g_Deopt.script_tokens.push_back(token);
 
     if(g_Deopt.depth_index == 0) {
-        printf("Got end of struct\n");
+        //printf("Got end of struct, %08x\n", g_Deopt.root_name_checksum);
+        emit_struct();
         g_Deopt.currentState = DeoptState_ReadNextGlobalToken;
     }
 }
 void handle_read_script_tokens(QScriptToken *token) {
-        g_Deopt.script_tokens.push_back(token);
-        switch(token->GetType()) {
-            case ESCRIPTTOKEN_KEYWORD_ENDSCRIPT:
-            emit_script();
-            g_Deopt.currentState = DeoptState_ReadNextGlobalToken;
-            break;
-        }
+    g_Deopt.script_tokens.push_back(token);
+    switch(token->GetType()) {
+        case ESCRIPTTOKEN_KEYWORD_ENDSCRIPT:
+        emit_script();
+        g_Deopt.currentState = DeoptState_ReadNextGlobalToken;
+        break;
+    }
 }
 
 int main(int argc, const char *argv[]) {
+    g_last_script_keyword_write = 0;
     if(argc  < 3) {
         fprintf(stderr, "usage: %s [in] [out]\n",argv[0]);
         return -1;
@@ -147,7 +167,8 @@ int main(int argc, const char *argv[]) {
 
     out_fs.SetWriteEndian(ISTREAM_BIG_ENDIAN);
     SymbolFileStream sym_fs(&out_fs);
-    sym_fs.SetSourceChecksum(0xDEADBEEF);
+    uint32_t src_checksum_name = crc32(0, argv[1], strlen(argv[1]));
+    sym_fs.SetSourceChecksum(src_checksum_name);
 
     sym_fs.WriteHeader();
 
@@ -156,7 +177,11 @@ int main(int argc, const char *argv[]) {
     QScriptToken *token;
     while(true) {
         token = qs.NextToken();
+        printf("Token: %d\n", token->GetType());
         if(token == NULL || token->GetType() == ESCRIPTTOKEN_ENDOFFILE) {
+            if(token->GetType() == ESCRIPTTOKEN_ENDOFFILE) {
+                printf("END OF FILE\n");
+            }
             break;
         }
         switch(g_Deopt.currentState) {
@@ -182,7 +207,6 @@ int main(int argc, const char *argv[]) {
                 handle_read_root_struct(token);
                 break;
         }
-        //printf("token: %d\n", token->GetType());
     }
 
     sym_fs.UpdateHeaderSize();

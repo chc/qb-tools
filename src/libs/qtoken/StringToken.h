@@ -11,6 +11,7 @@ class StringToken : public QScriptToken {
         void LoadParams(IStream *stream);
         void Write(IStream *stream);
         std::string ToString();
+        std::string GetValue() { return m_value; }
     private:
         std::string m_value;
 };

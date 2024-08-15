@@ -15,7 +15,7 @@ EScriptToken ElseIfToken::GetType() {
     return ESCRIPTTOKEN_KEYWORD_ELSEIF;
 }
 void ElseIfToken::LoadParams(IStream *stream) {
-    m_file_offset = stream->GetOffset()-1;
+    m_file_offset = stream->GetOffset()-sizeof(uint8_t);
     m_next_offset = stream->ReadUInt16();
     m_endif_offset = stream->ReadUInt16();
 }
@@ -52,4 +52,19 @@ int ElseIfToken::GetPreTabOffset() {
 }
 int ElseIfToken::GetPostTabOffset() {
     return 1;
+}
+std::vector<TokenInjection> ElseIfToken::GetInjections() {
+    std::vector<TokenInjection> v;
+
+    TokenInjection i;
+    i.use_next_jump_offset = false;
+    i.offset = m_next_offset - 2;
+    i.token = "**ELSEIF1**";
+    v.push_back(i);
+
+    i.use_next_jump_offset = false;
+    i.offset = m_endif_offset - 2;
+    i.token = "**ELSEIF2**";
+    v.push_back(i);
+    return v;
 }

@@ -11,9 +11,11 @@ class InlinePackStructToken : public QScriptToken {
         EScriptToken GetType();
         void LoadParams(IStream *stream);
         void Write(IStream *stream);
+        void WriteStructure(IStream* stream, StructureSymbol *symbol);
         std::string ToString();
-        StructureSymbol GetValue() { return m_inner_struct; }
+        StructureSymbol *GetValue() { return m_inner_struct; }
+        void SetValue(StructureSymbol *sym);
     private:
-        StructureSymbol m_inner_struct;
+        StructureSymbol *m_inner_struct;
 };
 #endif //_INLINEPACKSTRUCTTOKEN_H

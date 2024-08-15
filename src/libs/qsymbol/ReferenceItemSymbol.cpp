@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <cassert>
 ReferenceItemSymbol::ReferenceItemSymbol(uint8_t type) : m_type(type) {
-
+    assert(type == ESYMBOLTYPE_STRUCTURE);
 }
 ReferenceItemSymbol::~ReferenceItemSymbol() {
 
@@ -19,12 +19,22 @@ void ReferenceItemSymbol::LoadParams(IStream *stream) {
 void ReferenceItemSymbol::LoadParamsFromArray(IStream *stream) {
     SetValue(stream->ReadUInt32());
 }
-#include <cassert>
 void ReferenceItemSymbol::Write(IStream *stream) {
-    assert(0);
+    stream->WriteUInt32(m_value);
+    stream->WriteUInt32(0xFFFFFFFF);
 }
 void ReferenceItemSymbol::WriteToArray(IStream *stream) {
-    assert(0);
+    printf("writing ref at: %08x / %08x\n", stream->GetOffset(), m_value);
+    stream->WriteUInt32(m_value);
+    if(m_struct_item) {
+        //set next_offset
+        uint32_t cursor = stream->GetOffset();
+        if(m_next_offset == 1) {
+            stream->WriteUInt32(cursor + sizeof(int32_t));   
+        } else {
+            stream->WriteUInt32(0);
+        }
+    }
 }
 std::string ReferenceItemSymbol::ToString() {
     return "";

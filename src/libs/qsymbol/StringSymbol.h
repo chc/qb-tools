@@ -5,6 +5,7 @@
 class StringSymbol : public QSymbolToken {
     public:
         StringSymbol();
+        StringSymbol(std::string value);
         ~StringSymbol();
         ESymbolType GetType();
         void LoadParams(IStream *stream);

@@ -43,7 +43,7 @@ enum ESymbolType
     ESYMBOLTYPE_INTERNAL_REFERENCE, //not real
 };
 
-class QSymbolToken {
+class QSymbolToken { //rename this to QSymbol...
     public:
         QSymbolToken();
         virtual ~QSymbolToken();

@@ -15,7 +15,7 @@ EScriptToken DefaultToken::GetType() {
     return ESCRIPTTOKEN_KEYWORD_DEFAULT;
 }
 void DefaultToken::LoadParams(IStream *stream) {
-
+    m_file_offset = stream->GetOffset() - sizeof(uint8_t);
 }
 std::string DefaultToken::ToString() {
     return AppendSpaceToString ? "default " : "default";

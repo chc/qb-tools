@@ -3,9 +3,11 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-
+#include <cassert>
 StringSymbol::StringSymbol() {
 
+}
+StringSymbol::StringSymbol(std::string value) : m_value(value) {
 }
 StringSymbol::~StringSymbol() {
 
@@ -52,12 +54,24 @@ void StringSymbol::LoadParamsFromArray(IStream *stream) {
     m_value = (char *)&data[0];
     stream->Align();
 }
-#include <cassert>
 void StringSymbol::Write(IStream *stream) {
-    assert(0);
+    WriteToArray(stream);
 }
 void StringSymbol::WriteToArray(IStream *stream) {
-    assert(0);
+    uint32_t start = stream->GetOffset();
+    stream->WriteUInt32(0);
+
+    stream->WriteBuffer((uint8_t *)m_value.c_str(), m_value.length() + 1);
+    stream->WriteAlign();
+
+    if(m_struct_item && m_next_offset == 1) {
+        //set next_offset
+        uint32_t cursor = stream->GetOffset();
+        stream->SetCursor(start);
+        stream->WriteUInt32(cursor);   
+        stream->SetCursor(cursor);
+        
+    }
 }
 std::string StringSymbol::ToString() {
     return "";

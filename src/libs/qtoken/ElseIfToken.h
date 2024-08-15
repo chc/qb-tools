@@ -17,6 +17,7 @@ class ElseIfToken : public QScriptToken {
         uint16_t GetEndIfOffset() {return m_endif_offset; }
         void SetNextOffset(IStream *stream, uint16_t offset);
         void SetEndIfOffset(IStream *stream, uint16_t offset);
+        std::vector<TokenInjection> GetInjections();
 
     private:
         uint16_t m_next_offset;

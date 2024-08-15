@@ -15,6 +15,7 @@ EScriptToken EndIfToken::GetType() {
     return ESCRIPTTOKEN_KEYWORD_ENDIF;
 }
 void EndIfToken::LoadParams(IStream *stream) {
+    m_file_offset = stream->GetOffset() - sizeof(uint8_t);
 }
 void EndIfToken::Write(IStream *stream) {
     m_file_offset = stream->GetOffset();

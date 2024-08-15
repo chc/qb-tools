@@ -32,17 +32,7 @@ void ArraySymbol::LoadParams(IStream *stream) {
 
     stream->SetCursor(array_data_offset);
 
-    uint16_t hdr = stream->ReadUInt16();
-    assert(hdr == 1);
-
-    uint8_t type_flags = stream->ReadByte();
-    stream->ReadByte();
-
-    m_num_items = stream->ReadUInt32();
-
-    m_tokens = new QSymbolToken*[m_num_items];
-
-    ReadSymbolsFromArray(stream, type_flags, m_num_items, m_tokens);
+    LoadParamsFromArray(stream);
 }
 
 void ArraySymbol::LoadParamsFromArray(IStream *stream) {
@@ -59,9 +49,17 @@ void ArraySymbol::LoadParamsFromArray(IStream *stream) {
     ReadSymbolsFromArray(stream, type_flags, m_num_items, m_tokens);
 }
 void ArraySymbol::Write(IStream *stream) {
+
     uint32_t offset = stream->GetOffset() + sizeof(uint32_t) + sizeof(uint32_t);
     stream->WriteUInt32(offset); //offset
     stream->WriteUInt32(0);
+    WriteToArray(stream);
+}
+void ArraySymbol::WriteToArray(IStream *stream) {
+    uint32_t start_offset = stream->GetOffset();
+    if(m_struct_item) {
+        stream->WriteUInt32(0); //next_offset
+    }
     stream->WriteUInt16(1);
 
     uint8_t type = 0;
@@ -70,11 +68,22 @@ void ArraySymbol::Write(IStream *stream) {
     stream->WriteByte(0);
 
     stream->WriteUInt32(m_num_items);
+    stream->WriteAlign();
 
     WriteSymbolsToArray(stream, type, m_num_items, m_tokens);
-}
-void ArraySymbol::WriteToArray(IStream *stream) {
-    assert(false);
+
+    if(m_struct_item) {
+        //set next_offset
+        uint32_t cursor = stream->GetOffset();
+        stream->SetCursor(start_offset);
+        if(m_next_offset) {
+            stream->WriteUInt32(cursor);
+        } else {
+            stream->WriteUInt32(0);
+        }
+        
+        stream->SetCursor(cursor);
+    }
 }
 std::string ArraySymbol::ToString() {
     return "";

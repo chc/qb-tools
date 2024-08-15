@@ -7,6 +7,9 @@
 LocalStringSymbol::LocalStringSymbol() {
 
 }
+LocalStringSymbol::LocalStringSymbol(std::string value) : m_value(value) {
+
+}
 LocalStringSymbol::~LocalStringSymbol() {
 
 }
@@ -51,12 +54,33 @@ void LocalStringSymbol::LoadParamsFromArray(IStream *stream) {
         
     stream->Align();
 }
-#include <cassert>
+
 void LocalStringSymbol::Write(IStream *stream) {
-    assert(0);
+    uint32_t start = stream->GetOffset();
+    stream->WriteUInt32(start + sizeof(uint32_t) + sizeof(uint32_t));
+    stream->WriteUInt32(0);
+
+    std::string::iterator it = m_value.begin();
+    while(it != m_value.end()) {
+        char16_t c = *it;
+        stream->WriteUInt16(c);
+        it++;
+    }
+    stream->WriteUInt16(0);
+    
+    stream->WriteAlign();
+
+    if(m_struct_item && m_next_offset == 1) {
+        //set next_offset
+        uint32_t cursor = stream->GetOffset();
+        stream->SetCursor(start + sizeof(uint32_t));
+        stream->WriteUInt32(cursor);   
+        stream->SetCursor(cursor);
+        
+    }
 }
 void LocalStringSymbol::WriteToArray(IStream *stream) {
-    assert(0);
+    Write(stream);
 }
 std::string LocalStringSymbol::ToString() {
     return "";
