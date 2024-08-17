@@ -117,6 +117,7 @@ void StructureSymbol::LoadParamsNoOffset(IStream *stream) {
 }
 void StructureSymbol::WriteSymbol(IStream *stream, QSymbolToken *sym) {
     uint8_t flags = 0x80;
+    uint8_t type =sym->GetType();
     if(sym->GetType() == ESYMBOLTYPE_INTERNAL_REFERENCE) {
         flags |= 0x10;
         flags |= reinterpret_cast<ReferenceItemSymbol*>(sym)->GetRefType();
@@ -129,7 +130,8 @@ void StructureSymbol::WriteSymbol(IStream *stream, QSymbolToken *sym) {
     stream->WriteUInt32(sym->GetNameChecksum());
 
     QSymbolToken *tokens[1] = {sym};
-    WriteSymbolsToArray(stream, sym->GetType(), 1, tokens);
+    sym->SetIsStructItem(true);
+    WriteSymbolsToArray(stream, flags, 1, tokens);
 }
 void StructureSymbol::Write(IStream *stream) {
 
@@ -158,7 +160,21 @@ void StructureSymbol::WriteNoOffset(IStream *stream) {
 }
 
 void StructureSymbol::WriteToArray(IStream *stream) {
+    uint32_t start_cursor = stream->GetOffset();
+    if(m_struct_item) {
+        stream->WriteUInt32(0);
+    }
     WriteNoOffset(stream);
+
+    if(m_struct_item && m_next_offset) {
+        uint32_t cursor = stream->GetOffset();
+        stream->SetCursor(start_cursor);
+        
+        stream->WriteUInt32(cursor + sizeof(uint32_t));    
+
+        stream->SetCursor(cursor);
+    }
+
 }
 std::string StructureSymbol::ToString() {
     std::ostringstream ss;

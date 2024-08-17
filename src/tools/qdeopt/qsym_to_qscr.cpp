@@ -234,7 +234,6 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
         }
         if(token->GetType() == ESCRIPTTOKEN_INLINEPACKSTRUCT) {
             size_t inline_offset = ms.GetOffset() + 6; // 6 = start script type + name type / value
-            printf("PROPER expected offset: %08x\n", inline_offset);
             InlinePackStructToken* ip = reinterpret_cast<InlinePackStructToken*>(token);
             int padding = 4 - (inline_offset % 4);
             ip->SetPadding(padding);

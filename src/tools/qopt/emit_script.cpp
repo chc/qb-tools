@@ -129,7 +129,7 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
 
     bool in_argument_pack = false;
     bool in_name_mode = true;
-    uint32_t name_checksum;
+    uint32_t name_checksum = 0;
 
     QSymbolToken *sym = nullptr;
 
@@ -223,7 +223,6 @@ void emit_script() {
         if(token->GetType() == ESCRIPTTOKEN_INLINEPACKSTRUCT) {
             InlinePackStructToken* ip = reinterpret_cast<InlinePackStructToken*>(token);
             size_t inline_offset = ms.GetOffset() + 7;
-            printf("WRITTEN offset: %08x\n", inline_offset);
    
             int padding = 4 - (inline_offset % 4);
             ip->SetPadding(padding);

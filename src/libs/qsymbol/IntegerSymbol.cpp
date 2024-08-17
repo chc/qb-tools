@@ -3,6 +3,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include <cassert>
+
 IntegerSymbol::IntegerSymbol() {
 
 }

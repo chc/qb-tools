@@ -57,7 +57,10 @@ void LocalStringSymbol::LoadParamsFromArray(IStream *stream) {
 
 void LocalStringSymbol::Write(IStream *stream) {
     uint32_t start = stream->GetOffset();
-    stream->WriteUInt32(start + sizeof(uint32_t) + sizeof(uint32_t));
+    /*if(!m_struct_item) { //is this needed at all?
+        stream->WriteUInt32(start + sizeof(uint32_t) + sizeof(uint32_t));
+    }*/
+    
     stream->WriteUInt32(0);
 
     std::string::iterator it = m_value.begin();
@@ -73,7 +76,7 @@ void LocalStringSymbol::Write(IStream *stream) {
     if(m_struct_item && m_next_offset == 1) {
         //set next_offset
         uint32_t cursor = stream->GetOffset();
-        stream->SetCursor(start + sizeof(uint32_t));
+        stream->SetCursor(start);
         stream->WriteUInt32(cursor);   
         stream->SetCursor(cursor);
         
