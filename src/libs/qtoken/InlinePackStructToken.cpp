@@ -33,7 +33,6 @@ EScriptToken InlinePackStructToken::GetType() {
 
 void InlinePackStructToken::LoadParams(IStream *stream) {
     assert(m_inner_struct == NULL);
-    m_inner_struct = new StructureSymbol();
     m_file_offset = stream->GetOffset() - 1;
     uint16_t len = stream->ReadUInt16();    
 
@@ -53,6 +52,7 @@ void InlinePackStructToken::LoadParams(IStream *stream) {
         MemoryStream ms(buff, len);
         ms.SetReadEndian(ISTREAM_BIG_ENDIAN);
 
+        m_inner_struct = new StructureSymbol();
         m_inner_struct->LoadParamsNoOffset(&ms);
 
         delete[] buff;

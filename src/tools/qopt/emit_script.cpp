@@ -32,6 +32,7 @@ extern "C" {
     extern int32_t g_last_script_keyword;
     extern int32_t g_last_script_keyword_write;
 }
+EScriptToken next_usable_type(std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end);
 
 QScriptToken *find_by_offset(std::map<QScriptToken *, size_t> &offsets, size_t offset) {
     std::map<QScriptToken *, size_t>::iterator it = offsets.begin();
@@ -119,7 +120,7 @@ void rewrite_offsets(IStream *stream, QScriptToken *token) {
 }
 
 
-StructureSymbol *ReadStructure(std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end) {
+std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end, StructureSymbol** out) {
     std::vector<QScriptToken *>::iterator it = begin;
 
     assert((*it)->GetType() == ESCRIPTTOKEN_STARTSTRUCT);
@@ -131,6 +132,8 @@ StructureSymbol *ReadStructure(std::vector<QScriptToken *>::iterator begin, std:
     uint32_t name_checksum;
 
     QSymbolToken *sym = nullptr;
+
+    StructureSymbol *result;
 
     std::vector<QSymbolToken *> children;
 
@@ -144,11 +147,15 @@ StructureSymbol *ReadStructure(std::vector<QScriptToken *>::iterator begin, std:
             case ESCRIPTTOKEN_ENDOFLINE:
             case ESCRIPTTOKEN_ENDOFLINENUMBER:
             break;
-            case ESCRIPTTOKEN_STARTSTRUCT:
-                children.push_back(ReadStructure(it, end));
-                it = g_Deopt.script_tokens.begin(); //hopefully this is fine... kind of becoming spaghetti code
-                break;
+            case ESCRIPTTOKEN_INLINEPACKSTRUCT:
+                assert(false);
             break;
+            case ESCRIPTTOKEN_STARTSTRUCT:
+                it = ReadStructure(it, end, &result);
+                //result->SetIsStructItem(true);
+                result->SetNameChecksum(name_checksum);
+                children.push_back(result);
+                continue;
             case ESCRIPTTOKEN_ENDSTRUCT:
                 depth--;
                 assert(depth==0);
@@ -157,6 +164,10 @@ StructureSymbol *ReadStructure(std::vector<QScriptToken *>::iterator begin, std:
                 in_argument_pack = true;
             break;
             case ESCRIPTTOKEN_NAME:
+                if(in_name_mode && next_usable_type(it+1, g_Deopt.script_tokens.end()) != ESCRIPTTOKEN_EQUALS) {
+                    in_name_mode = false;
+                    name_checksum = 0;
+                }
                 if(in_name_mode) {
                     in_name_mode = false;
                     name_checksum = reinterpret_cast<NameToken*>(t)->GetChecksum();
@@ -175,10 +186,8 @@ StructureSymbol *ReadStructure(std::vector<QScriptToken *>::iterator begin, std:
         it++;
     }
     
-    StructureSymbol *result = new StructureSymbol(children);
-
-    g_Deopt.script_tokens.erase(begin, it);
-    return result;
+    *out = new StructureSymbol(children);
+    return it;
 }
 
 void rewrite_inline_structs() {
@@ -189,12 +198,13 @@ void rewrite_inline_structs() {
         if(token->GetType() == ESCRIPTTOKEN_INLINEPACKSTRUCT) {
             InlinePackStructToken* ip = reinterpret_cast<InlinePackStructToken*>(token);
             if(ip->GetValue() == nullptr) {
-                StructureSymbol *sym = ReadStructure(it+1, g_Deopt.script_tokens.end());
+                StructureSymbol *sym;
+                std::vector<QScriptToken *>::iterator it2 = ReadStructure(it+1, g_Deopt.script_tokens.end(), &sym);
+
+                it = g_Deopt.script_tokens.erase(it+1, it2);
                 ip->SetValue(sym);
-                it = g_Deopt.script_tokens.begin();
                 continue;
             }
-
         }
         it++;
     }
@@ -212,7 +222,9 @@ void emit_script() {
         original_offsets[token] = token->GetFileOffset();
         if(token->GetType() == ESCRIPTTOKEN_INLINEPACKSTRUCT) {
             InlinePackStructToken* ip = reinterpret_cast<InlinePackStructToken*>(token);
-            size_t inline_offset = ms.GetOffset() + 3; //+3 for inline pack token type + len
+            size_t inline_offset = ms.GetOffset() + 7;
+            printf("WRITTEN offset: %08x\n", inline_offset);
+   
             int padding = 4 - (inline_offset % 4);
             ip->SetPadding(padding);
         }

@@ -7,7 +7,7 @@
 #include "crc32.h"
 #include "lzss.h"
 
-//#define NO_LZSS_COMPRESS
+#define NO_LZSS_COMPRESS
 
 
 QScriptSymbol::QScriptSymbol() {
