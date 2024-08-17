@@ -41,6 +41,8 @@ void emit_struct();
 void emit_array();
 void emit_array_of_structs();
 
+bool is_end_of_line_token(QScriptToken *token);
+
 QSymbolToken *ConvertToken(QScriptToken *token, bool make_reference = false);
 
 #endif //_QOPT_H

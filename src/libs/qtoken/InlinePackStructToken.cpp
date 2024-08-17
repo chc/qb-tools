@@ -21,6 +21,7 @@ void WriteStructure(StructureSymbol *symbol, IStream *stream, bool packed);
 
 InlinePackStructToken::InlinePackStructToken() {
     m_inner_struct = NULL;
+    m_padding = 0;
 
 }
 InlinePackStructToken::~InlinePackStructToken() {
@@ -36,18 +37,11 @@ void InlinePackStructToken::LoadParams(IStream *stream) {
     m_file_offset = stream->GetOffset() - 1;
     uint16_t len = stream->ReadUInt16();    
 
-    //calculat required alignment
-    int offset = stream->GetOffset() - g_last_script_keyword;
-    offset += 5;
-    offset -= 2; //len
-    
-    int idx = 0;
-    while((offset % 4)) {
-        offset++;
-        idx++;
+    //set required alignment
+    int padding = m_padding;
+    while(padding--) {
         stream->ReadByte();
-    }
-    printf("inline idx: %d\n", idx);
+    }    
     //
 
     if(len > 0) {
@@ -84,9 +78,8 @@ void InlinePackStructToken::Write(IStream *stream) {
     }
     stream->WriteUInt16(len);
 
-    int offset = stream->GetOffset() - g_last_script_keyword_write;
-    while((offset % 4)) {
-        offset++;
+    int padding = m_padding;
+    while(padding--) {
         stream->WriteByte(0);
     }
     if(len > 0) {

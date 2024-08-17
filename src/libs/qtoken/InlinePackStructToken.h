@@ -15,7 +15,9 @@ class InlinePackStructToken : public QScriptToken {
         std::string ToString();
         StructureSymbol *GetValue() { return m_inner_struct; }
         void SetValue(StructureSymbol *sym);
+        void SetPadding(int padding) { m_padding = padding; }
     private:
         StructureSymbol *m_inner_struct;
+        int m_padding;
 };
 #endif //_INLINEPACKSTRUCTTOKEN_H

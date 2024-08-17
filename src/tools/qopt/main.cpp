@@ -177,11 +177,7 @@ int main(int argc, const char *argv[]) {
     QScriptToken *token;
     while(true) {
         token = qs.NextToken();
-        printf("Token: %d\n", token->GetType());
         if(token == NULL || token->GetType() == ESCRIPTTOKEN_ENDOFFILE) {
-            if(token->GetType() == ESCRIPTTOKEN_ENDOFFILE) {
-                printf("END OF FILE\n");
-            }
             break;
         }
         switch(g_Deopt.currentState) {

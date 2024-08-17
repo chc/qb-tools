@@ -7,8 +7,6 @@
 StructureSymbol *ReadStructure(std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end);
 
 void emit_struct() {
-    printf("num structs: %d\n", g_Deopt.script_tokens.size());
-
     int depth = 1;
     bool in_name_mode = true;
     std::vector<QScriptToken *>::iterator it = g_Deopt.script_tokens.begin();

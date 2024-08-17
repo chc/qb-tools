@@ -121,8 +121,10 @@ void rewrite_offsets(IStream *stream, QScriptToken *token) {
 
 StructureSymbol *ReadStructure(std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end) {
     std::vector<QScriptToken *>::iterator it = begin;
+
     assert((*it)->GetType() == ESCRIPTTOKEN_STARTSTRUCT);
     it++;
+
 
     bool in_argument_pack = false;
     bool in_name_mode = true;
@@ -143,11 +145,13 @@ StructureSymbol *ReadStructure(std::vector<QScriptToken *>::iterator begin, std:
             case ESCRIPTTOKEN_ENDOFLINENUMBER:
             break;
             case ESCRIPTTOKEN_STARTSTRUCT:
-                depth++;
-                assert(false);
+                children.push_back(ReadStructure(it, end));
+                it = g_Deopt.script_tokens.begin(); //hopefully this is fine... kind of becoming spaghetti code
+                break;
             break;
             case ESCRIPTTOKEN_ENDSTRUCT:
                 depth--;
+                assert(depth==0);
                 break;
             case ESCRIPTTOKEN_ARGUMENTPACK:
                 in_argument_pack = true;
@@ -179,12 +183,18 @@ StructureSymbol *ReadStructure(std::vector<QScriptToken *>::iterator begin, std:
 
 void rewrite_inline_structs() {
     std::vector<QScriptToken *>::iterator it = g_Deopt.script_tokens.begin();
+
     while(it != g_Deopt.script_tokens.end()) {
-        QScriptToken *token = *it;
-        
+        QScriptToken *token = *it;        
         if(token->GetType() == ESCRIPTTOKEN_INLINEPACKSTRUCT) {
-            StructureSymbol *sym = ReadStructure(it+1, g_Deopt.script_tokens.end());
-            reinterpret_cast<InlinePackStructToken*>(token)->SetValue(sym);
+            InlinePackStructToken* ip = reinterpret_cast<InlinePackStructToken*>(token);
+            if(ip->GetValue() == nullptr) {
+                StructureSymbol *sym = ReadStructure(it+1, g_Deopt.script_tokens.end());
+                ip->SetValue(sym);
+                it = g_Deopt.script_tokens.begin();
+                continue;
+            }
+
         }
         it++;
     }
@@ -200,6 +210,12 @@ void emit_script() {
     while(it != g_Deopt.script_tokens.end()) {
         QScriptToken *token = *it;
         original_offsets[token] = token->GetFileOffset();
+        if(token->GetType() == ESCRIPTTOKEN_INLINEPACKSTRUCT) {
+            InlinePackStructToken* ip = reinterpret_cast<InlinePackStructToken*>(token);
+            size_t inline_offset = ms.GetOffset() + 3; //+3 for inline pack token type + len
+            int padding = 4 - (inline_offset % 4);
+            ip->SetPadding(padding);
+        }
         token->Write(&ms);
         updated_offsets[token] = token->GetFileOffset();
         it++;
@@ -214,7 +230,6 @@ void emit_script() {
 
     QScriptSymbol *symbol = new QScriptSymbol(token_buffer, ms.GetOffset());
     symbol->SetNameChecksum(g_Deopt.root_name_checksum);
-    printf("emit script: %08x\n", g_Deopt.root_name_checksum);
     g_Deopt.write_stream->WriteSymbol(symbol);
     delete symbol;
 
