@@ -135,7 +135,8 @@ void StructureSymbol::WriteSymbol(IStream *stream, QSymbolToken *sym) {
 }
 void StructureSymbol::Write(IStream *stream) {
 
-    stream->WriteUInt32(stream->GetOffset() + sizeof(uint32_t));
+    stream->WriteUInt32(stream->GetOffset() + sizeof(uint32_t) + sizeof(uint32_t));
+    stream->WriteUInt32(0);
     WriteNoOffset(stream);
 }
 void StructureSymbol::WriteNoOffset(IStream *stream) {

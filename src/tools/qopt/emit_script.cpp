@@ -105,7 +105,7 @@ void rewrite_offsets(IStream *stream, QScriptToken *token) {
         t = find_by_offset(original_offsets, offset);
         assert(t);
 
-        updated_offset = updated_offsets[t] - fif->GetFileOffset();  
+        updated_offset = updated_offsets[t] - fif->GetFileOffset() - sizeof(uint8_t);  
         fif->SetEndIfOffset(stream, updated_offset);
     } else if(token->GetType() == ESCRIPTTOKEN_SHORTJUMP) {
         size_t original_offset = original_offsets[token];
@@ -114,7 +114,7 @@ void rewrite_offsets(IStream *stream, QScriptToken *token) {
         QScriptToken *t = find_by_offset(original_offsets, endif_offset);
         assert(t);
 
-        size_t updated_offset = updated_offsets[t] - jt->GetFileOffset() - sizeof(uint8_t);
+        size_t updated_offset = updated_offsets[t] - jt->GetFileOffset() - sizeof(uint16_t);
         jt->RewriteOffset(stream, updated_offset);
     }
 }
