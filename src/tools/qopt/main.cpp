@@ -13,11 +13,6 @@
 
 Deopt g_Deopt;
 
-extern "C" {
-    extern int32_t g_last_script_keyword;
-    extern int32_t g_last_script_keyword_write;
-}
-
 
 void handle_read_token_value(QScriptToken *token) {
     g_Deopt.currentState = DeoptState_ReadNextGlobalToken;
@@ -59,7 +54,6 @@ void handle_global_token_state(QScriptToken *token) {
             g_Deopt.currentState = DeoptState_ReadEqualsToken;
         break;
         case ESCRIPTTOKEN_KEYWORD_SCRIPT:
-            g_last_script_keyword = token->GetFileOffset() + 5;
             g_Deopt.currentState = DeoptState_ReadScriptName;
             break;
         break;
@@ -145,7 +139,6 @@ void handle_read_script_tokens(QScriptToken *token) {
 }
 
 int main(int argc, const char *argv[]) {
-    g_last_script_keyword_write = 0;
     if(argc  < 3) {
         fprintf(stderr, "usage: %s [in] [out]\n",argv[0]);
         return -1;

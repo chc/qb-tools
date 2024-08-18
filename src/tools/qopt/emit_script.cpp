@@ -28,10 +28,6 @@
 std::map<QScriptToken *, size_t> original_offsets;
 std::map<QScriptToken *, size_t> updated_offsets;
 
-extern "C" {
-    extern int32_t g_last_script_keyword;
-    extern int32_t g_last_script_keyword_write;
-}
 EScriptToken next_usable_type(std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end);
 
 QScriptToken *find_by_offset(std::map<QScriptToken *, size_t> &offsets, size_t offset) {

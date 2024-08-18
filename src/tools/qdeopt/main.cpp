@@ -11,8 +11,6 @@
 #include <dbginfo.h>
 void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream);
 
-extern int32_t g_last_script_keyword;
-
 std::map<uint32_t, const char *> m_checksum_names;
 
 int main(int argc, const char *argv[]) {

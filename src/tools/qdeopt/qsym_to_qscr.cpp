@@ -43,10 +43,6 @@
 void WriteArray(ArraySymbol *symbol, IStream *stream);
 void WriteStructure(StructureSymbol *symbol, IStream *stream, bool packed = false);
 
-extern "C" {
-    extern int32_t g_last_script_keyword;
-    extern int32_t g_last_script_keyword_write;
-}
 extern std::map<uint32_t, const char *> m_checksum_names;
 
 template<typename T, typename ST> void WriteAsScriptToken(T *symbol, IStream *stream) {
@@ -218,8 +214,6 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
     nt.Write(stream);
 
     uint32_t prescript_offset = stream->GetOffset();
-
-    g_last_script_keyword_write = stream->GetOffset();
 
     MemoryStream ms(qscript->GetDecompBuff(), qscript->GetDecompLen());
 

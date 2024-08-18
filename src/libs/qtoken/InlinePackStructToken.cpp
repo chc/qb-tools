@@ -12,11 +12,6 @@
 #include <StructureSymbol.h>
 #include "MemoryStream.h"
 
-extern "C" {
-    extern int32_t g_last_script_keyword;
-    extern int32_t g_last_script_keyword_write;
-}
-
 void WriteStructure(StructureSymbol *symbol, IStream *stream, bool packed);
 
 InlinePackStructToken::InlinePackStructToken() {

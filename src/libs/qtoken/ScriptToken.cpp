@@ -5,10 +5,6 @@
 #include <sstream>
 #include <iomanip>
 
-extern "C" {
-    int32_t g_last_script_keyword = -1; ///XXX: why is -1 init needed? figure out problems with inline pack offsets...
-    int32_t g_last_script_keyword_write = 0;
-}
 ScriptToken::ScriptToken() {
 
 }
