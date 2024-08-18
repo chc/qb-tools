@@ -71,6 +71,8 @@ std::vector<QScriptToken *>::iterator read_array_struct_item(std::vector<QScript
             case ESCRIPTTOKEN_STRING:    
             case ESCRIPTTOKEN_INTEGER:
             case ESCRIPTTOKEN_FLOAT:
+            case ESCRIPTTOKEN_PAIR:
+            case ESCRIPTTOKEN_VECTOR:
             
                 child = ConvertToken(t);
                 child->SetNameChecksum(struct_item_name);
@@ -109,7 +111,7 @@ std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::ve
         } else if(t->GetType() == ESCRIPTTOKEN_ENDARRAY) {
             depth--;
             assert(depth==0);
-            printf("** ARRAY got end array: %08x\n", name);
+            //printf("** ARRAY got end array: %08x - size: %d\n", name, arr_items.size());
             it++;
             break;
         } else if(t->GetType() == ESCRIPTTOKEN_STARTSTRUCT) {

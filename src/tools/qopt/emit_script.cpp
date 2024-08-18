@@ -125,11 +125,10 @@ std::vector<QScriptToken *>::iterator ReadArray(uint32_t name, std::vector<QScri
     std::vector<QSymbolToken *> syms;
     std::vector<QScriptToken *>::iterator it = handle_struct_array(name, syms, begin, end);
     if(!syms.empty()) {
-        QSymbolToken **sym_array = new QSymbolToken*[syms.size()];
-        for(int i=0;i<syms.size();i++) {
-            sym_array[i] = syms.at(i);
-        }
-        *out = new ArraySymbol(sym_array, syms.size());
+        assert(syms.size() == 1);
+
+        
+        *out = (ArraySymbol*)syms.front();
     } else {
         *out = new ArraySymbol(nullptr, 0);
     }
@@ -173,6 +172,7 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
                 //result->SetIsStructItem(true);
                 result->SetNameChecksum(name_checksum);
                 children.push_back(result);
+                in_name_mode = true;
                 continue;
             case ESCRIPTTOKEN_ENDSTRUCT:
                 depth--;
@@ -182,6 +182,7 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
                 it = ReadArray(name_checksum, it+1, end, &arr_result);
                 arr_result->SetNameChecksum(name_checksum);
                 children.push_back(arr_result);
+                in_name_mode = true;
                 continue;
             case ESCRIPTTOKEN_ENDARRAY:
                 assert(false);
@@ -195,7 +196,7 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
                 }
                 if(in_name_mode) {
                     in_name_mode = false;
-                    name_checksum = reinterpret_cast<NameToken*>(t)->GetChecksum();
+                    name_checksum = reinterpret_cast<NameToken*>(t)->GetChecksum();                    
                     break;
                 }
             default:
@@ -203,9 +204,6 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
                 assert(sym);
                 in_argument_pack = false;
                 in_name_mode = true;
-                if(name_checksum == 0x7e1cf3e2) {
-                    printf("write the array of names\n");
-                }
                 sym->SetNameChecksum(name_checksum);
                 sym->SetIsStructItem(true);
                 children.push_back(sym);

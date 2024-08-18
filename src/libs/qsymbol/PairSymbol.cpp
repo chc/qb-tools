@@ -62,9 +62,21 @@ void PairSymbol::Write(IStream *stream) {
     }
 }
 void PairSymbol::WriteToArray(IStream *stream) {
+    uint32_t next_cursor = stream->GetOffset() + sizeof(uint32_t);
+    if(m_struct_item) {
+        stream->WriteUInt32(0);
+    }
     stream->WriteUInt32(65536);
     stream->WriteFloat(m_x);
     stream->WriteFloat(m_y);
+
+    if(m_struct_item && m_next_offset) {
+        uint32_t cursor = stream->GetOffset();
+        stream->SetCursor(next_cursor);
+        stream->WriteUInt32(cursor);
+        stream->SetCursor(cursor);
+
+    }
 }
 std::string PairSymbol::ToString() {
     std::ostringstream ss;
