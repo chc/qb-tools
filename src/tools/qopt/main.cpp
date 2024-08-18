@@ -100,7 +100,9 @@ void handle_equals_token_state(QScriptToken *token) {
 void handle_read_root_array(QScriptToken *token) {
     if(token->GetType() == ESCRIPTTOKEN_ENDARRAY) {
         g_Deopt.depth_index--;
-        g_Deopt.script_tokens.push_back(token);
+        if(g_Deopt.depth_index > 0) {
+            g_Deopt.script_tokens.push_back(token);
+        }
     } else if(token->GetType() == ESCRIPTTOKEN_STARTARRAY) {
         g_Deopt.depth_index++;
         g_Deopt.script_tokens.push_back(token);

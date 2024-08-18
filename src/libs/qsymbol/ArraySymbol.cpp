@@ -8,6 +8,15 @@ ArraySymbol::ArraySymbol() {
     m_struct_item = false;
 
 }
+ArraySymbol::ArraySymbol(std::vector<QSymbolToken *> tokens) {
+    m_struct_item = false;
+    m_num_items = tokens.size();
+    m_tokens = new QSymbolToken*[m_num_items];
+    
+    for(int i=0;i<m_num_items;i++) {
+        m_tokens[i] = tokens.at(i);
+    }
+}
 ArraySymbol::ArraySymbol(QSymbolToken **tokens, uint32_t num_tokens) : m_tokens(tokens), m_num_items(num_tokens) {
     m_struct_item = false;
 }
@@ -63,7 +72,9 @@ void ArraySymbol::WriteToArray(IStream *stream) {
     stream->WriteUInt16(1);
 
     uint8_t type = 0;
-    type = m_tokens[0]->GetType();
+    if(m_num_items > 0)
+        type = m_tokens[0]->GetType();
+        
     stream->WriteByte(type);
     stream->WriteByte(0);
 

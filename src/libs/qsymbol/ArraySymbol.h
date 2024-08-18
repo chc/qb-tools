@@ -6,6 +6,8 @@
 class ArraySymbol : public QSymbolToken {
     public:
         ArraySymbol();
+        ArraySymbol(std::vector<QSymbolToken *> tokens);
+        //
         ArraySymbol(QSymbolToken **tokens, uint32_t num_tokens);
         ~ArraySymbol();
         ESymbolType GetType();

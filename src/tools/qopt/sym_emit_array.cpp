@@ -17,6 +17,8 @@
 #include <ArraySymbol.h>
 #include <StructureSymbol.h>
 
+#include <ReferenceItemSymbol.h>
+
 EScriptToken next_usable_type(std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end) {
     std::vector<QScriptToken *>::iterator it = begin;
     while(it != end) {
@@ -47,12 +49,14 @@ std::vector<QScriptToken *>::iterator read_array_struct_item(std::vector<QScript
             break;
             case ESCRIPTTOKEN_ENDSTRUCT:
                 depth--;
+                assert(depth==0);
             break;
             case ESCRIPTTOKEN_ARGUMENTPACK:
                 assert(false);
             break;
             case ESCRIPTTOKEN_STARTSTRUCT:
                 it = read_array_struct_item(it+1, end, &child);
+                
                 children.push_back(child);
                 continue;
             case ESCRIPTTOKEN_NAME:
@@ -78,7 +82,8 @@ std::vector<QScriptToken *>::iterator read_array_struct_item(std::vector<QScript
     }
 
     *out = new StructureSymbol(children);
-    return g_Deopt.script_tokens.erase(begin, it);
+    return it;
+    //return g_Deopt.script_tokens.erase(begin, it);
 }
 
 std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::vector<QSymbolToken *> &struct_symbols, std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end) {
@@ -86,14 +91,25 @@ std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::ve
 
     std::vector<QSymbolToken *> arr_items;
 
+    ArraySymbol *arr_sym;
+    std::vector<QSymbolToken *> child_arr_items;
+
     QSymbolToken *sym;
 
-    while(it != end) {
+    int depth = 1;
+    bool make_reference = false;
+    while(it != end && depth) {
         QScriptToken *t = *it;
         if(t->GetType() == ESCRIPTTOKEN_STARTARRAY) {
-            assert(false);
+            printf("** ARRAY got start\n");
+            it = handle_struct_array(name, child_arr_items, it+1, end);
+            arr_sym = new ArraySymbol(child_arr_items);
+            arr_items.push_back(arr_sym);
+            continue;
         } else if(t->GetType() == ESCRIPTTOKEN_ENDARRAY) {
-            //printf("** ARRAY got end array\n");
+            depth--;
+            assert(depth==0);
+            printf("** ARRAY got end array: %08x\n", name);
             it++;
             break;
         } else if(t->GetType() == ESCRIPTTOKEN_STARTSTRUCT) {
@@ -102,11 +118,20 @@ std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::ve
             arr_items.push_back(sym);
             continue;
         } else if(t->GetType() ==ESCRIPTTOKEN_ENDSTRUCT) {
-            assert(false);
+            depth--;
+            assert(depth==0);
+            it++;
+            break;
         } else if(t->GetType() == ESCRIPTTOKEN_ARGUMENTPACK) {
-            assert(false);
+            make_reference = true;
+            it++;
+            continue;
+        } else if(is_end_of_line_token(t)) {
+            it++;
+            continue;
         }
-        sym = ConvertToken(t);
+        sym = ConvertToken(t, make_reference);
+        make_reference = false;
         arr_items.push_back(sym);
         it++;
     }
@@ -117,18 +142,21 @@ std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::ve
         syms[i] = arr_items.at(i);
     }
 
-    ArraySymbol *arr_sym = new ArraySymbol(syms, num_items);
+    arr_sym = new ArraySymbol(syms, num_items);
     arr_sym->SetNameChecksum(name);
     arr_sym->SetIsStructItem(true);
     struct_symbols.push_back(arr_sym);
 
-    return g_Deopt.script_tokens.erase(begin, it);
+    return it;
+
+    //return g_Deopt.script_tokens.erase(begin, it);
 }
 void emit_array_of_structs() {
     int depth = 1;
 
     bool in_name_mode = true;
-    uint32_t struct_item_name;
+    bool in_ref_mode = false;
+    uint32_t struct_item_name = 0;
     QScriptToken *struct_value = NULL;
 
     std::vector<QScriptToken *>::iterator it = g_Deopt.script_tokens.begin();
@@ -152,18 +180,19 @@ void emit_array_of_structs() {
             break;
             case ESCRIPTTOKEN_STARTARRAY:
                 //printf("ARRAY start array\n");
-                it = handle_struct_array(struct_item_name, struct_symbols, it+1, g_Deopt.script_tokens.end());
+                it = g_Deopt.script_tokens.erase(handle_struct_array(struct_item_name, struct_symbols, it+1, g_Deopt.script_tokens.end()));
                 in_name_mode = true;
                 continue;
             break;
             case ESCRIPTTOKEN_ENDARRAY:
                 depth--;
+                assert(depth==0);
             break;
             case ESCRIPTTOKEN_EQUALS:
                 in_name_mode = false;
             break;
             case ESCRIPTTOKEN_ARGUMENTPACK:
-                assert(false);
+                in_ref_mode = true;
             break;
             case ESCRIPTTOKEN_NAME:
                 if(in_name_mode && next_usable_type(it+1, g_Deopt.script_tokens.end()) != ESCRIPTTOKEN_EQUALS) {
@@ -174,11 +203,13 @@ void emit_array_of_structs() {
                     struct_item_name = reinterpret_cast<NameToken*>(t)->GetChecksum();
                     break;
                 }
-            case ESCRIPTTOKEN_STRING:    
+            case ESCRIPTTOKEN_STRING:
+            case ESCRIPTTOKEN_LOCALSTRING:
             case ESCRIPTTOKEN_INTEGER:
             case ESCRIPTTOKEN_FLOAT:
                 struct_value = t;
-                symbol = ConvertToken(struct_value);
+                symbol = ConvertToken(struct_value, in_ref_mode);
+                in_ref_mode = false;
                 assert(symbol);
                 symbol->SetIsStructItem(true);
                 symbol->SetNameChecksum(struct_item_name);
@@ -205,9 +236,14 @@ void emit_array_of_structs() {
 }
 
 void emit_array() {
-    if(g_Deopt.script_tokens.empty()) { //TODO: handle empty array
-        assert(false);
+    if(g_Deopt.script_tokens.empty()) {
+        ArraySymbol sym(nullptr, 0);
+        sym.SetNameChecksum(g_Deopt.root_name_checksum);
+        g_Deopt.write_stream->WriteSymbol(&sym);
+        return;
     }
+
+    printf("emit array: %08x\n", g_Deopt.root_name_checksum);
 
     switch(g_Deopt.script_tokens.front()->GetType()) {
             case ESCRIPTTOKEN_STARTSTRUCT:

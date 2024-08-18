@@ -24,7 +24,6 @@ void ReferenceItemSymbol::Write(IStream *stream) {
     stream->WriteUInt32(0xFFFFFFFF);
 }
 void ReferenceItemSymbol::WriteToArray(IStream *stream) {
-    printf("writing ref at: %08x / %08x\n", stream->GetOffset(), m_value);
     stream->WriteUInt32(m_value);
     if(m_struct_item) {
         //set next_offset

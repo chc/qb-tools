@@ -11,6 +11,9 @@ class VectorToken : public QScriptToken {
         void LoadParams(IStream *stream);
         void Write(IStream *stream);
         std::string ToString();
+        float GetX() { return m_x; }
+        float GetY() { return m_y; }
+        float GetZ() { return m_z; }
     private:
         float m_x;
         float m_y;

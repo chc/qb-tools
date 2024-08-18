@@ -18,12 +18,12 @@ int main(int argc, const char* argv[]) {
 
 
     
-    /*for(int i=0;i<len;i++) {
+    for(int i=0;i<len;i++) {
         name[i] = tolower(name[i]);
     }
 
     checksum = crc32(0, name, len);
-    printf("Checksum (Lower): 0x%08x - %d\n", checksum, checksum);*/
+    printf("Checksum (Lower): 0x%08x - %d\n", checksum, checksum);
 
     free((void *)name);
     return checksum;

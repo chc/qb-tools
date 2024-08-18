@@ -120,6 +120,23 @@ void rewrite_offsets(IStream *stream, QScriptToken *token) {
 }
 
 
+std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::vector<QSymbolToken *> &struct_symbols, std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end);
+std::vector<QScriptToken *>::iterator ReadArray(uint32_t name, std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end, ArraySymbol** out) {
+    std::vector<QSymbolToken *> syms;
+    std::vector<QScriptToken *>::iterator it = handle_struct_array(name, syms, begin, end);
+    if(!syms.empty()) {
+        QSymbolToken **sym_array = new QSymbolToken*[syms.size()];
+        for(int i=0;i<syms.size();i++) {
+            sym_array[i] = syms.at(i);
+        }
+        *out = new ArraySymbol(sym_array, syms.size());
+    } else {
+        *out = new ArraySymbol(nullptr, 0);
+    }
+
+    return it;
+
+}
 std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end, StructureSymbol** out) {
     std::vector<QScriptToken *>::iterator it = begin;
 
@@ -134,6 +151,7 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
     QSymbolToken *sym = nullptr;
 
     StructureSymbol *result;
+    ArraySymbol *arr_result;
 
     std::vector<QSymbolToken *> children;
 
@@ -160,6 +178,13 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
                 depth--;
                 assert(depth==0);
                 break;
+            case ESCRIPTTOKEN_STARTARRAY:
+                it = ReadArray(name_checksum, it+1, end, &arr_result);
+                arr_result->SetNameChecksum(name_checksum);
+                children.push_back(arr_result);
+                continue;
+            case ESCRIPTTOKEN_ENDARRAY:
+                assert(false);
             case ESCRIPTTOKEN_ARGUMENTPACK:
                 in_argument_pack = true;
             break;
@@ -178,6 +203,9 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
                 assert(sym);
                 in_argument_pack = false;
                 in_name_mode = true;
+                if(name_checksum == 0x7e1cf3e2) {
+                    printf("write the array of names\n");
+                }
                 sym->SetNameChecksum(name_checksum);
                 sym->SetIsStructItem(true);
                 children.push_back(sym);
@@ -224,7 +252,8 @@ void emit_script() {
             InlinePackStructToken* ip = reinterpret_cast<InlinePackStructToken*>(token);
             size_t inline_offset = ms.GetOffset() + 7;
    
-            int padding = 4 - (inline_offset % 4);
+            int padding = (sizeof(uint32_t)) - (((inline_offset - 1) % sizeof(uint32_t)) + 1);
+            assert(padding <= 4);
             ip->SetPadding(padding);
         }
         token->Write(&ms);

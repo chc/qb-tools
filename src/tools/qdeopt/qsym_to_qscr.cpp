@@ -233,10 +233,12 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
             break;
         }
         if(token->GetType() == ESCRIPTTOKEN_INLINEPACKSTRUCT) {
-            size_t inline_offset = ms.GetOffset() + 6; // 6 = start script type + name type / value
+            size_t inline_offset = ms.GetOffset() + 2;
+            int padding = (sizeof(uint32_t)) - (((inline_offset - 1) % sizeof(uint32_t)) + 1);
+            assert(padding <= 4);
             InlinePackStructToken* ip = reinterpret_cast<InlinePackStructToken*>(token);
-            int padding = 4 - (inline_offset % 4);
             ip->SetPadding(padding);
+            
         }
         
         token->SetFileOffset(ms.GetOffset()-1);

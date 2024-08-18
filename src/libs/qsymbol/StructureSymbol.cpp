@@ -124,6 +124,7 @@ void StructureSymbol::WriteSymbol(IStream *stream, QSymbolToken *sym) {
     } else {
         flags |= sym->GetType();
     }
+    printf("Write struct flags: %d\n", flags & 0xF);
     stream->WriteByte(0);
     stream->WriteByte(flags);
     stream->WriteUInt16(0);

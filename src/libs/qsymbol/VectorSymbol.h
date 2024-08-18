@@ -5,6 +5,7 @@
 class VectorSymbol : public QSymbolToken {
     public:
         VectorSymbol();
+        VectorSymbol(float x, float y, float z);
         ~VectorSymbol();
         ESymbolType GetType();
         void LoadParams(IStream *stream);
