@@ -39,12 +39,50 @@ void VectorSymbol::LoadParamsFromArray(IStream *stream) {
     m_y = stream->ReadFloat();
     m_z = stream->ReadFloat();
 }
-#include <cassert>
+
 void VectorSymbol::Write(IStream *stream) {
-    assert(0);
+    uint32_t offset = stream->GetOffset() + sizeof(uint32_t);
+    
+    if(m_struct_item) {
+        offset += sizeof(uint32_t);
+    }
+    stream->WriteUInt32(offset);
+
+    uint32_t next_cursor = stream->GetOffset();
+    if(m_struct_item) {
+        stream->WriteUInt32(0);
+    }
+
+    stream->WriteUInt32(65536);
+    stream->WriteFloat(m_x);
+    stream->WriteFloat(m_y);
+    stream->WriteFloat(m_z);
+
+    if(m_struct_item && m_next_offset) {
+        uint32_t cursor = stream->GetOffset();
+        stream->SetCursor(next_cursor);
+        stream->WriteUInt32(cursor);
+        stream->SetCursor(cursor);
+
+    }
 }
 void VectorSymbol::WriteToArray(IStream *stream) {
-    assert(0);
+    uint32_t next_cursor = stream->GetOffset() + sizeof(uint32_t);
+    if(m_struct_item) {
+        stream->WriteUInt32(0);
+    }
+    stream->WriteUInt32(65536);
+    stream->WriteFloat(m_x);
+    stream->WriteFloat(m_y);
+    stream->WriteFloat(m_z);
+
+    if(m_struct_item && m_next_offset) {
+        uint32_t cursor = stream->GetOffset();
+        stream->SetCursor(next_cursor);
+        stream->WriteUInt32(cursor);
+        stream->SetCursor(cursor);
+
+    }
 }
 std::string VectorSymbol::ToString() {
     std::ostringstream ss;

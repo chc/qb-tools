@@ -9,7 +9,7 @@ EScriptToken FastIfToken::GetType() {
     return ESCRIPTTOKEN_KEYWORD_FASTIF;
 }
 void FastIfToken::LoadParams(IStream *stream) {
-    m_file_offset = stream->GetOffset() - 1;
+    m_file_offset = stream->GetOffset() - sizeof(uint8_t);
     m_offset = stream->ReadUInt16();
 }
 void FastIfToken::Write(IStream *stream) {

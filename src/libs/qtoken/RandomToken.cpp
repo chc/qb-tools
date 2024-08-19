@@ -20,7 +20,7 @@ EScriptToken RandomToken::GetType() {
     return ESCRIPTTOKEN_KEYWORD_RANDOM;
 }
 void RandomToken::LoadParams(IStream *stream) {
-    m_file_offset = stream->GetOffset();
+    m_file_offset = stream->GetOffset() - sizeof(uint8_t);
     m_num_items = stream->ReadUInt32();
     m_offsets = new RandomOffset[m_num_items];
     

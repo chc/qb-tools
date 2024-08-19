@@ -16,7 +16,7 @@ EScriptToken ShortJumpToken::GetType() {
     return ESCRIPTTOKEN_SHORTJUMP;
 }
 void ShortJumpToken::LoadParams(IStream *stream) {
-    m_file_offset = stream->GetOffset() - 1;
+    m_file_offset = stream->GetOffset() - sizeof(uint8_t);
     m_offset = stream->ReadUInt16();
 
 }

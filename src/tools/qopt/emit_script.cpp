@@ -23,6 +23,7 @@
 #include <InlinePackStructToken.h>
 #include <JumpToken.h>
 #include <ShortJumpToken.h>
+#include <RandomToken.h>
 
 #include <map>
 std::map<QScriptToken *, size_t> original_offsets;
@@ -56,20 +57,22 @@ bool is_random_token(EScriptToken type) {
     return false;
 }
 void rewrite_offsets(IStream *stream, QScriptToken *token) {
-    switch(token->GetType()) {
-        //case ESCRIPTTOKEN_KEYWORD_FASTELSE:
-        case ESCRIPTTOKEN_JUMP:
-        //case ESCRIPTTOKEN_SHORTJUMP:
-        //case ESCRIPTTOKEN_KEYWORD_ELSEIF:
-        assert(false);
-    }
     if(is_random_token(token->GetType())) {
-        assert(false);
+        RandomToken *rnd = reinterpret_cast<RandomToken*>(token);
+        for(int i=0;i<rnd->GetNumItems();i++) {
+            uint32_t offset = original_offsets[token] + rnd->CalculateTokenOffset(i) +  rnd->GetRandomOffset(i);
+            QScriptToken *t = find_by_offset(original_offsets, offset);
+            
+            assert(t);
+            
+            size_t diff = (updated_offsets[t] - rnd->GetFileOffset()) - rnd->CalculateTokenOffset(i);
+            rnd->SetRandomOffset(i, diff);
+        }
     }
     if(token->GetType() == ESCRIPTTOKEN_KEYWORD_FASTIF) {
         size_t original_offset = original_offsets[token];
         FastIfToken* fif = reinterpret_cast<FastIfToken*>(token);
-        size_t endif_offset = fif->GetOffset() + original_offset + sizeof(uint8_t);
+        size_t endif_offset = fif->GetOffset() + original_offset;
         QScriptToken *t = find_by_offset(original_offsets, endif_offset);
         assert(t);
 
@@ -78,7 +81,7 @@ void rewrite_offsets(IStream *stream, QScriptToken *token) {
     } else if(token->GetType() == ESCRIPTTOKEN_KEYWORD_FASTELSE) {
         size_t original_offset = original_offsets[token];
         FastElseToken* fif = reinterpret_cast<FastElseToken*>(token);
-        size_t endif_offset = fif->GetOffset() + original_offset;
+        size_t endif_offset = fif->GetOffset() + original_offset + sizeof(uint8_t);
         QScriptToken *t = find_by_offset(original_offsets, endif_offset);
         assert(t);
 
@@ -104,13 +107,24 @@ void rewrite_offsets(IStream *stream, QScriptToken *token) {
         updated_offset = updated_offsets[t] - fif->GetFileOffset() - sizeof(uint8_t);  
         fif->SetEndIfOffset(stream, updated_offset);
     } else if(token->GetType() == ESCRIPTTOKEN_SHORTJUMP) {
-        size_t original_offset = original_offsets[token];
+        size_t original_offset = original_offsets[token] + sizeof(uint8_t); //skip type
         ShortJumpToken* jt = reinterpret_cast<ShortJumpToken*>(token);
-        size_t endif_offset = jt->GetOffset() + original_offset + sizeof(uint8_t);
+        size_t endif_offset = jt->GetOffset() + original_offset;
+        
         QScriptToken *t = find_by_offset(original_offsets, endif_offset);
         assert(t);
 
         size_t updated_offset = updated_offsets[t] - jt->GetFileOffset() - sizeof(uint16_t);
+        jt->RewriteOffset(stream, updated_offset);
+    } else if(token->GetType() == ESCRIPTTOKEN_JUMP) {
+        size_t original_offset = original_offsets[token] + sizeof(uint8_t); //skip type
+        JumpToken* jt = reinterpret_cast<JumpToken*>(token);
+        size_t endif_offset = jt->GetOffset() + original_offset + sizeof(uint32_t);
+        
+        QScriptToken *t = find_by_offset(original_offsets, endif_offset);
+        assert(t);
+        
+        size_t updated_offset = updated_offsets[t] - jt->GetFileOffset() - sizeof(uint8_t) - sizeof(uint32_t);
         jt->RewriteOffset(stream, updated_offset);
     }
 }
@@ -233,7 +247,8 @@ void rewrite_inline_structs() {
 }
 
 void emit_script() {
-    const int TOKEN_BUFF_SIZE = 4096;
+
+    const int TOKEN_BUFF_SIZE = 16384*4;
     uint8_t *token_buffer = new uint8_t[TOKEN_BUFF_SIZE];
 
     MemoryStream ms(token_buffer, TOKEN_BUFF_SIZE);
@@ -265,9 +280,11 @@ void emit_script() {
     QScriptSymbol *symbol = new QScriptSymbol(token_buffer, ms.GetOffset());
     symbol->SetNameChecksum(g_Deopt.root_name_checksum);
     g_Deopt.write_stream->WriteSymbol(symbol);
-    delete symbol;
+    //delete symbol;
+    //delete[] token_buffer;
 
     g_Deopt.script_tokens.clear();
     original_offsets.clear();
+    updated_offsets.clear();
     
 }

@@ -128,17 +128,17 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             uint32_t offset = original_offsets[t] + sizeof(uint16_t) + t->GetOffset() - sizeof(uint8_t);
             QScriptToken *r = token_at_offset(offset, original_offsets);
             if(r) {
-                size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint8_t);
+                size_t diff = r->GetFileOffset() - token->GetFileOffset();
                 t->RewriteOffset(stream, diff);
             } else {
                 assert(false);
             }
         } else if(token->GetType() == ESCRIPTTOKEN_KEYWORD_FASTELSE) {
             FastElseToken *t = reinterpret_cast<FastElseToken*>(token);
-            uint32_t offset = original_offsets[t] + sizeof(uint16_t) + t->GetOffset();
+            uint32_t offset = original_offsets[t] + t->GetOffset() - sizeof(uint8_t);
             QScriptToken *r = token_at_offset(offset, original_offsets);
             if(r) {
-                size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint8_t);
+                size_t diff = r->GetFileOffset() - token->GetFileOffset();
                 t->RewriteOffset(stream, diff);
             } else {
                 assert(false);
@@ -167,7 +167,7 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             uint32_t offset = original_offsets[t] + sizeof(uint32_t) + sizeof(uint8_t) + t->GetOffset();
             QScriptToken *r = token_at_offset(offset, original_offsets);
             if(r) {
-                size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint32_t);
+                size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint32_t) - sizeof(uint8_t);
                 t->RewriteOffset(stream, diff);
             } else {
                 assert(false);
@@ -189,9 +189,9 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
                 QScriptToken *r = token_at_offset(offset, original_offsets);
                 
                 assert(r);
-                
-                size_t diff = (r->GetFileOffset() - token->GetFileOffset() - prescript_offset) - t->CalculateTokenOffset(i);
-                t->SetRandomOffset(i, diff);
+
+                uint32_t updated_offset = r->GetFileOffset() - t->GetFileOffset() -  t->CalculateTokenOffset(i);
+                t->SetRandomOffset(i, updated_offset);
             }
 
             //rewrite random data

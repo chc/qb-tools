@@ -26,6 +26,8 @@ void handle_read_token_value(QScriptToken *token) {
         case ESCRIPTTOKEN_NAME:
         case ESCRIPTTOKEN_STRING:
         case ESCRIPTTOKEN_LOCALSTRING:
+        case ESCRIPTTOKEN_PAIR:
+        case ESCRIPTTOKEN_VECTOR:
             emit_symbol();
             break;
         case ESCRIPTTOKEN_STARTARRAY:
@@ -171,10 +173,12 @@ int main(int argc, const char *argv[]) {
 
     QScriptToken *token;
     while(true) {
+        uint32_t offset = fs.GetOffset();
         token = qs.NextToken();
         if(token == NULL || token->GetType() == ESCRIPTTOKEN_ENDOFFILE) {
             break;
         }
+        token->SetFileOffset(offset);
         switch(g_Deopt.currentState) {
             case DeoptState_ReadNextGlobalToken:
                 handle_global_token_state(token);

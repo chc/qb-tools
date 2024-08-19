@@ -12,6 +12,10 @@ ArraySymbol::ArraySymbol(std::vector<QSymbolToken *> tokens) {
     m_struct_item = false;
     m_num_items = tokens.size();
     m_tokens = new QSymbolToken*[m_num_items];
+    for(int i=0;i<m_num_items;i++) {
+        m_tokens[i] = tokens.at(i);
+        m_tokens[i]->SetIsStructItem(false);
+    }
 }
 ArraySymbol::ArraySymbol(QSymbolToken **tokens, uint32_t num_tokens) : m_tokens(tokens), m_num_items(num_tokens) {
     m_struct_item = false;

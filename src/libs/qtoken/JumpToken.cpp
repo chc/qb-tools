@@ -15,7 +15,7 @@ EScriptToken JumpToken::GetType() {
     return ESCRIPTTOKEN_JUMP;
 }
 void JumpToken::LoadParams(IStream *stream) {
-    m_file_offset = stream->GetOffset() - 1;
+    m_file_offset = stream->GetOffset() - sizeof(uint8_t);
     
     m_offset = stream->ReadUInt32();
 }
@@ -27,7 +27,7 @@ void JumpToken::Write(IStream *stream) {
 void JumpToken::RewriteOffset(IStream *stream, size_t diff) {
     size_t cursor = stream->GetOffset();
 
-    stream->SetCursor(m_file_offset+1);
+    stream->SetCursor(m_file_offset+sizeof(uint8_t));
     stream->WriteUInt32(diff);
 
     stream->SetCursor(cursor);

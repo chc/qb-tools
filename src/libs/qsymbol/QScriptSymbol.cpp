@@ -7,7 +7,7 @@
 #include "crc32.h"
 #include "lzss.h"
 
-// #define NO_LZSS_COMPRESS
+#define NO_LZSS_COMPRESS
 
 
 QScriptSymbol::QScriptSymbol() {
@@ -19,9 +19,9 @@ QScriptSymbol::QScriptSymbol(uint8_t *decomp_buff, uint32_t decomp_len) : m_deco
 
 }
 QScriptSymbol::~QScriptSymbol() {
-    if(m_decomp_buff != NULL) {
+    /*if(m_decomp_buff != NULL) {
         delete[] m_decomp_buff;
-    }
+    }*/
 
 }
 ESymbolType QScriptSymbol::GetType() {
@@ -29,7 +29,6 @@ ESymbolType QScriptSymbol::GetType() {
 }
 
 void QScriptSymbol::LoadParams(IStream *stream) {
-    
     uint32_t size  = stream->ReadInt32();
     stream->ReadInt32(); //??
 
@@ -73,18 +72,25 @@ void QScriptSymbol::Write(IStream *stream) {
 
     stream->WriteUInt32(m_decomp_len);
 
-    uint8_t *comp_buff = new uint8_t[m_decomp_len];
-    int comp_len = compress_lzss(m_decomp_buff, m_decomp_len, comp_buff);
+    bool use_lzss = true;
+    if(m_decomp_len < 10) {
+        use_lzss = false;
+    }
     #ifdef NO_LZSS_COMPRESS
-        comp_len = m_decomp_len;
+        use_lzss = false;
     #endif
-    if(comp_len < m_decomp_len) { //compression was smaller, write
+
+    if(use_lzss) {
+        uint8_t *comp_buff = new uint8_t[m_decomp_len];
+        int comp_len = compress_lzss(m_decomp_buff, m_decomp_len, comp_buff);
         stream->WriteUInt32(comp_len);
         stream->WriteBuffer(comp_buff, comp_len);
+        delete[] comp_buff;
     } else {
         stream->WriteUInt32(m_decomp_len);
         stream->WriteBuffer(m_decomp_buff, m_decomp_len);
     }
+    
     stream->WriteAlign();
 }
 void QScriptSymbol::WriteToArray(IStream *stream) {

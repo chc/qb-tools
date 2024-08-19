@@ -172,7 +172,7 @@ void StructureSymbol::WriteToArray(IStream *stream) {
         uint32_t cursor = stream->GetOffset();
         stream->SetCursor(start_cursor);
         
-        stream->WriteUInt32(cursor + sizeof(uint32_t));    
+        stream->WriteUInt32(cursor);    
 
         stream->SetCursor(cursor);
     }

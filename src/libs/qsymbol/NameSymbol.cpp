@@ -35,7 +35,7 @@ void NameSymbol::WriteToArray(IStream *stream) {
     if(m_struct_item) {
         //set next_offset
         uint32_t cursor = stream->GetOffset();
-        if(m_next_offset == 1) {
+        if(m_next_offset) {
             stream->WriteUInt32(cursor + sizeof(uint32_t));   
         } else {
             stream->WriteUInt32(0);
