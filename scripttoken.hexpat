@@ -158,6 +158,7 @@ fn string_length(u32 offset) { //includes null char
 
 fn is_single_byte_token(EScriptToken token) {
  if(token == EScriptToken::ESCRIPTTOKEN_EQUALS) {
+ } else if(token == EScriptToken::ESCRIPTTOKEN_OR) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_LESSTHAN) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_ARG) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_ADD) {
@@ -185,6 +186,9 @@ fn is_single_byte_token(EScriptToken token) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_GREATERTHAN) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_ALLARGS) {
     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_BREAK) {
+     } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_ENDSWITCH) {   
+    } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_SWITCH) {
+    } else if(token == EScriptToken::ESCRIPTTOKEN_KEYWORD_CASE) {
     } else {    
         return 0;
     }
@@ -258,7 +262,10 @@ struct ScriptToken {
         u16 next;
         u16 end;
         //ScriptToken jump_token @(addressof(offset) + offset);
-    }
+    } else if(token == EScriptToken::ESCRIPTTOKEN_SHORTJUMP) {
+        u16 offset;;
+        //ScriptToken jump_token @(addressof(offset) + sizeof(offset) + offset);
+    } 
      else {
         std::error(std::format("Unhandled Token: {}", token));
     }

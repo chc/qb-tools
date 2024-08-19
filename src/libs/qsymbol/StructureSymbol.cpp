@@ -10,7 +10,6 @@ StructureSymbol::StructureSymbol() {
 
 }
 StructureSymbol::StructureSymbol(std::vector<QSymbolToken *> children) : m_children(children) {
-
 }
 StructureSymbol::~StructureSymbol() {
 

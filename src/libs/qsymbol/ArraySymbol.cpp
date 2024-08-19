@@ -1,5 +1,5 @@
 #include "ArraySymbol.h"
-
+#include "ReferenceItemSymbol.h"
 #include <sstream>
 #include <iomanip>
 #include <cassert>
@@ -72,8 +72,17 @@ void ArraySymbol::WriteToArray(IStream *stream) {
     stream->WriteUInt16(1);
 
     uint8_t type = 0;
-    if(m_num_items > 0)
-        type = m_tokens[0]->GetType();
+    if(m_num_items > 0) {
+        if(m_tokens[0]->GetType() == ESYMBOLTYPE_INTERNAL_REFERENCE) {
+            type = reinterpret_cast<ReferenceItemSymbol*>(m_tokens[0])->GetRefType();
+            type |= 0x10;
+        } else {
+            type = m_tokens[0]->GetType();
+        }
+    }
+        
+
+    assert(type != 0x14);
         
     stream->WriteByte(type);
     stream->WriteByte(0);

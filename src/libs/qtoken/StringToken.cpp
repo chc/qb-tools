@@ -18,6 +18,7 @@ EScriptToken StringToken::GetType() {
     return ESCRIPTTOKEN_STRING;
 }
 void StringToken::LoadParams(IStream *stream) {
+    m_file_offset = stream->GetOffset() - sizeof(uint8_t);
     uint32_t length = stream->ReadUInt32();
     while(length--) {
         char ch = stream->ReadByte();

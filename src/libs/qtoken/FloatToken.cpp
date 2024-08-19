@@ -18,6 +18,7 @@ EScriptToken FloatToken::GetType() {
     return ESCRIPTTOKEN_FLOAT;
 }
 void FloatToken::LoadParams(IStream *stream) {
+    m_file_offset = stream->GetOffset() - sizeof(uint8_t);
     m_value = stream->ReadFloat();
 }
 void FloatToken::Write(IStream *stream) {

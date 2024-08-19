@@ -15,6 +15,7 @@ class StringSymbol : public QSymbolToken {
         void Write(IStream *stream);
         void WriteToArray(IStream *stream);
     private:
+        void writeData(IStream *stream);
         std::string m_value;
 };
 #endif //_STRINGSYMBOL_H

@@ -52,6 +52,13 @@ void RandomToken::Write(IStream *stream) {
     m_end_offset = stream->GetOffset();
     m_total_size = m_end_offset - m_file_offset;
 }
+void RandomToken::Rewrite(IStream *stream) {
+    assert(m_file_offset);
+    uint32_t cursor = stream->GetOffset();
+    stream->SetCursor(m_file_offset);
+    Write(stream);
+    stream->SetCursor(cursor);
+}
 std::string RandomToken::ToString() {
     return "Random(";
 }

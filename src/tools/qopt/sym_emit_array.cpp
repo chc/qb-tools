@@ -19,6 +19,9 @@
 
 #include <ReferenceItemSymbol.h>
 
+std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end, StructureSymbol** out);
+std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::vector<QSymbolToken *> &struct_symbols, std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end);
+
 EScriptToken next_usable_type(std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end) {
     std::vector<QScriptToken *>::iterator it = begin;
     while(it != end) {
@@ -34,10 +37,13 @@ EScriptToken next_usable_type(std::vector<QScriptToken *>::iterator begin, std::
     }
     return ESCRIPTTOKEN_ENDOFFILE;
 }
+
 std::vector<QScriptToken *>::iterator read_array_struct_item(std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end, QSymbolToken **out) {
     std::vector<QScriptToken *>::iterator it = begin;
     std::vector<QSymbolToken *> children;
+    std::vector<QSymbolToken *> temp_children;
     QSymbolToken *child;
+    ArraySymbol *arr_sym;
     int depth = 1;
     bool in_name_mode = true;
     bool in_argument_pack = false;
@@ -63,6 +69,21 @@ std::vector<QScriptToken *>::iterator read_array_struct_item(std::vector<QScript
                 in_name_mode = true;
                 in_argument_pack = false;
                 continue;
+            case ESCRIPTTOKEN_ENDARRAY:
+                continue;
+            case ESCRIPTTOKEN_STARTARRAY:
+                /*it = read_array_struct_item(it+1, end, &child);
+                child->SetNameChecksum(struct_item_name);
+                child->SetIsStructItem(true);*/
+                it = handle_struct_array(struct_item_name, temp_children, it+1, end);
+                arr_sym = new ArraySymbol(temp_children);
+                temp_children.clear();
+                children.push_back(arr_sym);
+                in_name_mode = true;
+                in_argument_pack = false;
+                struct_item_name = 0;
+                continue;
+            break;
             case ESCRIPTTOKEN_NAME:
                 if(in_name_mode && next_usable_type(it+1, end) != ESCRIPTTOKEN_EQUALS) {
                     in_name_mode = false;
@@ -72,6 +93,7 @@ std::vector<QScriptToken *>::iterator read_array_struct_item(std::vector<QScript
                     struct_item_name = reinterpret_cast<NameToken*>(t)->GetChecksum();
                     break;
                 }
+            case ESCRIPTTOKEN_LOCALSTRING:
             case ESCRIPTTOKEN_STRING:    
             case ESCRIPTTOKEN_INTEGER:
             case ESCRIPTTOKEN_FLOAT:
@@ -84,13 +106,17 @@ std::vector<QScriptToken *>::iterator read_array_struct_item(std::vector<QScript
                 children.push_back(child);
                 in_name_mode = true;
                 in_argument_pack = false;
+            case ESCRIPTTOKEN_ENDOFLINE:
+            case ESCRIPTTOKEN_ENDOFLINENUMBER:
+                break;
+            default:
+                assert(false);
         }
         it++;
     }
 
     *out = new StructureSymbol(children);
     return it;
-    //return g_Deopt.script_tokens.erase(begin, it);
 }
 
 std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::vector<QSymbolToken *> &struct_symbols, std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end) {
@@ -109,7 +135,13 @@ std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::ve
         QScriptToken *t = *it;
         if(t->GetType() == ESCRIPTTOKEN_STARTARRAY) {
             it = handle_struct_array(name, child_arr_items, it+1, end);
+            assert(child_arr_items.size() == 1);
+            sym = child_arr_items.front();
+            child_arr_items.clear();
+            child_arr_items.push_back(sym);
+            sym->SetIsStructItem(false);
             arr_sym = new ArraySymbol(child_arr_items);
+            child_arr_items.clear();
             arr_items.push_back(arr_sym);
             continue;
         } else if(t->GetType() == ESCRIPTTOKEN_ENDARRAY) {
@@ -152,8 +184,6 @@ std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::ve
     struct_symbols.push_back(arr_sym);
 
     return it;
-
-    //return g_Deopt.script_tokens.erase(begin, it);
 }
 void emit_array_of_structs() {
     int depth = 1;
@@ -176,10 +206,19 @@ void emit_array_of_structs() {
                 arr_syms.push_back(new StructureSymbol(struct_symbols));
                 struct_symbols.clear();
                 depth--;
+                assert(depth == 0);
             break;   
             case ESCRIPTTOKEN_STARTSTRUCT:
-                depth++;
-            break;
+                StructureSymbol *sym;
+                it = ReadStructure(it, g_Deopt.script_tokens.end(), &sym);
+                sym->SetIsStructItem(true);
+                sym->SetNameChecksum(struct_item_name);
+                arr_syms.push_back(sym);
+                
+                in_name_mode = true;
+                in_ref_mode = false;
+                struct_item_name = 0;
+                continue;
             case ESCRIPTTOKEN_STARTARRAY:
                 it = g_Deopt.script_tokens.erase(handle_struct_array(struct_item_name, struct_symbols, it+1, g_Deopt.script_tokens.end()));
                 in_name_mode = true;

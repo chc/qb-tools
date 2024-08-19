@@ -55,14 +55,10 @@ void StringSymbol::LoadParamsFromArray(IStream *stream) {
     stream->Align();
 }
 void StringSymbol::Write(IStream *stream) {
-    WriteToArray(stream);
-}
-void StringSymbol::WriteToArray(IStream *stream) {
-    uint32_t start = stream->GetOffset();
+    uint32_t start = stream->GetOffset();    
+    stream->WriteUInt32(start + sizeof(uint32_t) + sizeof(uint32_t));
     stream->WriteUInt32(0);
-
-    stream->WriteBuffer((uint8_t *)m_value.c_str(), m_value.length() + 1);
-    stream->WriteAlign();
+    writeData(stream);
 
     if(m_struct_item && m_next_offset == 1) {
         //set next_offset
@@ -72,6 +68,25 @@ void StringSymbol::WriteToArray(IStream *stream) {
         stream->SetCursor(cursor);
         
     }
+}
+void StringSymbol::WriteToArray(IStream *stream) {
+    uint32_t start = stream->GetOffset();
+    if(m_struct_item) {
+        stream->WriteUInt32(0);
+    }
+    writeData(stream);
+    if(m_struct_item && m_next_offset == 1) {
+        //set next_offset
+        uint32_t cursor = stream->GetOffset();
+        stream->SetCursor(start);
+        stream->WriteUInt32(cursor);   
+        stream->SetCursor(cursor);
+        
+    }
+}
+void StringSymbol::writeData(IStream *stream) {
+    stream->WriteBuffer((uint8_t *)m_value.c_str(), m_value.length() + 1);
+    stream->WriteAlign();
 }
 std::string StringSymbol::ToString() {
     return "";

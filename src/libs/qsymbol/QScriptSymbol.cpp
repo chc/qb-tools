@@ -7,7 +7,7 @@
 #include "crc32.h"
 #include "lzss.h"
 
-#define NO_LZSS_COMPRESS
+// #define NO_LZSS_COMPRESS
 
 
 QScriptSymbol::QScriptSymbol() {
@@ -73,20 +73,23 @@ void QScriptSymbol::Write(IStream *stream) {
     stream->WriteUInt32(m_decomp_len);
 
     bool use_lzss = true;
-    if(m_decomp_len < 10) {
-        use_lzss = false;
-    }
     #ifdef NO_LZSS_COMPRESS
         use_lzss = false;
     #endif
 
     if(use_lzss) {
-        uint8_t *comp_buff = new uint8_t[m_decomp_len];
+        uint8_t *comp_buff = new uint8_t[m_decomp_len * 2];
         int comp_len = compress_lzss(m_decomp_buff, m_decomp_len, comp_buff);
-        stream->WriteUInt32(comp_len);
-        stream->WriteBuffer(comp_buff, comp_len);
+        if(comp_len >= m_decomp_len) {
+            use_lzss = false;
+        } else {
+            stream->WriteUInt32(comp_len);
+            stream->WriteBuffer(comp_buff, comp_len);
+        }
         delete[] comp_buff;
-    } else {
+    }
+
+    if(!use_lzss) {
         stream->WriteUInt32(m_decomp_len);
         stream->WriteBuffer(m_decomp_buff, m_decomp_len);
     }

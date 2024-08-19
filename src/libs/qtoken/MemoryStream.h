@@ -1,5 +1,5 @@
-#ifndef _FILESTREAM_H
-#define _FILESTREAM_H
+#ifndef _MEMSTREAM_H
+#define _MEMSTREAM_H
 #include "IStream.h"
 #include <stdio.h>
 
@@ -42,4 +42,4 @@ class MemoryStream : public IStream {
         uint8_t m_read_endian_mode;
         uint8_t m_write_endian_mode;        
 };
-#endif //_IQFILESTREAM_H
+#endif //_MEMSTREAM_H

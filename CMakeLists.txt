@@ -64,3 +64,13 @@ include_directories("src/libs/qtoken")
 source_group("Sources" FILES ${QGENNAME_SRCS})
 add_executable (qgenname ${QGENNAME_SRCS})
 target_link_libraries(qgenname qtoken)
+
+file (GLOB QOFFDUMP_SYM_SRCS "src/tools/qoffdump/qoffdump_symbol.cpp" "src/tools/qoffdump/shared.cpp")
+include_directories("src/libs/qtoken")
+add_executable (qoffdump_symbol ${QOFFDUMP_SYM_SRCS})
+target_link_libraries(qoffdump_symbol qtoken)
+
+file (GLOB QOFFDUMP_TOKEN_SRCS "src/tools/qoffdump/qoffdump_token.cpp" "src/tools/qoffdump/shared.cpp")
+include_directories("src/libs/qtoken" "src/libs/qsymbol")
+add_executable (qoffdump_token ${QOFFDUMP_TOKEN_SRCS})
+target_link_libraries(qoffdump_token qtoken qsymbol)

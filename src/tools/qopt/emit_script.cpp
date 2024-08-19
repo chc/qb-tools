@@ -64,15 +64,15 @@ void rewrite_offsets(IStream *stream, QScriptToken *token) {
             QScriptToken *t = find_by_offset(original_offsets, offset);
             
             assert(t);
-            
             size_t diff = (updated_offsets[t] - rnd->GetFileOffset()) - rnd->CalculateTokenOffset(i);
             rnd->SetRandomOffset(i, diff);
         }
+        rnd->Rewrite(stream);
     }
     if(token->GetType() == ESCRIPTTOKEN_KEYWORD_FASTIF) {
         size_t original_offset = original_offsets[token];
         FastIfToken* fif = reinterpret_cast<FastIfToken*>(token);
-        size_t endif_offset = fif->GetOffset() + original_offset;
+        size_t endif_offset = fif->GetOffset() + original_offset + sizeof(uint8_t);
         QScriptToken *t = find_by_offset(original_offsets, endif_offset);
         assert(t);
 
@@ -114,7 +114,7 @@ void rewrite_offsets(IStream *stream, QScriptToken *token) {
         QScriptToken *t = find_by_offset(original_offsets, endif_offset);
         assert(t);
 
-        size_t updated_offset = updated_offsets[t] - jt->GetFileOffset() - sizeof(uint16_t);
+        size_t updated_offset = updated_offsets[t] - jt->GetFileOffset() - sizeof(uint8_t);
         jt->RewriteOffset(stream, updated_offset);
     } else if(token->GetType() == ESCRIPTTOKEN_JUMP) {
         size_t original_offset = original_offsets[token] + sizeof(uint8_t); //skip type
@@ -137,7 +137,6 @@ std::vector<QScriptToken *>::iterator ReadArray(uint32_t name, std::vector<QScri
     if(!syms.empty()) {
         assert(syms.size() == 1);
 
-        
         *out = (ArraySymbol*)syms.front();
     } else {
         *out = new ArraySymbol(nullptr, 0);
@@ -221,7 +220,6 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
         }
         it++;
     }
-    
     *out = new StructureSymbol(children);
     return it;
 }

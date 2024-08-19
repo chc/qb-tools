@@ -15,6 +15,7 @@ class RandomToken : public QScriptToken {
         uint32_t GetNumItems() { return m_num_items; }
         uint32_t GetRandomOffset(int idx) { return m_offsets[idx].offset; }
         void SetRandomOffset(int idx, uint32_t offset) { m_offsets[idx].offset = offset; }
+        void Rewrite(IStream *stream);
         uint32_t GetFileOffset() { return m_file_offset; }
         uint32_t GetEndOffset() { return m_end_offset; }
         uint32_t CalculateTokenOffset(uint32_t index) {

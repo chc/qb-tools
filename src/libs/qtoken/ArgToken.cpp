@@ -21,6 +21,7 @@ EScriptToken ArgToken::GetType() {
     return ESCRIPTTOKEN_ARG;
 }
 void ArgToken::LoadParams(IStream *stream) {
+    m_file_offset = stream->GetOffset() - sizeof(uint8_t);
     uint8_t t = stream->ReadByte();
     assert(t == 0x16);
     m_checksum = stream->ReadUInt32();

@@ -128,7 +128,7 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             uint32_t offset = original_offsets[t] + sizeof(uint16_t) + t->GetOffset() - sizeof(uint8_t);
             QScriptToken *r = token_at_offset(offset, original_offsets);
             if(r) {
-                size_t diff = r->GetFileOffset() - token->GetFileOffset();
+                size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint8_t);
                 t->RewriteOffset(stream, diff);
             } else {
                 assert(false);
@@ -138,7 +138,7 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             uint32_t offset = original_offsets[t] + t->GetOffset() - sizeof(uint8_t);
             QScriptToken *r = token_at_offset(offset, original_offsets);
             if(r) {
-                size_t diff = r->GetFileOffset() - token->GetFileOffset();
+                size_t diff = r->GetFileOffset() - token->GetFileOffset() + sizeof(uint8_t);
                 t->RewriteOffset(stream, diff);
             } else {
                 assert(false);
@@ -177,7 +177,7 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             uint32_t offset = original_offsets[t] + t->GetOffset() + sizeof(uint8_t);
             QScriptToken *r = token_at_offset(offset, original_offsets);
             if(r) {
-                size_t diff = r->GetFileOffset() - token->GetFileOffset();
+                size_t diff = r->GetFileOffset() - token->GetFileOffset() - sizeof(uint8_t);
                 t->RewriteOffset(stream, diff);
             } else {
                 assert(false);
@@ -231,8 +231,7 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
             int padding = (sizeof(uint32_t)) - (((inline_offset - 1) % sizeof(uint32_t)) + 1);
             assert(padding <= 4);
             InlinePackStructToken* ip = reinterpret_cast<InlinePackStructToken*>(token);
-            ip->SetPadding(padding);
-            
+            ip->SetPadding(padding);            
         }
         
         token->SetFileOffset(ms.GetOffset()-1);

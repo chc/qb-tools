@@ -56,13 +56,22 @@ void LocalStringSymbol::LoadParamsFromArray(IStream *stream) {
 }
 
 void LocalStringSymbol::Write(IStream *stream) {
-    uint32_t start = stream->GetOffset();
-    /*if(!m_struct_item) { //is this needed at all?
-        stream->WriteUInt32(start + sizeof(uint32_t) + sizeof(uint32_t));
-    }*/
-    
+    uint32_t start = stream->GetOffset();    
+    stream->WriteUInt32(start + sizeof(uint32_t) + sizeof(uint32_t));
     stream->WriteUInt32(0);
+    writeData(stream);
 
+    if(m_struct_item && m_next_offset == 1) {
+        //set next_offset
+        uint32_t cursor = stream->GetOffset();
+        stream->SetCursor(start);
+        stream->WriteUInt32(cursor);   
+        stream->SetCursor(cursor);
+        
+    }
+
+}
+void LocalStringSymbol::writeData(IStream *stream) {
     std::string::iterator it = m_value.begin();
     while(it != m_value.end()) {
         char16_t c = *it;
@@ -73,6 +82,14 @@ void LocalStringSymbol::Write(IStream *stream) {
     
     stream->WriteAlign();
 
+
+}
+void LocalStringSymbol::WriteToArray(IStream *stream) {
+    uint32_t start = stream->GetOffset();
+    if(m_struct_item) {
+        stream->WriteUInt32(0);
+    }
+    writeData(stream);
     if(m_struct_item && m_next_offset == 1) {
         //set next_offset
         uint32_t cursor = stream->GetOffset();
@@ -81,9 +98,6 @@ void LocalStringSymbol::Write(IStream *stream) {
         stream->SetCursor(cursor);
         
     }
-}
-void LocalStringSymbol::WriteToArray(IStream *stream) {
-    Write(stream);
 }
 std::string LocalStringSymbol::ToString() {
     return "";

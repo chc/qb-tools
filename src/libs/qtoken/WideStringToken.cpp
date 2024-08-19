@@ -20,7 +20,7 @@ EScriptToken WideStringToken::GetType() {
     return ESCRIPTTOKEN_WIDESTRING;
 }
 void WideStringToken::LoadParams(IStream *stream) {
-    m_file_offset = stream->GetOffset();
+    m_file_offset = stream->GetOffset() - sizeof(uint8_t);
     uint32_t len = stream->ReadUInt32();
 
     uint8_t mode = stream->GetReadEndianMode();
