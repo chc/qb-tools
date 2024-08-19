@@ -109,10 +109,8 @@ QScriptToken *token_at_offset(uint32_t offset, std::map<QScriptToken *, uint32_t
 bool is_random_token(EScriptToken type) {
     switch(type) {
         case ESCRIPTTOKEN_KEYWORD_RANDOM:
-        //case ESCRIPTTOKEN_KEYWORD_RANDOM2:
         case ESCRIPTTOKEN_KEYWORD_RANDOM_PERMUTE:
-        //case ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE2:
-        //case ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE:
+        case ESCRIPTTOKEN_KEYWORD_RANDOM_NO_REPEAT:
             return true;
         break;
     }

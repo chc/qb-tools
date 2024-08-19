@@ -103,6 +103,7 @@ void dump_token_offsets(QScriptToken *token) {
             break;
         case ESCRIPTTOKEN_KEYWORD_RANDOM:
         case ESCRIPTTOKEN_KEYWORD_RANDOM_PERMUTE:
+        case ESCRIPTTOKEN_KEYWORD_RANDOM_NO_REPEAT:
             dump_random(reinterpret_cast<RandomToken*>(token));
             break;
     }
