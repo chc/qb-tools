@@ -26,4 +26,4 @@ Set the `QTOOLS_DBGPAK_PATH` to point to a DBG.PAK if you want to have checksum 
 ## TODO
 * QComp tool
 * Support structure script symbols
-* Random token jump offsets may be wrong for Random tokens with a small number of entries (2 or less)
+* Random tokens jump marker `@` is not displaying properly for some entries
