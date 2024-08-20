@@ -45,7 +45,7 @@ void InlinePackStructToken::LoadParams(IStream *stream) {
         }
 
         MemoryStream ms(buff, len);
-        ms.SetReadEndian(ISTREAM_BIG_ENDIAN);
+        ms.SetReadEndian(ISTREAM_SYMBOL_ENDIAN);
 
         m_inner_struct = new StructureSymbol();
         m_inner_struct->LoadParamsNoOffset(&ms);
@@ -67,7 +67,7 @@ void InlinePackStructToken::Write(IStream *stream) {
     } else {
 
         MemoryStream ms(&struct_buff, STRUCT_BUFF_SIZE);
-        ms.SetWriteEndian(ISTREAM_BIG_ENDIAN);
+        ms.SetWriteEndian(ISTREAM_SYMBOL_ENDIAN);
         m_inner_struct->WriteNoOffset(&ms);
         len = ms.GetOffset();
     }

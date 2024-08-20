@@ -59,6 +59,12 @@ void handle_global_token_state(QScriptToken *token) {
             g_Deopt.currentState = DeoptState_ReadScriptName;
             break;
         break;
+        case ESCRIPTTOKEN_INTEGER:
+            //in THAW PC tod_manager.qb there is an unnamed integer token with a value of 0... 
+            // this is the only known case where this happens so far, global symbols with no name are likely of no use, so just skip
+            g_Deopt.currentState = DeoptState_ReadNextGlobalToken;
+            assert(reinterpret_cast<IntegerToken*>(token)->GetValue() == 0);
+        break;
         default:
             assert(false);
         case ESCRIPTTOKEN_CHECKSUM_NAME:
@@ -162,7 +168,7 @@ int main(int argc, const char *argv[]) {
         return -1;
     }
 
-    out_fs.SetWriteEndian(ISTREAM_BIG_ENDIAN);
+    out_fs.SetWriteEndian(ISTREAM_SYMBOL_ENDIAN);
     SymbolFileStream sym_fs(&out_fs);
     uint32_t src_checksum_name = crc32(0, argv[1], strlen(argv[1]));
     sym_fs.SetSourceChecksum(src_checksum_name);

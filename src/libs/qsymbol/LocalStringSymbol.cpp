@@ -28,7 +28,11 @@ void LocalStringSymbol::LoadParams(IStream *stream) {
     uint32_t i = 0;
 
     while(true) {
+        #ifdef WIDE_LOCALSTRING
         data[i % MAX_CHARS] = (char16_t)stream->ReadUInt16();
+        #else
+        data[i % MAX_CHARS] = (char16_t)stream->ReadByte();
+        #endif
         if(data[i % MAX_CHARS] == 0) {
             break;
         }
@@ -44,7 +48,11 @@ void LocalStringSymbol::LoadParamsFromArray(IStream *stream) {
     uint32_t i = 0;
 
     while(true) {
+        #ifdef WIDE_LOCALSTRING
         data[i % MAX_CHARS] = (char16_t)stream->ReadUInt16();
+        #else
+        data[i % MAX_CHARS] = (char16_t)stream->ReadByte();
+        #endif
         if(data[i % MAX_CHARS] == 0) {
             break;
         }
@@ -75,10 +83,18 @@ void LocalStringSymbol::writeData(IStream *stream) {
     std::string::iterator it = m_value.begin();
     while(it != m_value.end()) {
         char16_t c = *it;
+        #ifdef WIDE_LOCALSTRING
         stream->WriteUInt16(c);
+        #else
+        stream->WriteByte(c);
+        #endif
         it++;
     }
+    #ifdef WIDE_LOCALSTRING
     stream->WriteUInt16(0);
+    #else
+    stream->WriteByte(0);
+    #endif
     
     stream->WriteAlign();
 

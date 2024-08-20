@@ -45,17 +45,24 @@ void ArraySymbol::LoadParams(IStream *stream) {
 }
 
 void ArraySymbol::LoadParamsFromArray(IStream *stream) {
-    uint16_t hdr = stream->ReadUInt16();
+    stream->ReadByte();
+    uint8_t hdr = stream->ReadByte();
     assert(hdr == 1);
 
-    uint8_t type_flags = stream->ReadByte();
+    uint8_t type = stream->ReadByte();
     stream->ReadByte();
 
     m_num_items = stream->ReadUInt32();
 
     m_tokens = new QSymbolToken*[m_num_items];
 
-    ReadSymbolsFromArray(stream, type_flags, m_num_items, m_tokens);
+    bool is_ref = false;
+    if(type & SYMBOL_ISREF_FLAG) {
+        is_ref = true;
+        type &= ~SYMBOL_ISREF_FLAG;
+    }
+
+    ReadSymbolsFromArray(stream, type, is_ref, m_num_items, m_tokens);
 }
 void ArraySymbol::Write(IStream *stream) {
 
@@ -65,28 +72,29 @@ void ArraySymbol::Write(IStream *stream) {
     WriteNoOffset(stream);
 }
 void ArraySymbol::WriteNoOffset(IStream *stream) {
-    stream->WriteUInt16(1);
+    stream->WriteByte(0);
+    stream->WriteByte(1);
 
+    uint8_t type_flags = 0;
     uint8_t type = 0;
+    bool is_ref = false;
     if(m_num_items > 0) {
         if(m_tokens[0]->GetType() == ESYMBOLTYPE_INTERNAL_REFERENCE) {
             type = reinterpret_cast<ReferenceItemSymbol*>(m_tokens[0])->GetRefType();
-            type |= 0x10;
+            type_flags = type;
+            type_flags |= SYMBOL_ISREF_FLAG;
+            is_ref = true;
         } else {
             type = m_tokens[0]->GetType();
         }
     }
-        
-
-    assert(type != 0x14);
-        
     stream->WriteByte(type);
     stream->WriteByte(0);
 
     stream->WriteUInt32(m_num_items);
     stream->WriteAlign();
 
-    WriteSymbolsToArray(stream, type, m_num_items, m_tokens);
+    WriteSymbolsToArray(stream, type, is_ref, m_num_items, m_tokens);
 }
 void ArraySymbol::WriteToArray(IStream *stream) {
     uint32_t start_offset = stream->GetOffset();

@@ -51,9 +51,7 @@ QSymbolToken* QSymbolToken::Resolve(uint8_t token) {
     assert(false);
     return nullptr;
 }
-void QSymbolToken::ReadSymbolsFromArray(IStream *stream, uint8_t type_flags, uint32_t num_items, QSymbolToken **output_tokens) {
-    uint8_t type = type_flags & 0xF;
-    bool is_reference = type_flags & 0x10;
+void QSymbolToken::ReadSymbolsFromArray(IStream *stream, uint8_t type, bool is_reference, uint32_t num_items, QSymbolToken **output_tokens) {
 
     if(num_items == 0) {
         uint32_t v = stream->ReadUInt32(); //skip null data
@@ -106,10 +104,7 @@ void QSymbolToken::ReadSymbolsFromArray(IStream *stream, uint8_t type_flags, uin
         assert(false);
     }
 }
-void QSymbolToken::WriteSymbolsToArray(IStream *stream, uint8_t type_flags, uint32_t num_items, QSymbolToken **output_tokens) {
-    uint8_t type = type_flags & 0xF;
-    bool is_reference = type_flags & 0x10;
-
+void QSymbolToken::WriteSymbolsToArray(IStream *stream, uint8_t type, bool is_reference, uint32_t num_items, QSymbolToken **output_tokens) {
     if(num_items == 0) {
         stream->WriteUInt32(0);
         return;

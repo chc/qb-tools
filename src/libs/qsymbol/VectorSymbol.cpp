@@ -23,8 +23,14 @@ void VectorSymbol::LoadParams(IStream *stream) {
     }
     stream->SetCursor(offset);
     
-    uint32_t hdr = stream->ReadUInt32();
-    assert(hdr == 65536);
+    uint8_t hdr = stream->ReadByte();
+    assert(hdr == 0);
+    hdr = stream->ReadByte();
+    assert(hdr == 1);
+    hdr = stream->ReadByte();
+    assert(hdr == 0);
+    hdr = stream->ReadByte();
+    assert(hdr == 0);
     
     m_x = stream->ReadFloat();
     m_y = stream->ReadFloat();
@@ -32,8 +38,15 @@ void VectorSymbol::LoadParams(IStream *stream) {
     
 }
 void VectorSymbol::LoadParamsFromArray(IStream *stream) {
-    uint32_t hdr = stream->ReadUInt32();
-    assert(hdr == 65536);
+    uint8_t hdr = stream->ReadByte();
+    assert(hdr == 0);
+    hdr = stream->ReadByte();
+    assert(hdr == 1);
+    hdr = stream->ReadByte();
+    assert(hdr == 0);
+    hdr = stream->ReadByte();
+    assert(hdr == 0);
+    
     
     m_x = stream->ReadFloat();
     m_y = stream->ReadFloat();
@@ -53,7 +66,10 @@ void VectorSymbol::Write(IStream *stream) {
         stream->WriteUInt32(0);
     }
 
-    stream->WriteUInt32(65536);
+    stream->WriteByte(0);
+    stream->WriteByte(1);
+    stream->WriteByte(0);
+    stream->WriteByte(0);
     stream->WriteFloat(m_x);
     stream->WriteFloat(m_y);
     stream->WriteFloat(m_z);
@@ -71,7 +87,10 @@ void VectorSymbol::WriteToArray(IStream *stream) {
     if(m_struct_item) {
         stream->WriteUInt32(0);
     }
-    stream->WriteUInt32(65536);
+    stream->WriteByte(0);
+    stream->WriteByte(1);
+    stream->WriteByte(0);
+    stream->WriteByte(0);
     stream->WriteFloat(m_x);
     stream->WriteFloat(m_y);
     stream->WriteFloat(m_z);

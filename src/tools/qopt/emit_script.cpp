@@ -59,8 +59,7 @@ void rewrite_offsets(IStream *stream, QScriptToken *token) {
         RandomToken *rnd = reinterpret_cast<RandomToken*>(token);
         for(int i=0;i<rnd->GetNumItems();i++) {
             uint32_t offset = original_offsets[token] + rnd->CalculateTokenOffset(i) +  rnd->GetRandomOffset(i);
-            QScriptToken *t = find_by_offset(original_offsets, offset);
-            
+            QScriptToken *t = find_by_offset(original_offsets, offset);   
             assert(t);
             size_t diff = (updated_offsets[t] - rnd->GetFileOffset()) - rnd->CalculateTokenOffset(i);
             rnd->SetRandomOffset(i, diff);

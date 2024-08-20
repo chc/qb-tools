@@ -69,7 +69,7 @@ int main(int argc, const char *argv[]) {
         return -1;
     }
     FileStream fs(argv[1]);
-    fs.SetReadEndian(ISTREAM_BIG_ENDIAN);
+    fs.SetReadEndian(ISTREAM_SYMBOL_ENDIAN);
 
 
     if(!fs.IsFileOpened()) {

@@ -25,8 +25,7 @@ void WideStringToken::LoadParams(IStream *stream) {
 
     uint8_t mode = stream->GetReadEndianMode();
 
-    //XXX: update this to read platform endian mode
-    stream->SetReadEndian(ISTREAM_BIG_ENDIAN);
+    stream->SetReadEndian(ISTREAM_SYMBOL_ENDIAN);
 
 
     while(len) {
@@ -50,8 +49,7 @@ void WideStringToken::Write(IStream *stream) {
 
     uint8_t mode = stream->GetWriteEndianMode();
 
-    //XXX: update this to read platform endian mode
-    stream->SetWriteEndian(ISTREAM_BIG_ENDIAN);
+    stream->SetWriteEndian(ISTREAM_SYMBOL_ENDIAN);
 
     for(int i=0;i<len;i++) {
         stream->WriteUInt16(m_value[i]);

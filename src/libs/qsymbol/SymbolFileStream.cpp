@@ -8,10 +8,11 @@ SymbolFileStream::~SymbolFileStream() {
 
 }
 QSymbolToken *SymbolFileStream::NextSymbol() {
-    uint16_t flags = mp_stream->ReadUInt16();
+    mp_stream->ReadByte();
+    uint8_t flags = mp_stream->ReadByte();
     //printf("flags: %04x - %d\n", flags, mp_stream->GetOffset());
 
-    assert(flags & 0x20);
+    assert(flags & SYMBOL_ROOT_FLAG);
 
     uint8_t type = mp_stream->ReadByte();
     //printf("type: %d\n", type);
@@ -47,7 +48,8 @@ void SymbolFileStream::UpdateHeaderSize() {
     mp_stream->WriteUInt32(offset);
 }
 void SymbolFileStream::WriteSymbol(QSymbolToken *symbol) {
-    mp_stream->WriteUInt16(0x20);
+    mp_stream->WriteByte(0);
+    mp_stream->WriteByte(SYMBOL_ROOT_FLAG);
 
     mp_stream->WriteByte(symbol->GetType());
     mp_stream->WriteByte(0);
