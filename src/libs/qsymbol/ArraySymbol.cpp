@@ -86,9 +86,10 @@ void ArraySymbol::WriteNoOffset(IStream *stream) {
             is_ref = true;
         } else {
             type = m_tokens[0]->GetType();
+            type_flags = type;
         }
     }
-    stream->WriteByte(type);
+    stream->WriteByte(type_flags);
     stream->WriteByte(0);
 
     stream->WriteUInt32(m_num_items);

@@ -262,6 +262,14 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
 }
 
 void WriteArgumentPack(ReferenceItemSymbol *symbol, IStream *stream) {
+    if(symbol->GetNameChecksum() != 0) {
+        m_checksum_names[symbol->GetNameChecksum()] = NULL;
+        NameToken nt(symbol->GetNameChecksum());
+        nt.Write(stream);
+
+        EqualsToken et;
+        et.Write(stream);
+    }
     ArgumentPackToken tok;
     tok.Write(stream);
 

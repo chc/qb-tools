@@ -17,20 +17,23 @@ void handle_script(QScriptSymbol *qscript) {
     MemoryStream ms(qscript->GetDecompBuff(), qscript->GetDecompLen());
     ms.SetReadEndian(ISTREAM_LITTLE_ENDIAN);
 
-    #if 0
-    printf("dumping script: %08x\n", qscript->GetNameChecksum());
-    char name[256];
-    sprintf(name, "%08x.bin", qscript->GetNameChecksum());
-    FILE *rfd = fopen(name, "r");
-    if(rfd) {
-        fclose(rfd);
-    } else {
-        FILE *fd = fopen(name, "wb");
-        if(fd) {
-            fwrite(qscript->GetDecompBuff(), qscript->GetDecompLen(), 1, fd);
-            fclose(fd);
+    #if 1
+    if(qscript->GetNameChecksum() == 0x899e42a0) {
+        printf("dumping script: %08x\n", qscript->GetNameChecksum());
+        char name[256];
+        sprintf(name, "%08x.bin", qscript->GetNameChecksum());
+        FILE *rfd = fopen(name, "r");
+        if(rfd) {
+            fclose(rfd);
+        } else {
+            FILE *fd = fopen(name, "wb");
+            if(fd) {
+                fwrite(qscript->GetDecompBuff(), qscript->GetDecompLen(), 1, fd);
+                fclose(fd);
+            }
         }
     }
+
     #endif
     
 

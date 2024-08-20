@@ -5,23 +5,24 @@ enable_testing()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 #THPG
-# add_definitions(-DISTREAM_SYMBOL_ENDIAN=ISTREAM_BIG_ENDIAN)
-# add_definitions(-DISTREAM_TOKEN_ENDIAN=ISTREAM_LITTLE_ENDIAN)
-# add_definitions(-DSYMBOL_STRUCT_FLAG=0x80)
-# add_definitions(-DSYMBOL_ROOT_FLAG=0x20)
-# add_definitions(-DSYMBOL_ISREF_FLAG=0x10)
-# add_definitions(-DARRAY_HEADER_VALUE=1)
-# add_definitions(-DSYMBOL_STRUCT_TYPE_ANDMASK=0x0F)
-# add_definitions(-DSYMBOL_STRUCT_TYPE_RSHIFTMASK=0)
-# add_definitions(-DWIDE_LOCALSTRING=1)
-
-add_definitions(-DISTREAM_SYMBOL_ENDIAN=ISTREAM_LITTLE_ENDIAN)
+add_definitions(-DISTREAM_SYMBOL_ENDIAN=ISTREAM_BIG_ENDIAN)
 add_definitions(-DISTREAM_TOKEN_ENDIAN=ISTREAM_LITTLE_ENDIAN)
-add_definitions(-DSYMBOL_STRUCT_FLAG=0x01)
-add_definitions(-DSYMBOL_ROOT_FLAG=0x04)
-add_definitions(-DSYMBOL_ISREF_FLAG=0x80)
-add_definitions(-DSYMBOL_STRUCT_TYPE_ANDMASK=0x1E)
-add_definitions(-DSYMBOL_STRUCT_TYPE_RSHIFTMASK=1)
+add_definitions(-DSYMBOL_STRUCT_FLAG=0x80)
+add_definitions(-DSYMBOL_ROOT_FLAG=0x20)
+add_definitions(-DSYMBOL_ISREF_FLAG=0x10)
+add_definitions(-DARRAY_HEADER_VALUE=1)
+add_definitions(-DSYMBOL_STRUCT_TYPE_ANDMASK=0x0F)
+add_definitions(-DSYMBOL_STRUCT_TYPE_RSHIFTMASK=0)
+add_definitions(-DWIDE_LOCALSTRING=1)
+
+#THAW PC
+# add_definitions(-DISTREAM_SYMBOL_ENDIAN=ISTREAM_LITTLE_ENDIAN)
+# add_definitions(-DISTREAM_TOKEN_ENDIAN=ISTREAM_LITTLE_ENDIAN)
+# add_definitions(-DSYMBOL_STRUCT_FLAG=0x01)
+# add_definitions(-DSYMBOL_ROOT_FLAG=0x04)
+# add_definitions(-DSYMBOL_ISREF_FLAG=0x80)
+# add_definitions(-DSYMBOL_STRUCT_TYPE_ANDMASK=0x1E)
+# add_definitions(-DSYMBOL_STRUCT_TYPE_RSHIFTMASK=1)
 
 
 
