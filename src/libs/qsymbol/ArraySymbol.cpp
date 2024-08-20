@@ -62,13 +62,9 @@ void ArraySymbol::Write(IStream *stream) {
     uint32_t offset = stream->GetOffset() + sizeof(uint32_t) + sizeof(uint32_t);
     stream->WriteUInt32(offset); //offset
     stream->WriteUInt32(0);
-    WriteToArray(stream);
+    WriteNoOffset(stream);
 }
-void ArraySymbol::WriteToArray(IStream *stream) {
-    uint32_t start_offset = stream->GetOffset();
-    if(m_struct_item) {
-        stream->WriteUInt32(0); //next_offset
-    }
+void ArraySymbol::WriteNoOffset(IStream *stream) {
     stream->WriteUInt16(1);
 
     uint8_t type = 0;
@@ -91,6 +87,14 @@ void ArraySymbol::WriteToArray(IStream *stream) {
     stream->WriteAlign();
 
     WriteSymbolsToArray(stream, type, m_num_items, m_tokens);
+}
+void ArraySymbol::WriteToArray(IStream *stream) {
+    uint32_t start_offset = stream->GetOffset();
+    if(m_struct_item) {
+        stream->WriteUInt32(0); //next_offset
+    }
+
+    WriteNoOffset(stream);
 
     if(m_struct_item) {
         //set next_offset

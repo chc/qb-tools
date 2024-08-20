@@ -19,6 +19,7 @@ class ArraySymbol : public QSymbolToken {
         void Write(IStream *stream);
         void WriteToArray(IStream *stream);
     private:
+        void WriteNoOffset(IStream *stream);
         uint32_t m_num_items;
         QSymbolToken **m_tokens;
 };

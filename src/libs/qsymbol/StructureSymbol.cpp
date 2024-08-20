@@ -135,7 +135,7 @@ void StructureSymbol::WriteSymbol(IStream *stream, QSymbolToken *sym) {
 }
 void StructureSymbol::Write(IStream *stream) {
 
-    stream->WriteUInt32(stream->GetOffset() + sizeof(uint32_t) + sizeof(uint32_t));
+    stream->WriteUInt32(stream->GetOffset() + sizeof(uint32_t));
     stream->WriteUInt32(0);
     WriteNoOffset(stream);
 }
@@ -162,19 +162,19 @@ void StructureSymbol::WriteNoOffset(IStream *stream) {
 
 void StructureSymbol::WriteToArray(IStream *stream) {
     uint32_t start_cursor = stream->GetOffset();
-    if(m_struct_item) {
-        stream->WriteUInt32(0);
-    }
+    /*if(m_struct_item) {
+        stream->WriteUInt32(0xFFFFFFFF);
+    }*/
     WriteNoOffset(stream);
 
-    if(m_struct_item && m_next_offset) {
+    /*if(m_struct_item && m_next_offset) {
         uint32_t cursor = stream->GetOffset();
         stream->SetCursor(start_cursor);
         
         stream->WriteUInt32(cursor);    
 
         stream->SetCursor(cursor);
-    }
+    }*/
 
 }
 std::string StructureSymbol::ToString() {
