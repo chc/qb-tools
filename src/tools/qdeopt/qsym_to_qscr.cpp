@@ -193,10 +193,7 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             }
 
             //rewrite random data
-            size_t cursor = stream->GetOffset();
-            stream->SetCursor(t->GetFileOffset());
-            t->Write(stream);
-            stream->SetCursor(cursor);
+            t->Rewrite(stream);
         }
 
         it++;

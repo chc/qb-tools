@@ -30,8 +30,8 @@ int main(int argc, const char *argv[]) {
     FileStream fsout(argv[2], true);
 
 
-    if(!fs.IsFileOpened()) {
-        fprintf(stderr, "Failed to open file: %s\n", argv[1]);
+    if(!fsout.IsFileOpened()) {
+        fprintf(stderr, "Failed to open file: %s\n", argv[2]);
         return -1;
     }
 
