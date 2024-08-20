@@ -9,7 +9,7 @@
 #include <QScriptToken.h>
 #include <ChecksumNameToken.h>
 #include <dbginfo.h>
-void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream);
+void WriteSymbolAsScriptToken(QSymbol *symbol, IStream *stream);
 
 std::map<uint32_t, const char *> m_checksum_names;
 
@@ -46,7 +46,7 @@ int main(int argc, const char *argv[]) {
 
     SymbolFileStream ss = SymbolFileStream(&fs);
 
-    QSymbolToken *symbol;
+    QSymbol *symbol;
     int x = 0;
     while(fs.GetOffset() < total_length) {
         symbol = ss.NextSymbol();

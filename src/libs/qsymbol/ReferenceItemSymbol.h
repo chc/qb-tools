@@ -2,7 +2,7 @@
 #define _REFERENCEITEMSYMBOL_H
 #include "QSymbolToken.h"
 
-class ReferenceItemSymbol : public QSymbolToken {
+class ReferenceItemSymbol : public QSymbol {
     public:
         ReferenceItemSymbol(uint8_t type);
         ~ReferenceItemSymbol();

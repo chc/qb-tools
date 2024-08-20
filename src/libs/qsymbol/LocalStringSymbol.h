@@ -2,7 +2,7 @@
 #define _LOCALSTRINGSYMBOL_H
 #include "QSymbolToken.h"
 
-class LocalStringSymbol : public QSymbolToken {
+class LocalStringSymbol : public QSymbol {
     public:
         LocalStringSymbol();
         LocalStringSymbol(std::string value);

@@ -12,18 +12,18 @@
 #include "StructureSymbol.h"
 #include "QScriptSymbol.h"
 #include "ReferenceItemSymbol.h"
-QSymbolToken::QSymbolToken() {
+QSymbol::QSymbol() {
     m_next_offset = 0;
     m_name_checksum = 0;
     m_source_checksum = 0;
     m_struct_item = false;
 
 }
-QSymbolToken::~QSymbolToken() {
+QSymbol::~QSymbol() {
 
 }
 
-QSymbolToken* QSymbolToken::Resolve(uint8_t token) {
+QSymbol* QSymbol::Resolve(uint8_t token) {
     switch(token) {
         case ESYMBOLTYPE_INTEGER:
             return new IntegerSymbol();
@@ -51,7 +51,7 @@ QSymbolToken* QSymbolToken::Resolve(uint8_t token) {
     assert(false);
     return nullptr;
 }
-void QSymbolToken::ReadSymbolsFromArray(IStream *stream, uint8_t type, bool is_reference, uint32_t num_items, QSymbolToken **output_tokens) {
+void QSymbol::ReadSymbolsFromArray(IStream *stream, uint8_t type, bool is_reference, uint32_t num_items, QSymbol **output_tokens) {
 
     if(num_items == 0) {
         uint32_t v = stream->ReadUInt32(); //skip null data
@@ -104,7 +104,7 @@ void QSymbolToken::ReadSymbolsFromArray(IStream *stream, uint8_t type, bool is_r
         assert(false);
     }
 }
-void QSymbolToken::WriteSymbolsToArray(IStream *stream, uint8_t type, bool is_reference, uint32_t num_items, QSymbolToken **output_tokens) {
+void QSymbol::WriteSymbolsToArray(IStream *stream, uint8_t type, bool is_reference, uint32_t num_items, QSymbol **output_tokens) {
     if(num_items == 0) {
         stream->WriteUInt32(0);
         return;
@@ -162,9 +162,9 @@ void QSymbolToken::WriteSymbolsToArray(IStream *stream, uint8_t type, bool is_re
    }
 
 }
-void QSymbolToken::LoadParamsFromArray(IStream *stream) {
+void QSymbol::LoadParamsFromArray(IStream *stream) {
     assert(false);
 }
-uint32_t QSymbolToken::GetNextOffset() {
+uint32_t QSymbol::GetNextOffset() {
     return m_next_offset;
 }

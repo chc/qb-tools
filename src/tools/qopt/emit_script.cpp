@@ -127,9 +127,9 @@ void rewrite_offsets(IStream *stream, QScriptToken *token) {
 }
 
 
-std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::vector<QSymbolToken *> &struct_symbols, std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end);
+std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::vector<QSymbol *> &struct_symbols, std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end);
 std::vector<QScriptToken *>::iterator ReadArray(uint32_t name, std::vector<QScriptToken *>::iterator begin, std::vector<QScriptToken *>::iterator end, ArraySymbol** out) {
-    std::vector<QSymbolToken *> syms;
+    std::vector<QSymbol *> syms;
     std::vector<QScriptToken *>::iterator it = handle_struct_array(name, syms, begin, end);
     if(!syms.empty()) {
         assert(syms.size() == 1);
@@ -153,12 +153,12 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
     bool in_name_mode = true;
     uint32_t name_checksum = 0;
 
-    QSymbolToken *sym = nullptr;
+    QSymbol *sym = nullptr;
 
     StructureSymbol *result;
     ArraySymbol *arr_result;
 
-    std::vector<QSymbolToken *> children;
+    std::vector<QSymbol *> children;
 
     int depth = 1;
     while(it != end && depth > 0) {
@@ -196,7 +196,7 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
                 in_argument_pack = true;
             break;
             case ESCRIPTTOKEN_NAME:
-                if(in_name_mode && next_usable_type(it+1, g_Deopt.script_tokens.end()) != ESCRIPTTOKEN_EQUALS) {
+                if(in_name_mode && next_usable_type(it+1, g_QOpt.script_tokens.end()) != ESCRIPTTOKEN_EQUALS) {
                     in_name_mode = false;
                     name_checksum = 0;
                 }
@@ -222,17 +222,17 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
 }
 
 void rewrite_inline_structs() {
-    std::vector<QScriptToken *>::iterator it = g_Deopt.script_tokens.begin();
+    std::vector<QScriptToken *>::iterator it = g_QOpt.script_tokens.begin();
 
-    while(it != g_Deopt.script_tokens.end()) {
+    while(it != g_QOpt.script_tokens.end()) {
         QScriptToken *token = *it;        
         if(token->GetType() == ESCRIPTTOKEN_INLINEPACKSTRUCT) {
             InlinePackStructToken* ip = reinterpret_cast<InlinePackStructToken*>(token);
             if(ip->GetValue() == nullptr) {
                 StructureSymbol *sym;
-                std::vector<QScriptToken *>::iterator it2 = ReadStructure(it+1, g_Deopt.script_tokens.end(), &sym);
+                std::vector<QScriptToken *>::iterator it2 = ReadStructure(it+1, g_QOpt.script_tokens.end(), &sym);
 
-                it = g_Deopt.script_tokens.erase(it+1, it2);
+                it = g_QOpt.script_tokens.erase(it+1, it2);
                 ip->SetValue(sym);
                 continue;
             }
@@ -248,8 +248,8 @@ void emit_script() {
 
     MemoryStream ms(token_buffer, TOKEN_BUFF_SIZE);
     rewrite_inline_structs();
-    std::vector<QScriptToken *>::iterator it = g_Deopt.script_tokens.begin();
-    while(it != g_Deopt.script_tokens.end()) {
+    std::vector<QScriptToken *>::iterator it = g_QOpt.script_tokens.begin();
+    while(it != g_QOpt.script_tokens.end()) {
         QScriptToken *token = *it;
         original_offsets[token] = token->GetFileOffset();
         if(token->GetType() == ESCRIPTTOKEN_INLINEPACKSTRUCT) {
@@ -265,20 +265,20 @@ void emit_script() {
         it++;
     }
 
-    it = g_Deopt.script_tokens.begin();
-    while(it != g_Deopt.script_tokens.end()) {
+    it = g_QOpt.script_tokens.begin();
+    while(it != g_QOpt.script_tokens.end()) {
         QScriptToken *token = *it;
         rewrite_offsets(reinterpret_cast<IStream*>(&ms), token);
         it++;
     }
 
     QScriptSymbol *symbol = new QScriptSymbol(token_buffer, ms.GetOffset());
-    symbol->SetNameChecksum(g_Deopt.root_name_checksum);
-    g_Deopt.write_stream->WriteSymbol(symbol);
+    symbol->SetNameChecksum(g_QOpt.root_name_checksum);
+    g_QOpt.write_stream->WriteSymbol(symbol);
     //delete symbol;
     //delete[] token_buffer;
 
-    g_Deopt.script_tokens.clear();
+    g_QOpt.script_tokens.clear();
     original_offsets.clear();
     updated_offsets.clear();
     

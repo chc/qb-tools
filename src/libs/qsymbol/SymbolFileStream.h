@@ -11,10 +11,10 @@ class SymbolFileStream : public ISStream {
     public:
         SymbolFileStream(IStream *data_stream);
         ~SymbolFileStream();
-        QSymbolToken *NextSymbol();
+        QSymbol *NextSymbol();
         void WriteHeader();
         void UpdateHeaderSize();
-        void WriteSymbol(QSymbolToken *symbol);
+        void WriteSymbol(QSymbol *symbol);
         void SetSourceChecksum(uint32_t checksum) { m_source_checksum = checksum;}
     private:
         IStream *mp_stream;

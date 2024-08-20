@@ -2,10 +2,10 @@
 #define _ISSTREAM_H
 #include <stdint.h>
 #include <stddef.h>
-class QSymbolToken;
+class QSymbol;
 class ISStream {
     public:
-        virtual QSymbolToken *NextSymbol() = 0;
-        virtual void WriteSymbol(QSymbolToken *symbol) = 0;
+        virtual QSymbol *NextSymbol() = 0;
+        virtual void WriteSymbol(QSymbol *symbol) = 0;
 };
 #endif //_ISSTREAM_H

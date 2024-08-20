@@ -7,19 +7,19 @@
 #include <ISStream.h>
 #include <vector>
 
-enum DeoptState {
-    DeoptState_ReadNextGlobalToken,
-    DeoptState_ReadEqualsToken,
-    DeoptState_ReadTokenValue,
-    DeoptState_ReadScriptName,
-    DeoptState_ReadScriptTokens,
-    DeoptState_ReadArrayTokens,
-    DeoptState_ReadStructTokens,
+enum QOptState {
+    QOptState_ReadNextGlobalToken,
+    QOptState_ReadEqualsToken,
+    QOptState_ReadTokenValue,
+    QOptState_ReadScriptName,
+    QOptState_ReadScriptTokens,
+    QOptState_ReadArrayTokens,
+    QOptState_ReadStructTokens,
 };
 
 
 typedef struct {
-    DeoptState currentState;
+    QOptState currentState;
     uint32_t source_checksum;
     uint32_t root_name_checksum;
     uint32_t depth_index;
@@ -28,10 +28,10 @@ typedef struct {
     ISStream *write_stream;
 
     std::vector<QScriptToken *> script_tokens;
-} Deopt;
+} QOpt;
 
 
-extern Deopt g_Deopt;
+extern QOpt g_QOpt;
 
 void emit_symbol();
 void emit_script();
@@ -43,6 +43,6 @@ void emit_array_of_structs();
 
 bool is_end_of_line_token(QScriptToken *token);
 
-QSymbolToken *ConvertToken(QScriptToken *token, bool make_reference = false);
+QSymbol *ConvertToken(QScriptToken *token, bool make_reference = false);
 
 #endif //_QOPT_H

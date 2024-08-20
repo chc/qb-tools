@@ -2,7 +2,7 @@
 #define _NAMESYMBOL_H
 #include "QSymbolToken.h"
 
-class NameSymbol : public QSymbolToken {
+class NameSymbol : public QSymbol {
     public:
         NameSymbol();
         NameSymbol(uint32_t v);

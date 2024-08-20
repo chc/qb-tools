@@ -2,7 +2,7 @@
 #define _STRINGSYMBOL_H
 #include "QSymbolToken.h"
 
-class StringSymbol : public QSymbolToken {
+class StringSymbol : public QSymbol {
     public:
         StringSymbol();
         StringSymbol(std::string value);

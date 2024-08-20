@@ -275,7 +275,7 @@ void WriteArgumentPack(ReferenceItemSymbol *symbol, IStream *stream) {
     NameToken nt(symbol->GetValue());
     nt.Write(stream);
 }
-void WriteSymbolAsScriptToken(QSymbolToken *symbol, IStream *stream) {
+void WriteSymbolAsScriptToken(QSymbol *symbol, IStream *stream) {
     NameToken nt(symbol->GetNameChecksum());
     m_checksum_names[symbol->GetNameChecksum()] = NULL;
     switch(symbol->GetType()) {
@@ -332,7 +332,7 @@ void WriteArray(ArraySymbol *symbol, IStream *stream) {
     stream->WriteByte(ESCRIPTTOKEN_STARTARRAY);
     eolt.Write(stream);
     for(int i=0;i<symbol->GetNumItems();i++) {
-        QSymbolToken *s = symbol->GetToken(i);
+        QSymbol *s = symbol->GetToken(i);
         WriteSymbolAsScriptToken(s, stream);
     }
 
@@ -359,8 +359,8 @@ void WriteStructure(StructureSymbol *symbol, IStream *stream, bool packed) {
         eolt.Write(stream);
     }
 
-    std::vector<QSymbolToken *> children = symbol->GetTokens();
-    std::vector<QSymbolToken *>::iterator it = children.begin();
+    std::vector<QSymbol *> children = symbol->GetTokens();
+    std::vector<QSymbol *>::iterator it = children.begin();
     while(it != children.end()) {
         WriteSymbolAsScriptToken(*it, stream);
         it++;

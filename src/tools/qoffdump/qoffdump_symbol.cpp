@@ -88,7 +88,7 @@ int main(int argc, const char *argv[]) {
 
     SymbolFileStream ss = SymbolFileStream(&fs);
 
-    QSymbolToken *symbol;
+    QSymbol *symbol;
     int x = 0;
     while(fs.GetOffset() < total_length) {
         symbol = ss.NextSymbol();

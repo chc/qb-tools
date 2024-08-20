@@ -2,7 +2,7 @@
 #define _FLOATSYMBOL_H
 #include "QSymbolToken.h"
 
-class FloatSymbol : public QSymbolToken {
+class FloatSymbol : public QSymbol {
     public:
         FloatSymbol();
         FloatSymbol(float v);

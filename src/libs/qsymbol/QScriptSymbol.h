@@ -2,7 +2,7 @@
 #define _QSCRIPTSYMBOL_H
 #include "QSymbolToken.h"
 
-class QScriptSymbol : public QSymbolToken {
+class QScriptSymbol : public QSymbol {
     public:
         QScriptSymbol();
         QScriptSymbol(uint8_t *decomp_buff, uint32_t decomp_len);

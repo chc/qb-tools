@@ -2,7 +2,7 @@
 #define _VECTORSYMBOL_H
 #include "QSymbolToken.h"
 
-class VectorSymbol : public QSymbolToken {
+class VectorSymbol : public QSymbol {
     public:
         VectorSymbol();
         VectorSymbol(float x, float y, float z);

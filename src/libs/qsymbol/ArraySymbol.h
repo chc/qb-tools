@@ -3,24 +3,24 @@
 #include "QSymbolToken.h"
 #include <vector>
 
-class ArraySymbol : public QSymbolToken {
+class ArraySymbol : public QSymbol {
     public:
         ArraySymbol();
-        ArraySymbol(std::vector<QSymbolToken *> tokens);
+        ArraySymbol(std::vector<QSymbol *> tokens);
         //
-        ArraySymbol(QSymbolToken **tokens, uint32_t num_tokens);
+        ArraySymbol(QSymbol **tokens, uint32_t num_tokens);
         ~ArraySymbol();
         ESymbolType GetType();
         void LoadParams(IStream *stream);
         void LoadParamsFromArray(IStream *stream);        
         std::string ToString();
         uint32_t GetNumItems() { return m_num_items; };
-        QSymbolToken *GetToken(uint32_t index) { return m_tokens[index]; }
+        QSymbol *GetToken(uint32_t index) { return m_tokens[index]; }
         void Write(IStream *stream);
         void WriteToArray(IStream *stream);
     private:
         void WriteNoOffset(IStream *stream);
         uint32_t m_num_items;
-        QSymbolToken **m_tokens;
+        QSymbol **m_tokens;
 };
 #endif //_ARRAYSYMBOL_H

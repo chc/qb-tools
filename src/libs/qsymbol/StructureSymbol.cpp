@@ -9,7 +9,7 @@
 StructureSymbol::StructureSymbol() {
 
 }
-StructureSymbol::StructureSymbol(std::vector<QSymbolToken *> children) : m_children(children) {
+StructureSymbol::StructureSymbol(std::vector<QSymbol *> children) : m_children(children) {
 }
 StructureSymbol::~StructureSymbol() {
 
@@ -17,12 +17,12 @@ StructureSymbol::~StructureSymbol() {
 ESymbolType StructureSymbol::GetType() {
     return ESYMBOLTYPE_STRUCTURE;
 }
-QSymbolToken *StructureSymbol::NextSymbol(IStream *stream) {
+QSymbol *StructureSymbol::NextSymbol(IStream *stream) {
     uint16_t flags = stream->ReadUInt16();
     uint8_t type = stream->ReadByte();
     stream->ReadByte();
     
-    QSymbolToken *token = QSymbolToken::Resolve(type);
+    QSymbol *token = QSymbol::Resolve(type);
     token->LoadParams(stream);
     return token;
 }
@@ -53,11 +53,11 @@ void StructureSymbol::LoadParamsFromArray(IStream *stream) {
 
         uint32_t name = stream->ReadUInt32();
 
-        QSymbolToken *token = NULL;
+        QSymbol *token = NULL;
         if(type_flags & SYMBOL_ISREF_FLAG) { //is reference
             token = new ReferenceItemSymbol(((type_flags & SYMBOL_STRUCT_TYPE_ANDMASK) >> SYMBOL_STRUCT_TYPE_RSHIFTMASK));
         } else {
-            token = QSymbolToken::Resolve(type);
+            token = QSymbol::Resolve(type);
         }
         token->SetIsStructItem(true);
         token->LoadParams(stream);
@@ -107,7 +107,7 @@ void StructureSymbol::LoadParamsNoOffset(IStream *stream) {
 
         uint32_t name = stream->ReadUInt32();
 
-        QSymbolToken *token = NULL;
+        QSymbol *token = NULL;
         if(type_flags & SYMBOL_ISREF_FLAG) { //is reference
             ReferenceItemSymbol *ref = new ReferenceItemSymbol(((type_flags & SYMBOL_STRUCT_TYPE_ANDMASK) >> SYMBOL_STRUCT_TYPE_RSHIFTMASK));
             ref->SetIsStructItem(true);
@@ -115,7 +115,7 @@ void StructureSymbol::LoadParamsNoOffset(IStream *stream) {
             ref->SetNextOffset(stream->ReadUInt32());
             token = ref;
         } else {
-            token = QSymbolToken::Resolve(type);
+            token = QSymbol::Resolve(type);
             token->SetIsStructItem(true);
             token->LoadParams(stream);
         }
@@ -131,7 +131,7 @@ void StructureSymbol::LoadParamsNoOffset(IStream *stream) {
         stream->SetCursor(next);
     }
 }
-void StructureSymbol::WriteSymbol(IStream *stream, QSymbolToken *sym) {
+void StructureSymbol::WriteSymbol(IStream *stream, QSymbol *sym) {
     bool is_ref = false;
     uint8_t type = sym->GetType();
     uint8_t flags = (type << SYMBOL_STRUCT_TYPE_RSHIFTMASK);
@@ -149,7 +149,7 @@ void StructureSymbol::WriteSymbol(IStream *stream, QSymbolToken *sym) {
     stream->WriteUInt16(0);
     stream->WriteUInt32(sym->GetNameChecksum());
 
-    QSymbolToken *tokens[1] = {sym};
+    QSymbol *tokens[1] = {sym};
     sym->SetIsStructItem(true);
     WriteSymbolsToArray(stream, type, is_ref, 1, tokens);
 }
@@ -175,9 +175,9 @@ void StructureSymbol::WriteNoOffset(IStream *stream) {
     }
    stream->WriteUInt32(stream->GetOffset() + sizeof(uint32_t));
 
-    std::vector<QSymbolToken *>::iterator it = m_children.begin();
+    std::vector<QSymbol *>::iterator it = m_children.begin();
     while(it != m_children.end()) {
-        QSymbolToken *sym = *it;
+        QSymbol *sym = *it;
         it++;
         bool has_next = it != m_children.end();
         if(has_next) {

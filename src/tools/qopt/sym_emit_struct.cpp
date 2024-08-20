@@ -10,9 +10,9 @@ void emit_struct() {
     int depth = 1;
     bool in_name_mode = true;
     StructureSymbol *sym;
-    ReadStructure(g_Deopt.script_tokens.begin(), g_Deopt.script_tokens.end(), &sym);
+    ReadStructure(g_QOpt.script_tokens.begin(), g_QOpt.script_tokens.end(), &sym);
     
-    sym->SetNameChecksum(g_Deopt.root_name_checksum);
-    g_Deopt.write_stream->WriteSymbol(sym);
-    g_Deopt.script_tokens.clear();
+    sym->SetNameChecksum(g_QOpt.root_name_checksum);
+    g_QOpt.write_stream->WriteSymbol(sym);
+    g_QOpt.script_tokens.clear();
 }

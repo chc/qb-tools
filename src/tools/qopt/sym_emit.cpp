@@ -24,7 +24,7 @@
 #include <PairSymbol.h>
 #include <VectorToken.h>
 #include <VectorSymbol.h>
-QSymbolToken *ConvertToken(QScriptToken *token, bool make_reference) {
+QSymbol *ConvertToken(QScriptToken *token, bool make_reference) {
     if(make_reference) {      
         assert(token->GetType() == ESCRIPTTOKEN_NAME);
         ReferenceItemSymbol *ref = new ReferenceItemSymbol(ESYMBOLTYPE_STRUCTURE);
@@ -59,11 +59,11 @@ QSymbolToken *ConvertToken(QScriptToken *token, bool make_reference) {
     return nullptr;
 }
 void emit_symbol() {
-    QScriptToken *token = g_Deopt.currentToken;
-    QSymbolToken *converted = ConvertToken(token);
+    QScriptToken *token = g_QOpt.currentToken;
+    QSymbol *converted = ConvertToken(token);
     assert(converted);
-    converted->SetNameChecksum(g_Deopt.root_name_checksum);
-    g_Deopt.write_stream->WriteSymbol(converted);
+    converted->SetNameChecksum(g_QOpt.root_name_checksum);
+    g_QOpt.write_stream->WriteSymbol(converted);
     delete converted;
 }
 

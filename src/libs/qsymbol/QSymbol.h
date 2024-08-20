@@ -43,18 +43,18 @@ enum ESymbolType
     ESYMBOLTYPE_INTERNAL_REFERENCE, //not real
 };
 
-class QSymbolToken { //rename this to QSymbol...
+class QSymbol {
     public:
-        QSymbolToken();
-        virtual ~QSymbolToken();
+        QSymbol();
+        virtual ~QSymbol();
         virtual ESymbolType GetType() = 0;
 		virtual void LoadParams(IStream *stream) = 0;
         virtual void LoadParamsFromArray(IStream *stream);
         uint32_t GetNextOffset();
         void SetNextOffset(uint32_t v) { m_next_offset = v; }
-		static QSymbolToken *Resolve(uint8_t token);
-        static void ReadSymbolsFromArray(IStream *stream, uint8_t type, bool is_reference, uint32_t num_items, QSymbolToken **output_tokens);
-        static void WriteSymbolsToArray(IStream *stream, uint8_t type, bool is_reference, uint32_t num_items, QSymbolToken **output_tokens);
+		static QSymbol *Resolve(uint8_t token);
+        static void ReadSymbolsFromArray(IStream *stream, uint8_t type, bool is_reference, uint32_t num_items, QSymbol **output_tokens);
+        static void WriteSymbolsToArray(IStream *stream, uint8_t type, bool is_reference, uint32_t num_items, QSymbol **output_tokens);
 		virtual std::string ToString() = 0;
         void SetNameChecksum(uint32_t name) { m_name_checksum = name; }
         uint32_t GetNameChecksum() { return m_name_checksum; }

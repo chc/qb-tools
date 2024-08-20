@@ -2,7 +2,7 @@
 #define _INTEGERSYMBOL_H
 #include "QSymbolToken.h"
 
-class IntegerSymbol : public QSymbolToken {
+class IntegerSymbol : public QSymbol {
     public:
         IntegerSymbol();
         IntegerSymbol(int32_t v);

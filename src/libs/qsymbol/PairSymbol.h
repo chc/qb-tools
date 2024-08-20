@@ -2,7 +2,7 @@
 #define _PAIRSYMBOL_H
 #include "QSymbolToken.h"
 
-class PairSymbol : public QSymbolToken {
+class PairSymbol : public QSymbol {
     public:
         PairSymbol();
         PairSymbol(float x, float y);

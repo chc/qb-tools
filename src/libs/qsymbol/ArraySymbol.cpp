@@ -8,16 +8,16 @@ ArraySymbol::ArraySymbol() {
     m_struct_item = false;
 
 }
-ArraySymbol::ArraySymbol(std::vector<QSymbolToken *> tokens) {
+ArraySymbol::ArraySymbol(std::vector<QSymbol *> tokens) {
     m_struct_item = false;
     m_num_items = tokens.size();
-    m_tokens = new QSymbolToken*[m_num_items];
+    m_tokens = new QSymbol*[m_num_items];
     for(int i=0;i<m_num_items;i++) {
         m_tokens[i] = tokens.at(i);
         m_tokens[i]->SetIsStructItem(false);
     }
 }
-ArraySymbol::ArraySymbol(QSymbolToken **tokens, uint32_t num_tokens) : m_tokens(tokens), m_num_items(num_tokens) {
+ArraySymbol::ArraySymbol(QSymbol **tokens, uint32_t num_tokens) : m_tokens(tokens), m_num_items(num_tokens) {
     m_struct_item = false;
 }
 ArraySymbol::~ArraySymbol() {
@@ -26,8 +26,8 @@ ArraySymbol::~ArraySymbol() {
 ESymbolType ArraySymbol::GetType() {
     return ESYMBOLTYPE_ARRAY;
 }
-QSymbolToken *NextSymbol(IStream *stream, uint8_t type) {
-    QSymbolToken *token = QSymbolToken::Resolve(type);
+QSymbol *NextSymbol(IStream *stream, uint8_t type) {
+    QSymbol *token = QSymbol::Resolve(type);
     token->LoadParamsFromArray(stream);
     return token;
 }
@@ -54,7 +54,7 @@ void ArraySymbol::LoadParamsFromArray(IStream *stream) {
 
     m_num_items = stream->ReadUInt32();
 
-    m_tokens = new QSymbolToken*[m_num_items];
+    m_tokens = new QSymbol*[m_num_items];
 
     bool is_ref = false;
     if(type & SYMBOL_ISREF_FLAG) {

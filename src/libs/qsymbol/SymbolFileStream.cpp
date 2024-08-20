@@ -7,7 +7,7 @@ SymbolFileStream::SymbolFileStream(IStream *data_stream) {
 SymbolFileStream::~SymbolFileStream() {
 
 }
-QSymbolToken *SymbolFileStream::NextSymbol() {
+QSymbol *SymbolFileStream::NextSymbol() {
     mp_stream->ReadByte();
     uint8_t flags = mp_stream->ReadByte();
     //printf("flags: %04x - %d\n", flags, mp_stream->GetOffset());
@@ -24,7 +24,7 @@ QSymbolToken *SymbolFileStream::NextSymbol() {
     uint32_t source_checksum = mp_stream->ReadUInt32();
     //printf("source_checksum: %08x\n", source_checksum);
 
-    QSymbolToken *token = QSymbolToken::Resolve(type);
+    QSymbol *token = QSymbol::Resolve(type);
     token->SetNameChecksum(name_checksum);
     token->SetSourceChecksum(source_checksum);
     token->LoadParams(mp_stream);
@@ -47,7 +47,7 @@ void SymbolFileStream::UpdateHeaderSize() {
     mp_stream->SetCursor(sizeof(uint32_t));
     mp_stream->WriteUInt32(offset);
 }
-void SymbolFileStream::WriteSymbol(QSymbolToken *symbol) {
+void SymbolFileStream::WriteSymbol(QSymbol *symbol) {
     mp_stream->WriteByte(0);
     mp_stream->WriteByte(SYMBOL_ROOT_FLAG);
 
