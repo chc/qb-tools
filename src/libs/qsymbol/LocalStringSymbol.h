@@ -1,6 +1,6 @@
 #ifndef _LOCALSTRINGSYMBOL_H
 #define _LOCALSTRINGSYMBOL_H
-#include "QSymbolToken.h"
+#include "QSymbol.h"
 
 class LocalStringSymbol : public QSymbol {
     public:

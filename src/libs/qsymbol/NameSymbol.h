@@ -1,6 +1,6 @@
 #ifndef _NAMESYMBOL_H
 #define _NAMESYMBOL_H
-#include "QSymbolToken.h"
+#include "QSymbol.h"
 
 class NameSymbol : public QSymbol {
     public:

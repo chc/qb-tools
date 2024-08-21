@@ -1,6 +1,6 @@
 #ifndef _STRINGSYMBOL_H
 #define _STRINGSYMBOL_H
-#include "QSymbolToken.h"
+#include "QSymbol.h"
 
 class StringSymbol : public QSymbol {
     public:

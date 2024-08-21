@@ -2,7 +2,7 @@
 
 #include <FileStream.h>
 #include <ISStream.h>
-#include <QSymbolToken.h>
+#include <QSymbol.h>
 #include <SymbolFileStream.h>
 #include <QScriptToken.h>
 #include <ChecksumNameToken.h>

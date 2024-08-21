@@ -1,6 +1,6 @@
 #ifndef _REFERENCEITEMSYMBOL_H
 #define _REFERENCEITEMSYMBOL_H
-#include "QSymbolToken.h"
+#include "QSymbol.h"
 
 class ReferenceItemSymbol : public QSymbol {
     public:

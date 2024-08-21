@@ -1,6 +1,6 @@
 #ifndef _QSCRIPTSYMBOL_H
 #define _QSCRIPTSYMBOL_H
-#include "QSymbolToken.h"
+#include "QSymbol.h"
 
 class QScriptSymbol : public QSymbol {
     public:

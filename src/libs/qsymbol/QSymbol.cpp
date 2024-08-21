@@ -1,4 +1,4 @@
-#include "QSymbolToken.h"
+#include "QSymbol.h"
 #include <cassert>
 
 #include "IntegerSymbol.h"

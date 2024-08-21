@@ -4,7 +4,7 @@
 #include <FileStream.h>
 #include <stdio.h>
 #include <IStream.h>
-#include <QSymbolToken.h>
+#include <QSymbol.h>
 #include <ISStream.h>
 
 class SymbolFileStream : public ISStream {

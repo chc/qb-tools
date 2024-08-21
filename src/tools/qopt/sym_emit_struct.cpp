@@ -1,5 +1,5 @@
 #include "qopt.h"
-#include <QSymbolToken.h>
+#include <QSymbol.h>
 #include <QScriptToken.h>
 #include <QScriptSymbol.h>
 #include <StructureSymbol.h>

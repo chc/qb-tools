@@ -21,6 +21,7 @@
 #include "ElseToken.h"
 #include "EndIfToken.h"
 #include "NotToken.h"
+#include "NotEqualToken.h"
 #include "AndToken.h"
 #include "OrToken.h"
 #include "LessThanToken.h"
@@ -105,6 +106,8 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
             return new EndIfToken();
         case ESCRIPTTOKEN_KEYWORD_NOT:
             return new NotToken();
+        case ESCRIPTTOKEN_NOTEQUAL:
+            return new NotEqualToken();            
         case ESCRIPTTOKEN_AND:
             return new AndToken();
         case ESCRIPTTOKEN_OR:

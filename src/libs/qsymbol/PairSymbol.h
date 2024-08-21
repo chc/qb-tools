@@ -1,6 +1,6 @@
 #ifndef _PAIRSYMBOL_H
 #define _PAIRSYMBOL_H
-#include "QSymbolToken.h"
+#include "QSymbol.h"
 
 class PairSymbol : public QSymbol {
     public:

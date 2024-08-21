@@ -1,6 +1,6 @@
 #ifndef _VECTORSYMBOL_H
 #define _VECTORSYMBOL_H
-#include "QSymbolToken.h"
+#include "QSymbol.h"
 
 class VectorSymbol : public QSymbol {
     public:

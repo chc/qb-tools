@@ -1,6 +1,6 @@
 #ifndef _INTEGERSYMBOL_H
 #define _INTEGERSYMBOL_H
-#include "QSymbolToken.h"
+#include "QSymbol.h"
 
 class IntegerSymbol : public QSymbol {
     public:

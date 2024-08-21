@@ -1,6 +1,6 @@
 #ifndef _ARRAYSYMBOL_H
 #define _ARRAYSYMBOL_H
-#include "QSymbolToken.h"
+#include "QSymbol.h"
 #include <vector>
 
 class ArraySymbol : public QSymbol {

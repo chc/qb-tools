@@ -1,6 +1,6 @@
 #ifndef _FLOATSYMBOL_H
 #define _FLOATSYMBOL_H
-#include "QSymbolToken.h"
+#include "QSymbol.h"
 
 class FloatSymbol : public QSymbol {
     public:

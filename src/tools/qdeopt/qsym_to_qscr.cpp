@@ -1,7 +1,7 @@
 #include <cassert>
 #include <map>
 
-#include <QSymbolToken.h>
+#include <QSymbol.h>
 #include <QScriptToken.h>
 #include <IntegerSymbol.h>
 #include <IntegerToken.h>

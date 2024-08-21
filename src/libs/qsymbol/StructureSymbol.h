@@ -1,6 +1,6 @@
 #ifndef _STRUCTURESYMBOL_H
 #define _STRUCTURESYMBOL_H
-#include "QSymbolToken.h"
+#include "QSymbol.h"
 #include <vector>
 
 class StructureSymbol : public QSymbol {
