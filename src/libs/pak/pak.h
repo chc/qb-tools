@@ -18,6 +18,7 @@ typedef struct _PakItem {
     uint32_t pak_file_len;
     void *pab_fd; //also used as data fd for writing
     const char *file_path;
+    bool using_pab_file;
     _PakItem *next;
 } PakItem;
 

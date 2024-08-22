@@ -268,7 +268,9 @@ void WriteArgumentPack(ReferenceItemSymbol *symbol, IStream *stream) {
         et.Write(stream);
     }
     ArgumentPackToken tok;
-    tok.Write(stream);
+    tok.SetRefType(symbol->GetRefType());
+    tok.SetIsRequiredParams(symbol->GetIsRequiredParams());
+    tok.WriteExtendedParams(stream);
 
     m_checksum_names[symbol->GetValue()] = NULL;
 

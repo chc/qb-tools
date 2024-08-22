@@ -4,7 +4,7 @@
 
 class ReferenceItemSymbol : public QSymbol {
     public:
-        ReferenceItemSymbol(uint8_t type);
+        ReferenceItemSymbol(uint8_t type, bool is_required_param = false);
         ~ReferenceItemSymbol();
         ESymbolType GetType();
         void LoadParams(IStream *stream);
@@ -15,8 +15,10 @@ class ReferenceItemSymbol : public QSymbol {
         uint8_t GetRefType() { return m_type; }
         void Write(IStream *stream);
         void WriteToArray(IStream *stream);
+        bool GetIsRequiredParams() { return m_is_required_param; }
     private:
         uint8_t m_type;
         uint32_t m_value;
+        bool m_is_required_param;
 };
 #endif //_REFERENCEITEMSYMBOL_H

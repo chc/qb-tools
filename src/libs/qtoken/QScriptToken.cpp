@@ -63,7 +63,9 @@
 #include "ElseIfToken.h"
 #include "LessThanEqualToken.h"
 #include "GreaterThanEqualToken.h"
-
+#include "StringQSToken.h"
+#include "RandomIntegerToken.h"
+#include "RandomFloatToken.h"
 QScriptToken::QScriptToken() {
 
 }
@@ -192,6 +194,23 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
             return new WideStringToken();
         case ESCRIPTTOKEN_SHORTJUMP:
             return new ShortJumpToken();
+        case ESCRIPTTOKEN_STRINGQS:
+            return new StringQSToken();
+        case ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT:
+            return new RandomFloatToken();
+        case 81:
+        case 82:
+        case 83:
+        case 84:
+        case 85:
+        case 86:
+        case 87:
+        case 88:
+        case 89:
+        case 90:
+        printf("** unhandled type: %d\n", token);
+        case ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER:
+            return new RandomIntegerToken();
             
     }
     fprintf(stderr, "Failed to resolve token with id: %d - %02x\n", token, token);

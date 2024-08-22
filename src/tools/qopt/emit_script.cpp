@@ -24,6 +24,7 @@
 #include <JumpToken.h>
 #include <ShortJumpToken.h>
 #include <RandomToken.h>
+#include <ArgumentPackToken.h>
 
 #include <map>
 std::map<QScriptToken *, size_t> original_offsets;
@@ -160,6 +161,8 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
 
     std::vector<QSymbol *> children;
 
+    ArgumentPackToken *last_argpack;
+
     int depth = 1;
     while(it != end && depth > 0) {
         QScriptToken *t = *it;
@@ -193,6 +196,7 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
             case ESCRIPTTOKEN_ENDARRAY:
                 assert(false);
             case ESCRIPTTOKEN_ARGUMENTPACK:
+                last_argpack = reinterpret_cast<ArgumentPackToken *>(t);
                 in_argument_pack = true;
             break;
             case ESCRIPTTOKEN_NAME:
@@ -206,8 +210,8 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
                     break;
                 }
             default:
-                sym = ConvertToken(t, in_argument_pack);
-                assert(sym);
+                sym = ConvertToken(t, in_argument_pack, last_argpack);
+                assert(sym);                
                 in_argument_pack = false;
                 in_name_mode = true;
                 sym->SetNameChecksum(name_checksum);

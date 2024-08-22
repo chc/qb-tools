@@ -6,6 +6,7 @@
 #include <NameToken.h>
 #include <IntegerToken.h>
 #include <FloatToken.h>
+#include <ArgumentPackToken.h>
 
 #include <SymbolFileStream.h>
 #include <cassert>
@@ -185,6 +186,10 @@ int main(int argc, const char *argv[]) {
             break;
         }
         token->SetFileOffset(offset);
+        if(token->GetType() == ESCRIPTTOKEN_ARGUMENTPACK) {
+            ArgumentPackToken *argpack = reinterpret_cast<ArgumentPackToken*>(token);
+            argpack->LoadExtendedParams(&fs);
+        }
         switch(g_QOpt.currentState) {
             case QOptState_ReadNextGlobalToken:
                 handle_global_token_state(token);

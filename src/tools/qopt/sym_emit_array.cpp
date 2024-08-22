@@ -47,6 +47,7 @@ std::vector<QScriptToken *>::iterator read_array_struct_item(std::vector<QScript
     int depth = 1;
     bool in_name_mode = true;
     bool in_argument_pack = false;
+    ArgumentPackToken *last_argpack;
     uint32_t struct_item_name = 0;
     while(it != end && depth > 0) {
         QScriptToken *t = *it;
@@ -60,6 +61,7 @@ std::vector<QScriptToken *>::iterator read_array_struct_item(std::vector<QScript
             break;
             case ESCRIPTTOKEN_ARGUMENTPACK:
                 in_argument_pack = true;
+                last_argpack = reinterpret_cast<ArgumentPackToken *>(t);
                 it++;
                 continue;
             break;
@@ -101,7 +103,7 @@ std::vector<QScriptToken *>::iterator read_array_struct_item(std::vector<QScript
             case ESCRIPTTOKEN_PAIR:
             case ESCRIPTTOKEN_VECTOR:
             
-                child = ConvertToken(t, in_argument_pack);
+                child = ConvertToken(t, in_argument_pack, last_argpack);
                 child->SetNameChecksum(struct_item_name);
                 child->SetIsStructItem(true);
                 children.push_back(child);
@@ -127,7 +129,7 @@ std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::ve
 
     ArraySymbol *arr_sym;
     std::vector<QSymbol *> child_arr_items;
-
+    ArgumentPackToken *last_argpack;
     QSymbol *sym;
 
     int depth = 1;
@@ -162,13 +164,14 @@ std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::ve
             break;
         } else if(t->GetType() == ESCRIPTTOKEN_ARGUMENTPACK) {
             make_reference = true;
+            last_argpack = reinterpret_cast<ArgumentPackToken*>(t);
             it++;
             continue;
         } else if(is_end_of_line_token(t)) {
             it++;
             continue;
         }
-        sym = ConvertToken(t, make_reference);
+        sym = ConvertToken(t, make_reference, last_argpack);
         make_reference = false;
         arr_items.push_back(sym);
         it++;

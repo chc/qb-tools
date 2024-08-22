@@ -17,7 +17,7 @@ void handle_script(QScriptSymbol *qscript) {
     MemoryStream ms(qscript->GetDecompBuff(), qscript->GetDecompLen());
     ms.SetReadEndian(ISTREAM_LITTLE_ENDIAN);
 
-    #if 0
+    #if 1
     printf("dumping script: %08x\n", qscript->GetNameChecksum());
     char name[256];
     sprintf(name, "%08x.bin", qscript->GetNameChecksum());

@@ -27,6 +27,8 @@ QSymbol *StructureSymbol::NextSymbol(IStream *stream) {
     return token;
 }
 void StructureSymbol::LoadParamsFromArray(IStream *stream) {
+    LoadParamsNoOffset(stream);
+    return;
     uint8_t hdr = stream->ReadByte();
     assert(hdr == 0);
     hdr = stream->ReadByte();
@@ -43,19 +45,38 @@ void StructureSymbol::LoadParamsFromArray(IStream *stream) {
     }
     stream->SetCursor(offset);
     while(true) {
+        bool is_ref = false;
+        #ifdef SYMBOL_STRUCT_SEPERATE_FLAGS
         uint8_t unk = stream->ReadByte();
+        assert(unk == 0);
+        uint8_t flags = stream->ReadByte();
+        assert(flags & SYMBOL_STRUCT_FLAG);
+        uint8_t type = stream->ReadByte();
+        unk = stream->ReadByte();
+        assert(unk == 0);
+        if(type & SYMBOL_ISREF_FLAG) {
+            is_ref = true;
+            type = type &= ~SYMBOL_ISREF_FLAG;
+        }
+        #else
+        uint8_t unk = stream->ReadByte();
+        assert(unk == 0);
         uint8_t type_flags = stream->ReadByte();
         assert(type_flags & SYMBOL_STRUCT_FLAG);
         uint8_t type = (type_flags & SYMBOL_STRUCT_TYPE_ANDMASK) >> SYMBOL_STRUCT_TYPE_RSHIFTMASK;
-
         uint16_t unk2 = stream->ReadUInt16();
         assert(unk2 == 0);
+
+        if(type_flags & SYMBOL_ISREF_FLAG) {
+            is_ref = true;
+        }
+        #endif
 
         uint32_t name = stream->ReadUInt32();
 
         QSymbol *token = NULL;
-        if(type_flags & SYMBOL_ISREF_FLAG) { //is reference
-            token = new ReferenceItemSymbol(((type_flags & SYMBOL_STRUCT_TYPE_ANDMASK) >> SYMBOL_STRUCT_TYPE_RSHIFTMASK));
+        if(is_ref) {
+            token = new ReferenceItemSymbol(type);
         } else {
             token = QSymbol::Resolve(type);
         }
@@ -97,21 +118,53 @@ void StructureSymbol::LoadParamsNoOffset(IStream *stream) {
         return;
     }
     while(true) {
+
+        bool is_ref = false;
+        bool is_required_params_info = false;
+        #ifdef SYMBOL_STRUCT_SEPERATE_FLAGS
         uint8_t unk = stream->ReadByte();
+        assert(unk == 0);
+        uint8_t flags = stream->ReadByte();
+        assert(flags & SYMBOL_STRUCT_FLAG);
+        uint8_t type = stream->ReadByte();
+        unk = stream->ReadByte();
+        assert(unk == 0);
+        if(type & SYMBOL_ISREF_FLAG) {
+            is_ref = true;
+            type &= SYMBOL_STRUCT_TYPE_ANDMASK;
+        }
+        if(type & SYMBOL_STRUCT_REQUIRED_PARAM_FLAG) {
+            is_ref = true;
+            type &= ~SYMBOL_STRUCT_REQUIRED_PARAM_FLAG;
+            is_required_params_info = true;
+        }
+        #else
+        uint8_t unk = stream->ReadByte();
+        assert(unk == 0);
         uint8_t type_flags = stream->ReadByte();
         assert(type_flags & SYMBOL_STRUCT_FLAG);
         uint8_t type = (type_flags & SYMBOL_STRUCT_TYPE_ANDMASK) >> SYMBOL_STRUCT_TYPE_RSHIFTMASK;
-
         uint16_t unk2 = stream->ReadUInt16();
         assert(unk2 == 0);
+
+        if(type_flags & SYMBOL_ISREF_FLAG) {
+            is_ref = true;
+        }
+        #endif
 
         uint32_t name = stream->ReadUInt32();
 
         QSymbol *token = NULL;
-        if(type_flags & SYMBOL_ISREF_FLAG) { //is reference
-            ReferenceItemSymbol *ref = new ReferenceItemSymbol(((type_flags & SYMBOL_STRUCT_TYPE_ANDMASK) >> SYMBOL_STRUCT_TYPE_RSHIFTMASK));
+        if(is_ref) {
+            ReferenceItemSymbol *ref = new ReferenceItemSymbol(type, is_required_params_info);
             ref->SetIsStructItem(true);
             ref->SetValue(stream->ReadUInt32());
+            #ifdef SYMBOL_STRUCT_REQUIRED_PARAM_FLAG
+            if(is_required_params_info) {
+                assert(ref->GetValue() == 0x69696969);
+            }
+            #endif
+            
             ref->SetNextOffset(stream->ReadUInt32());
             token = ref;
         } else {
@@ -137,16 +190,36 @@ void StructureSymbol::WriteSymbol(IStream *stream, QSymbol *sym) {
     uint8_t flags = (type << SYMBOL_STRUCT_TYPE_RSHIFTMASK);
     
     if(type  == ESYMBOLTYPE_INTERNAL_REFERENCE) {
-        type = reinterpret_cast<ReferenceItemSymbol*>(sym)->GetRefType();
+        ReferenceItemSymbol* ref = reinterpret_cast<ReferenceItemSymbol*>(sym);
+        type = ref->GetRefType();
         flags = (type) << SYMBOL_STRUCT_TYPE_RSHIFTMASK;
-        flags |= SYMBOL_ISREF_FLAG;
+        if(ref->GetIsRequiredParams()) {
+            assert(ref->GetNameChecksum() != 0);
+            ref->SetValue(0x69696969);
+            #ifdef SYMBOL_STRUCT_REQUIRED_PARAM_FLAG 
+            flags |= SYMBOL_STRUCT_REQUIRED_PARAM_FLAG;
+            #else
+            assert(false);
+            #endif
+        } else {
+            flags |= SYMBOL_ISREF_FLAG;
+        }
+        
         is_ref = true;
     }
-    flags |= SYMBOL_STRUCT_FLAG;
+    
 
+    #ifdef SYMBOL_STRUCT_SEPERATE_FLAGS
+    stream->WriteByte(0);
+    stream->WriteByte(SYMBOL_STRUCT_FLAG);
+    stream->WriteByte(flags);
+    stream->WriteByte(0);
+    #else
+    flags |= SYMBOL_STRUCT_FLAG;
     stream->WriteByte(0);
     stream->WriteByte(flags);
     stream->WriteUInt16(0);
+    #endif
     stream->WriteUInt32(sym->GetNameChecksum());
 
     QSymbol *tokens[1] = {sym};

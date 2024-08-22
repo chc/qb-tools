@@ -3,8 +3,10 @@
 #include <sstream>
 #include <iomanip>
 #include <cassert>
-ReferenceItemSymbol::ReferenceItemSymbol(uint8_t type) : m_type(type) {
+ReferenceItemSymbol::ReferenceItemSymbol(uint8_t type, bool required) : m_type(type) , m_is_required_param(required) {
+    #ifndef SYMBOL_STRUCT_REQUIRED_PARAM_FLAG
     assert(type == ESYMBOLTYPE_STRUCTURE);
+    #endif
 }
 ReferenceItemSymbol::~ReferenceItemSymbol() {
 

@@ -8,6 +8,7 @@
 #include <ChecksumNameToken.h>
 #include <JumpToken.h>
 #include <InjectedToken.h>
+#include <ArgumentPackToken.h>
 
 #include <vector>
 std::vector<QScriptToken *> token_list;
@@ -118,6 +119,9 @@ int main(int argc, const char *argv[]) {
             append_injections(fs, token);
             if(token->GetType() == ESCRIPTTOKEN_JUMP) {
                 update_jump_injection(fs, reinterpret_cast<JumpToken*>(token));
+            }
+            if(token->GetType() == ESCRIPTTOKEN_ARGUMENTPACK) {
+                reinterpret_cast<ArgumentPackToken*>(token)->LoadExtendedParams(&fs);
             }
             token_list.push_back(token);
             perform_injections(fs);

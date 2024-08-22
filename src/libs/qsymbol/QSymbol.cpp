@@ -24,6 +24,11 @@ QSymbol::~QSymbol() {
 }
 
 QSymbol* QSymbol::Resolve(uint8_t token) {
+    if(token & SYMBOL_ISREF_FLAG) {
+        token &= SYMBOL_STRUCT_TYPE_ANDMASK;
+        ReferenceItemSymbol *ref = new ReferenceItemSymbol(token);
+        return ref;
+    }
     switch(token) {
         case ESYMBOLTYPE_INTEGER:
             return new IntegerSymbol();

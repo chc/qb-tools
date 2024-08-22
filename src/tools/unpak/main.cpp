@@ -31,6 +31,7 @@ void print_pak_item(PakItem* item) {
 
     const char* c = NULL;
     printf("**** BEGIN ITEM ****\n");
+    printf("File offset: %08x\n", item->file_offset);
     PRINT_FIELD("Type", item->type);
     PRINT_FIELD("Fullname", item->fullname);
     PRINT_FIELD("Pak Name", item->pakname);
@@ -40,6 +41,7 @@ void print_pak_item(PakItem* item) {
     printf("Offset: %08x - %d\n", item->offset, item->offset);
     printf("Expected End Offset: %08x - %d\n", item->size + item->offset, item->size + item->offset);
     printf("Size: %08x - %d\n", item->size, item->size);
+    
 
     printf("\n");
 
@@ -75,11 +77,13 @@ bool unpak_file_info_callback(PakItem item) {
     if (path) {
         name = strdup(path);
         create_dir(name);
+        
     } else {
         char tmp[32];
         snprintf(tmp, sizeof(tmp), "%08x.bin", item.pakname);
         name = strdup(tmp);
     }
+
 
 
 
@@ -90,6 +94,7 @@ bool unpak_file_info_callback(PakItem item) {
     } else {
         fprintf(stderr, "Failed to open for writing: %s\n", name);
     }
+
     free(name);
 
     delete[] buf;
