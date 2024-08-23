@@ -161,9 +161,17 @@ void pak_close(PakContext *ctx) {
     current_item = ctx->first_pak_item;
     while(current_item != nullptr) {
         ctx->pak_fd->SetCursor(current_item->file_offset + sizeof(uint32_t));
+        #ifdef PAB_ABSOLUTE_OFFSET
+        //XXX: test this with single pab-less paks too
         ctx->pak_fd->WriteUInt32(
-            current_item->offset - current_item->file_offset + (uses_pab ? pak_cursor : 0)
+            current_item->offset
+        );
+        #else
+            ctx->pak_fd->WriteUInt32(
+                current_item->offset - current_item->file_offset + (uses_pab ? pak_cursor : 0)
             );
+        #endif
+
         current_item = current_item->next;
     }
 

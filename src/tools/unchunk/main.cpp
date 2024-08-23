@@ -6,42 +6,7 @@
 #include <cassert>
 #include <zlib.h>
 #include <FileStream.h>
-void show_dump(unsigned char *data, unsigned int len, FILE *stream) {
-    static const char       hex[] = "0123456789abcdef";
-    static unsigned char    buff[67];   /* HEX  CHAR\n */
-    unsigned char           chr,
-                            *bytes,
-                            *p,
-                            *limit,
-                            *glimit = data + len;
-
-    memset(buff + 2, ' ', 48);
-
-    while(data < glimit) {
-        limit = data + 16;
-        if(limit > glimit) {
-            limit = glimit;
-            memset(buff, ' ', 48);
-        }
-
-        p     = buff;
-        bytes = p + 50;
-        while(data < limit) {
-            chr = *data;
-            *p++ = hex[chr >> 4];
-            *p++ = hex[chr & 15];
-            p++;
-            *bytes++ = ((chr < ' ') || (chr >= 0x7f)) ? '.' : chr;
-            data++;
-        }
-        *bytes++ = '\n';
-
-        fwrite(buff, bytes - buff, 1, stream);
-    }
-}
-
-
-
+#define CHUNK_SIZE (0x80000)
 
 int main(int argc, const char *argv[]) {
     if (argc < 3) {
@@ -57,7 +22,7 @@ int main(int argc, const char *argv[]) {
 
     FILE *out_fd = fopen(argv[2], "wb");
     if(!out_fd) {
-        fprintf(stderr, "Failed to open output: %s\n", argv[1]);
+        fprintf(stderr, "Failed to open output: %s\n", argv[2]);
         return -1;
     }
 
@@ -73,7 +38,7 @@ int main(int argc, const char *argv[]) {
     int ret = inflateInit2(&strm, -MAX_WBITS);
     if (ret != Z_OK)
         return ret;
-
+    uint8_t in_buff[CHUNK_SIZE], out_buff[CHUNK_SIZE];
     while(read_fd.ReadUInt32() == 1128812107) {
         uint32_t file_offset = read_fd.GetOffset() - sizeof(uint32_t);
         
@@ -83,15 +48,12 @@ int main(int argc, const char *argv[]) {
         uint32_t unk1 = read_fd.ReadUInt32();
         uint32_t size2 = read_fd.ReadUInt32();
         uint32_t out_offset = read_fd.ReadUInt32();
-        //printf("item: %08x %d %08x\n", offset, decomp_size, next);
-        //printf("item extra: %d %d %08x\n", unk1, size2, out_offset);
-
+        printf("*** (%08x)\nitem: offset:%08x decomp_size: %08x next: %08x\n", file_offset, offset, decomp_size, next);
+        printf("item extra: next-next: %08x/%d size2: %08x out_offset: %08x\n\n", unk1, unk1, size2, out_offset);
         read_fd.SetCursor(file_offset + offset);
 
-        uint8_t *comp_buff = new uint8_t[decomp_size];
-        uint8_t *decomp_buff = new uint8_t[decomp_size];
-        strm.next_in = comp_buff;
-        strm.avail_in =  fread(comp_buff, 1, decomp_size, read_fd.GetHandle());
+        //uint8_t *comp_buff = new uint8_t[decomp_size];
+        //uint8_t *decomp_buff = new uint8_t[decomp_size];
         //printf("avail in:%d\n", strm.avail_in);
 
         if(ferror(read_fd.GetHandle())) {
@@ -101,32 +63,51 @@ int main(int argc, const char *argv[]) {
 
         int ret;
         do {
-            strm.avail_out = decomp_size;
-            strm.next_out = decomp_buff;
-            ret = inflate(&strm, Z_NO_FLUSH);
-            assert(ret != Z_STREAM_ERROR);
-            int have = decomp_size - strm.avail_out;
-            switch(ret) {
-                case Z_NEED_DICT:
-                case Z_DATA_ERROR:
-                case Z_MEM_ERROR:
-                    fprintf(stderr, "Got libz error: %d\n", ret);
-                    return -1;
+            strm.next_in = &in_buff[0];
+            int read_len = CHUNK_SIZE;
+            if(decomp_size < CHUNK_SIZE) {
+                read_len = decomp_size;
             }
-            fwrite(decomp_buff, have, 1, out_fd);
-                
-            if(ret == Z_STREAM_END) {
-                break;   
+            strm.avail_in = fread(strm.next_in, 1, read_len, read_fd.GetHandle());
+            if(strm.avail_in <= 0) {
+                break;
             }
-        } while(true);
 
+            do {
+                strm.avail_out = CHUNK_SIZE;
+                strm.next_out = &out_buff[0];
+                ret = inflate(&strm, Z_SYNC_FLUSH);
+                assert(ret != Z_STREAM_ERROR);
+                int have = CHUNK_SIZE - strm.avail_out;
+                switch(ret) {
+                    case Z_NEED_DICT:
+                    case Z_DATA_ERROR:
+                    case Z_MEM_ERROR:
+                        fprintf(stderr, "Got libz error: %d\n", ret);
+                        return -1;
+                }
+                if(have == 0) {
+                    break;
+                }
+                int len = fwrite((void *)&out_buff, have, 1, out_fd);
+                assert(len == 1);
+                    
+                if(ret == Z_STREAM_END) {
+                    break;   
+                }
+
+                decomp_size -= read_len;
+            } while(strm.avail_out == 0);        
+            break;
+        } while(decomp_size > 0);
+    
         inflateReset2(&strm, -MAX_WBITS);
-        delete[] decomp_buff;
-        delete[] comp_buff;
 
+        if(next == 0xffffffff) {
+            break;
+        }
 
         read_fd.SetCursor(file_offset + next);
-        //printf("next chunk: %08x + %08x = %08x\n", file_offset, next, file_offset + next);
 
     }
     inflateEnd(&strm);
