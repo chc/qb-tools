@@ -18,7 +18,7 @@ void handle_directory(PakContext *ctx, const char *dir_name, int initial_len) {
     dp = opendir(dir_name);
 
     while(entry = readdir(dp)) {
-        const int expected_len = (strlen(dir_name) + entry->d_namlen) + 2; // +2 for "/" and null byte
+	const int expected_len = (strlen(dir_name) + strlen(entry->d_name)) + 2; // +2 for "/" and null byte
         char *temp_str = (char *)malloc(expected_len);
         snprintf(temp_str, expected_len, "%s/%s", dir_name, entry->d_name);
 

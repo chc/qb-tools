@@ -2,6 +2,7 @@
 #define _QSCRTIPTTOKEN_H
 
 #include <stdint.h>
+#include <string.h>
 #include <string>
 #include <vector>
 #include "IStream.h"

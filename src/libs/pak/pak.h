@@ -1,6 +1,8 @@
 #ifndef _LIBPAK_H
 #define _LIBPAK_H
 #include <stdint.h>
+#include <string.h>
+
 class FileStream;
 
 typedef struct _PakItem {

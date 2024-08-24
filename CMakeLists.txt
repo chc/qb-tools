@@ -71,23 +71,25 @@ target_link_libraries(qopt qtoken qsymbol dbginfo pak)
 file (GLOB LIBPAK_SRCS "src/libs/pak/*.cpp")
 include_directories("src/libs/pak")
 add_library(pak ${LIBPAK_SRCS})
+target_link_libraries(pak qtoken)
 
 file (GLOB LIBDBGINFO_SRCS "src/libs/dbginfo/*.cpp")
 include_directories("src/libs/dbginfo")
 add_library(dbginfo ${LIBDBGINFO_SRCS})
+target_link_libraries(dbginfo pak)
 
 file (GLOB UNPAK_SRCS "src/tools/unpak/*.cpp")
 include_directories("src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak")
 source_group("Sources" FILES ${UNPAK_SRCS})
 add_executable (unpak ${UNPAK_SRCS})
-target_link_libraries(unpak qtoken qsymbol pak dbginfo)
+target_link_libraries(unpak pak qtoken qsymbol dbginfo)
 
 
 file (GLOB PAK_SRCS "src/tools/pak/*.cpp")
 include_directories("src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak")
 source_group("Sources" FILES ${PAK_SRCS})
 add_executable (pakdir ${PAK_SRCS})
-target_link_libraries(pakdir qtoken qsymbol pak dbginfo)
+target_link_libraries(pakdir pak qtoken qsymbol dbginfo)
 
 file (GLOB QRESOLVE_SRCS "src/tools/qresolve/*.cpp")
 include_directories("src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak" "src/libs/dbginfo")
