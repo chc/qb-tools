@@ -17,6 +17,11 @@ void handle_directory(PakContext *ctx, const char *dir_name, int initial_len) {
     DIR *dp;
     dp = opendir(dir_name);
 
+    if(!dp) {
+        printf("failed to open dir: %s\n", dir_name);
+        return;
+    }
+
     while(entry = readdir(dp)) {
 	const int expected_len = (strlen(dir_name) + strlen(entry->d_name)) + 2; // +2 for "/" and null byte
         char *temp_str = (char *)malloc(expected_len);
@@ -47,6 +52,10 @@ int main(int argc, const char* argv[]) {
 
 
     PakContext *ctx = pak_create(argv[2], argv[3]);
+
+    if(ctx == nullptr) {
+        return -1;
+    }
 
     const char *data_dir = argv[1];
     handle_directory(ctx, data_dir, strlen(data_dir)+1);

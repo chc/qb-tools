@@ -16,12 +16,20 @@ PakContext *pak_create(const char *pak_path, const char *pab_path) {
     ctx->pab_fd = nullptr;
 
     ctx->pak_fd = new FileStream(pak_path, true);
+    if(!ctx->pak_fd->IsFileOpened()) {
+        fprintf(stderr, "Failed to open PAK %s for writing\n", pak_path);
+        return nullptr;
+    }
     ctx->pak_fd->SetWriteEndian(ISTREAM_BIG_ENDIAN);
 
     if(pab_path == nullptr) {
         ctx->pab_fd = ctx->pak_fd;
     } else {
         ctx->pab_fd = new FileStream(pab_path, true);
+        if(!ctx->pab_fd->IsFileOpened()) {
+            fprintf(stderr, "Failed to open PAK %s for writing\n", pab_path);
+            return nullptr;
+        }        
         ctx->pab_fd->SetWriteEndian(ISTREAM_BIG_ENDIAN);
     }
 
