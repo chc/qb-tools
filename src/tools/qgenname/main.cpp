@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 int main(int argc, const char* argv[]) {
-    if (argc < 1) {
+    if (argc < 2) {
         fprintf(stderr, "usage: %s [name]\n", argv[0]);
         return -1;
     }
