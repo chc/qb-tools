@@ -71,7 +71,7 @@ void calculate_pak_name_checksums(PakItem *item, const char *name) {
 }
 void pak_append_end_file(PakContext *ctx) {
     PakItem *item = new PakItem;
-    memset(item, 0, sizeof(item));
+    memset(item, 0, sizeof(PakItem));
 
     item->type = crc32(0, ".last", 5);
     item->size = 4;
@@ -94,7 +94,7 @@ void pak_append_file(PakContext *ctx, const char *path) {
      }
     
     PakItem *item = new PakItem;
-    memset(item, 0, sizeof(item));
+    memset(item, 0, sizeof(PakItem));
     item->file_path = strdup(path);
 
     fseek((FILE *)fd, 0, SEEK_END);
