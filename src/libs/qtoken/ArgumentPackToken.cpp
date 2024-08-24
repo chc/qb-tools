@@ -23,7 +23,8 @@ void ArgumentPackToken::LoadExtendedParams(IStream *stream) {
     m_is_required_params = stream->ReadByte();
 }
 void ArgumentPackToken::Write(IStream *stream) {
-    //assert(false);
+    m_file_offset = stream->GetOffset();
+    stream->WriteByte(ESCRIPTTOKEN_ARGUMENTPACK);
 }
 void ArgumentPackToken::WriteExtendedParams(IStream *stream) {
     m_file_offset = stream->GetOffset();

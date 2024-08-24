@@ -195,7 +195,7 @@ void MemoryStream::WriteFloat(float v) {
         assert(false);
         return;
     }
-    if(m_read_endian_mode == ISTREAM_BIG_ENDIAN) {
+    if(m_write_endian_mode == ISTREAM_BIG_ENDIAN) {
         SWAP_FLOAT(v)
     }
     *(float*)mp_cursor = v;

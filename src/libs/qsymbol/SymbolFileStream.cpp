@@ -33,6 +33,17 @@ QSymbol *SymbolFileStream::NextSymbol() {
 }
 
 void SymbolFileStream::WriteHeader() {
+    #if WOR_SYMBOLDUMP_HEADER
+    mp_stream->WriteUInt32(0);
+    mp_stream->WriteUInt32(0);
+
+    mp_stream->WriteUInt32(469762048);
+    mp_stream->WriteUInt32(0);
+    mp_stream->WriteUInt32(0xFFFFFFFF);
+    mp_stream->WriteUInt32(0);
+    mp_stream->WriteUInt32(0);
+    #else
+
     mp_stream->WriteUInt32(0);
     mp_stream->WriteUInt32(0);
 
@@ -41,11 +52,17 @@ void SymbolFileStream::WriteHeader() {
     mp_stream->WriteUInt32(201851396);
     mp_stream->WriteUInt32(335676428);
     mp_stream->WriteUInt32(269487104);
+    #endif
 }
 void SymbolFileStream::UpdateHeaderSize() {
     uint32_t offset = mp_stream->GetOffset();
     mp_stream->SetCursor(sizeof(uint32_t));
     mp_stream->WriteUInt32(offset);
+
+    #if WOR_SYMBOLDUMP_HEADER
+    mp_stream->SetCursor(sizeof(uint32_t)*4);
+    mp_stream->WriteUInt32(offset - 0x1C); //0x1C is the headers length
+    #endif
 }
 void SymbolFileStream::WriteSymbol(QSymbol *symbol) {
     mp_stream->WriteByte(0);

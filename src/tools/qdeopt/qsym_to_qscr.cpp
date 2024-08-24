@@ -240,6 +240,9 @@ void WriteQScript(QScriptSymbol *qscript, IStream *stream) {
 
             WriteStructure(sym, stream, true);
             delete sym;
+        } else if(token->GetType() == ESCRIPTTOKEN_ARGUMENTPACK) {
+            ArgumentPackToken* ap = reinterpret_cast<ArgumentPackToken*>(token);
+            ap->WriteExtendedParams(stream);
         } else {
             token->Write(stream);
         }

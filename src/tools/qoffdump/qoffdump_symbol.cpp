@@ -16,9 +16,9 @@
 void handle_script(QScriptSymbol *qscript) {
     MemoryStream ms(qscript->GetDecompBuff(), qscript->GetDecompLen());
     ms.SetReadEndian(ISTREAM_LITTLE_ENDIAN);
-
-    #if 1
-    printf("dumping script: %08x\n", qscript->GetNameChecksum());
+    printf("on script: %08x\n", qscript->GetNameChecksum());
+    #if 0
+    
     char name[256];
     sprintf(name, "%08x.bin", qscript->GetNameChecksum());
     FILE *rfd = fopen(name, "r");

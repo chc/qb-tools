@@ -64,7 +64,7 @@ int main(int argc, const char* argv[]) {
 
 
 
-        //int flush = feof(in_fd) ? Z_FINISH : Z_NO_FLUSH;
+        int flush = feof(in_fd) ? Z_FINISH : Z_SYNC_FLUSH;
         uint32_t file_offset = out_fd.GetOffset();
         out_fd.WriteUInt32(1128812107);
         out_fd.WriteUInt32(0); //offset;
@@ -83,7 +83,7 @@ int main(int argc, const char* argv[]) {
         do {
             strm.avail_out = CHUNK_SIZE;
             strm.next_out = &out_buff[0];
-            ret = deflate(&strm, Z_FINISH);    /* no bad return value */
+            ret = deflate(&strm, flush);    /* no bad return value */
             assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
             int have = CHUNK_SIZE - strm.avail_out;
             total_comp_size += have;

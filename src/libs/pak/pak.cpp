@@ -149,7 +149,14 @@ void pak_close(PakContext *ctx) {
                 ctx->pab_fd->WriteByte(0xAB);
             }
         }
-        ctx->pab_fd->WriteAlign(32);
+
+        size_t new_offset = ctx->pab_fd->GetOffset();
+        new_offset += 0x32;
+        while(new_offset % 0x10) {
+            new_offset++;
+        }
+        ctx->pab_fd->SetCursor(new_offset-sizeof(uint8_t));
+        ctx->pab_fd->WriteByte(0);
         
         current_item = current_item->next;
     }
@@ -176,6 +183,12 @@ void pak_close(PakContext *ctx) {
     }
 
     ctx->pak_fd->SetCursor(pak_cursor);
-    ctx->pak_fd->WriteAlign(128);
+        size_t new_offset = ctx->pab_fd->GetOffset();
+        new_offset += 128;
+        while(new_offset % 0x10) {
+            new_offset++;
+        }
+        ctx->pab_fd->SetCursor(new_offset-sizeof(uint8_t));
+        ctx->pab_fd->WriteByte(0);
 
 }

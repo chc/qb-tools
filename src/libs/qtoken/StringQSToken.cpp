@@ -24,5 +24,7 @@ void StringQSToken::Write(IStream *stream) {
     stream->WriteUInt32(m_checksum);
 }
 std::string StringQSToken::ToString() {
-    return "SQS";
+    std::ostringstream ss;
+    ss << "SQS(" << (int32_t)m_checksum << ")";
+    return ss.str();
 }
