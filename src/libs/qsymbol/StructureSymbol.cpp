@@ -46,6 +46,7 @@ void StructureSymbol::LoadParamsFromArray(IStream *stream) {
     stream->SetCursor(offset);
     while(true) {
         bool is_ref = false;
+        bool is_required_params_info = false;
         #ifdef SYMBOL_STRUCT_SEPERATE_FLAGS
         uint8_t unk = stream->ReadByte();
         assert(unk == 0);
@@ -56,7 +57,12 @@ void StructureSymbol::LoadParamsFromArray(IStream *stream) {
         assert(unk == 0);
         if(type & SYMBOL_ISREF_FLAG) {
             is_ref = true;
-            type = type &= ~SYMBOL_ISREF_FLAG;
+            type &= SYMBOL_STRUCT_TYPE_ANDMASK;
+        }
+        if(type & SYMBOL_STRUCT_REQUIRED_PARAM_FLAG) {
+            is_ref = true;
+            type &= ~SYMBOL_STRUCT_REQUIRED_PARAM_FLAG;
+            is_required_params_info = true;
         }
         #else
         uint8_t unk = stream->ReadByte();
@@ -76,7 +82,17 @@ void StructureSymbol::LoadParamsFromArray(IStream *stream) {
 
         QSymbol *token = NULL;
         if(is_ref) {
-            token = new ReferenceItemSymbol(type);
+            ReferenceItemSymbol *ref = new ReferenceItemSymbol(type, is_required_params_info);
+            ref->SetIsStructItem(true);
+            ref->SetValue(stream->ReadUInt32());
+            #ifdef SYMBOL_STRUCT_REQUIRED_PARAM_FLAG
+            if(is_required_params_info) {
+                assert(ref->GetValue() == 0x69696969);
+            }
+            #endif
+            
+            ref->SetNextOffset(stream->ReadUInt32());
+            token = ref;
         } else {
             token = QSymbol::Resolve(type);
         }
