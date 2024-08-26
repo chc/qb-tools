@@ -26,7 +26,7 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
 
-    dbginfo_load(checksum_path);
+    dbginfo_load(checksum_path, getenv("QTOOLS_CHECKSUM_FASTDUMP") != nullptr);
 
     printf("Checksum: 0x%08x / %d\n", checksum, checksum);
     printf("Name: %s\n", dbginfo_resolve(checksum));

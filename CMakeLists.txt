@@ -15,6 +15,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # add_definitions(-DSYMBOL_STRUCT_TYPE_ANDMASK=0x0F)
 # add_definitions(-DSYMBOL_STRUCT_TYPE_RSHIFTMASK=0)
 # add_definitions(-DWIDE_LOCALSTRING=1)
+# add_definitions(-DPAK_FLAGS_HAS_FILENAME=0x20)
 
 #THAW PC
 add_definitions(-DISTREAM_PAK_ENDIAN=ISTREAM_LITTLE_ENDIAN)
@@ -44,6 +45,7 @@ add_definitions(-DPAK_INCLUDE_FILENAME)
 # add_definitions(-DSYMBOL_STRUCT_SEPERATE_FLAGS)
 # add_definitions(-DSYMBOL_STRUCT_REQUIRED_PARAM_FLAG=0x20)
 # add_definitions(-DWOR_SYMBOLDUMP_HEADER)
+# add_definitions(-DPAK_FLAGS_HAS_FILENAME=0x20)
 
 include_directories("src/include" "src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak" "src/libs/dbginfo")
 

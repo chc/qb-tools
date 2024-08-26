@@ -60,8 +60,30 @@ bool pak_file_info_callback(PakItem item) {
     return true;
 }
 
-void dbginfo_load(const char *dbgpak) {
-    unpak_iterate_files(dbgpak, nullptr, pak_file_info_callback);
+typedef struct {
+    uint32_t checksum;
+    char name[0x40];
+} ChecksumDumpData;
+void dbginfo_load(const char *dbgpak, bool is_fastdump) {
+    if (is_fastdump) {
+        FILE* fd = fopen(dbgpak, "rb");
+        while (true) {
+            ChecksumDumpData dump;
+            int len = fread(&dump, sizeof(ChecksumDumpData), 1, fd);
+            if (len != 1) {
+                break;
+            }
+            DbgChecksumInfo line_info;
+            line_info.checksum = dump.checksum;
+            line_info.name = strdup(dump.name);
+            loaded_checksums.push_back(line_info);
+        }
+        fclose(fd);
+    }
+    else {
+        unpak_iterate_files(dbgpak, nullptr, pak_file_info_callback);
+    }
+    
 }
 const char *dbginfo_resolve(uint32_t checksum) {
     std::vector<DbgChecksumInfo>::iterator it = loaded_checksums.begin();
