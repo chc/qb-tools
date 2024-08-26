@@ -9,7 +9,11 @@
 #include <pak.h>
 #include <dbginfo.h>
 
+#ifdef _WINDOWS
+#include <win_dirent.h>
+#else
 #include <dirent.h>
+#endif
 #include <sys/stat.h>
 
 void handle_directory(PakContext *ctx, const char *dir_name, int initial_len) {

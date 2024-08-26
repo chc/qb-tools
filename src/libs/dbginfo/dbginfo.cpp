@@ -27,7 +27,7 @@ void handle_line(const char *line) {
 void handle_dbgfile(uint8_t *data, uint32_t len) {
     const char *match = "[Checksums]\r\n";
 
-    uint8_t *p = (uint8_t*)memmem(data, len, match, strlen(match));
+    uint8_t* p = (uint8_t*)strstr((char *)data, match);
 
     assert(p != nullptr);
 

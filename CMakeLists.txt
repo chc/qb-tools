@@ -42,9 +42,10 @@ add_definitions(-DSYMBOL_STRUCT_SEPERATE_FLAGS)
 add_definitions(-DSYMBOL_STRUCT_REQUIRED_PARAM_FLAG=0x20)
 add_definitions(-DWOR_SYMBOLDUMP_HEADER)
 
+include_directories("src/include" "src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak" "src/libs/dbginfo")
+
 
 file (GLOB QTOKEN_SRCS "src/libs/qtoken/*.cpp" "src/libs/qtoken/*.cpp")
-include_directories("src/libs/qsymbol")
 add_library(qtoken ${QTOKEN_SRCS})
 target_link_libraries(qtoken qsymbol)
 
@@ -54,18 +55,15 @@ add_library(qsymbol ${QSYMBOL_SRCS})
 target_link_libraries(qsymbol)
 
 file (GLOB QDUMP_SRCS "src/tools/qdump/*.cpp")
-include_directories("src/libs/qtoken")
 add_executable (qdump ${QDUMP_SRCS})
 target_link_libraries(qdump qtoken)
 
 file (GLOB QDEOPT_SRCS "src/tools/qdeopt/*.cpp")
-include_directories("src/libs/qtoken" "src/libs/qsymbol")
 source_group("Sources" FILES ${QDEOPT_SRCS})
 add_executable (qdeopt ${QDEOPT_SRCS})
 target_link_libraries(qdeopt qtoken qsymbol dbginfo pak)
 
 file (GLOB QOPT_SRCS "src/tools/qopt/*.cpp")
-include_directories("src/libs/qtoken" "src/libs/qsymbol")
 source_group("Sources" FILES ${QOPT_SRCS})
 add_executable (qopt ${QOPT_SRCS})
 target_link_libraries(qopt qtoken qsymbol dbginfo pak)
@@ -76,52 +74,44 @@ add_library(pak ${LIBPAK_SRCS})
 target_link_libraries(pak qtoken)
 
 file (GLOB LIBDBGINFO_SRCS "src/libs/dbginfo/*.cpp")
-include_directories("src/libs/dbginfo")
 add_library(dbginfo ${LIBDBGINFO_SRCS})
 target_link_libraries(dbginfo pak)
 
 file (GLOB UNPAK_SRCS "src/tools/unpak/*.cpp")
-include_directories("src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak")
 source_group("Sources" FILES ${UNPAK_SRCS})
 add_executable (unpak ${UNPAK_SRCS})
 target_link_libraries(unpak pak qtoken qsymbol dbginfo)
 
 
 file (GLOB PAK_SRCS "src/tools/pak/*.cpp")
-include_directories("src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak")
 source_group("Sources" FILES ${PAK_SRCS})
 add_executable (pakdir ${PAK_SRCS})
 target_link_libraries(pakdir pak qtoken qsymbol dbginfo)
 
 file (GLOB QRESOLVE_SRCS "src/tools/qresolve/*.cpp")
-include_directories("src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak" "src/libs/dbginfo")
 source_group("Sources" FILES ${QRESOLVE_SRCS})
 add_executable (qresolve ${QRESOLVE_SRCS})
 target_link_libraries(qresolve qtoken qsymbol pak dbginfo)
 
 
 file (GLOB QGENNAME_SRCS "src/tools/qgenname/*.cpp")
-include_directories("src/libs/qtoken")
 source_group("Sources" FILES ${QGENNAME_SRCS})
 add_executable (qgenname ${QGENNAME_SRCS})
 target_link_libraries(qgenname qtoken)
 
 file (GLOB QOFFDUMP_SYM_SRCS "src/tools/qoffdump/qoffdump_symbol.cpp" "src/tools/qoffdump/shared.cpp")
-include_directories("src/libs/qtoken")
 add_executable (qoffdump_symbol ${QOFFDUMP_SYM_SRCS})
 target_link_libraries(qoffdump_symbol qtoken)
 
 file (GLOB QOFFDUMP_TOKEN_SRCS "src/tools/qoffdump/qoffdump_token.cpp" "src/tools/qoffdump/shared.cpp")
-include_directories("src/libs/qtoken" "src/libs/qsymbol")
 add_executable (qoffdump_token ${QOFFDUMP_TOKEN_SRCS})
 target_link_libraries(qoffdump_token qtoken qsymbol)
 
 
-file (GLOB UNCHUNK_SRCS "src/tools/unchunk/*.cpp")
-add_executable (unchunk ${UNCHUNK_SRCS})
-target_link_libraries(unchunk qtoken z)
+# file (GLOB UNCHUNK_SRCS "src/tools/unchunk/*.cpp")
+# add_executable (unchunk ${UNCHUNK_SRCS})
+# target_link_libraries(unchunk qtoken z)
 
-
-file (GLOB CHUNK_SRCS "src/tools/chunk/*.cpp")
-add_executable (chunk ${CHUNK_SRCS})
-target_link_libraries(chunk qtoken z)
+# file (GLOB CHUNK_SRCS "src/tools/chunk/*.cpp")
+# add_executable (chunk ${CHUNK_SRCS})
+# target_link_libraries(chunk qtoken z)

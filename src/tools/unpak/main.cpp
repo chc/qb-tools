@@ -10,6 +10,10 @@
 #include <dbginfo.h>
 
 #include <sys/stat.h>
+#ifdef _WINDOWS
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
 
 std::vector<PakItem> pak_items;
 
@@ -56,7 +60,11 @@ void create_dir(char *path) {
             break;
         }
         *x = 0;
+#if _WINDOWS
+        CreateDirectoryA(path, NULL);
+#else
         mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+#endif
         p = x+1;
         *x = '/';
 
