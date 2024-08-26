@@ -13,7 +13,8 @@ typedef struct _PakItem {
     uint32_t pakname;
     uint32_t short_name;
     uint32_t fileNameKey;
-    uint32_t flags;    
+    uint32_t flags;
+    char filename[0xA0];
 
     //internal info
     uint32_t file_offset;

@@ -42,14 +42,15 @@ void print_pak_item(PakItem* item) {
     PRINT_FIELD("Short Name Name", item->short_name);
     PRINT_FIELD("fileNameKey", item->fileNameKey);
     PRINT_FIELD("flags", item->flags);
+    if (item->flags & PAK_FLAGS_HAS_FILENAME) {
+        printf("filename: %s\n", item->filename);
+    }
     printf("Offset: %08x - %d\n", item->offset, item->offset);
     printf("Expected End Offset: %08x - %d\n", item->size + item->offset, item->size + item->offset);
     printf("Size: %08x - %d\n", item->size, item->size);
     
 
     printf("\n");
-
-    //assert(item->flags == 0);
 }
 
 void create_dir(char *path) {
@@ -82,15 +83,24 @@ bool unpak_file_info_callback(PakItem item) {
     const char* path = get_checksum(item.pakname);
 
     char *name;
-    if (path) {
+    if (item.flags & PAK_FLAGS_HAS_FILENAME) {
+        path = item.filename;
         name = strdup(path);
         create_dir(name);
-        
-    } else {
-        char tmp[32];
-        snprintf(tmp, sizeof(tmp), "%08x.bin", item.pakname);
-        name = strdup(tmp);
     }
+    else {
+        if (path) {
+            name = strdup(path);
+            create_dir(name);
+
+        }
+        else {
+            char tmp[32];
+            snprintf(tmp, sizeof(tmp), "%08x.bin", item.pakname);
+            name = strdup(tmp);
+        }
+    }
+
 
 
 

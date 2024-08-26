@@ -130,7 +130,16 @@ void pak_close(PakContext *ctx) {
         ctx->pak_fd->WriteUInt32(current_item->pakname);
         ctx->pak_fd->WriteUInt32(current_item->short_name);
         ctx->pak_fd->WriteUInt32(current_item->fileNameKey);
+        #ifdef PAK_INCLUDE_FILENAME
+        current_item->flags |= PAK_FLAGS_HAS_FILENAME;
+        #endif
         ctx->pak_fd->WriteUInt32(current_item->flags);
+           
+
+        if (current_item->flags & PAK_FLAGS_HAS_FILENAME) {
+            strcpy(current_item->filename, current_item->file_path);
+            ctx->pak_fd->WriteBuffer((uint8_t*) & current_item->filename, sizeof(current_item->filename));
+        }
 
         current_item = current_item->next;
     }

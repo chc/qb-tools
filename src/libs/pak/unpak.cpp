@@ -9,7 +9,7 @@ void unpak_iterate_files(const char *pak_path, const char *pab_path, FileInfoCal
         return;
     }
 
-    pak_fd.SetReadEndian(ISTREAM_BIG_ENDIAN);
+    pak_fd.SetReadEndian(ISTREAM_PAK_ENDIAN);
 
     FILE* pab_fd = NULL;
     bool created = false;
@@ -43,6 +43,12 @@ void unpak_iterate_files(const char *pak_path, const char *pab_path, FileInfoCal
         item.fileNameKey = pak_fd.ReadUInt32();
         item.flags = pak_fd.ReadUInt32();
 
+        if (item.flags & PAK_FLAGS_HAS_FILENAME) {
+            for (int i = 0; i < sizeof(item.filename);i++) {
+                item.filename[i] = pak_fd.ReadByte();
+            }
+        }
+
         size_t last_offset = pak_fd.GetOffset();
 
         if(idx++ == 0 && pab_path != nullptr) {
@@ -51,7 +57,7 @@ void unpak_iterate_files(const char *pak_path, const char *pab_path, FileInfoCal
 
         
 
-        if (item.type == 749989691 || item.type == 0) {
+        if (item.type == 749989691 || item.type == -1255909793 || item.type == 0) {
             break;
         }
         if(!callback(item)) {

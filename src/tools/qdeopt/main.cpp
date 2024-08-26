@@ -67,11 +67,12 @@ int main(int argc, const char *argv[]) {
 
     std::map<uint32_t, const char *>::iterator it = m_checksum_names.begin();
     while(it != m_checksum_names.end()) {
+        std::pair<uint32_t, const char*> p = *it;
         it++;
-        it->second = dbginfo_resolve(it->first);
-        if(it->first == 0 || it->second == NULL)
+        p.second = dbginfo_resolve(p.first);
+        if(p.first == 0 || p.second == NULL)
             continue;
-        ChecksumNameToken token(it->first, it->second);
+        ChecksumNameToken token(p.first, p.second);
         token.Write(&fsout);
     }
     fsout.WriteByte(ESCRIPTTOKEN_ENDOFFILE);

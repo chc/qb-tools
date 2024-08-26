@@ -23,9 +23,11 @@ FileStream::FileStream(const char *path, bool is_write) {
     } else {
         mp_fd = fopen(path,"rb");
     }
+    assert(mp_fd);
     
 }
 FileStream::~FileStream() {
+    assert(mp_fd);
     fclose(mp_fd);
 }
 bool FileStream::IsFileOpened() {
