@@ -4,14 +4,13 @@
 #include <stdio.h>
 #include <cassert>
 #include <string.h>
-#include <vector>
+#include <map>
 
-typedef struct _DbgChecksumInfo {
-    uint32_t checksum;
-    const char *name;
-} DbgChecksumInfo;
 
-std::vector<DbgChecksumInfo> loaded_checksums;
+
+extern "C" {
+    std::map<uint32_t, DbgChecksumInfo> loaded_checksums;
+}
 
 void handle_line(const char *line) {
     DbgChecksumInfo line_info;
@@ -21,7 +20,7 @@ void handle_line(const char *line) {
     line += 11; //skip checksum (fixed length)
 
     line_info.name = strdup(line);
-    loaded_checksums.push_back(line_info);
+    loaded_checksums[line_info.checksum] = line_info;
 }
 
 void handle_dbgfile(uint8_t *data, uint32_t len) {
@@ -60,23 +59,23 @@ bool pak_file_info_callback(PakItem item) {
     return true;
 }
 
-typedef struct {
-    uint32_t checksum;
-    char name[0x40];
-} ChecksumDumpData;
+
 void dbginfo_load(const char *dbgpak, bool is_fastdump) {
     if (is_fastdump) {
         FILE* fd = fopen(dbgpak, "rb");
+        if (fd == NULL) {
+            return;
+        }
         while (true) {
-            ChecksumDumpData dump;
-            int len = fread(&dump, sizeof(ChecksumDumpData), 1, fd);
+            FastDumpChecksumDumpData dump;
+            int len = fread(&dump, sizeof(FastDumpChecksumDumpData), 1, fd);
             if (len != 1) {
                 break;
             }
             DbgChecksumInfo line_info;
             line_info.checksum = dump.checksum;
             line_info.name = strdup(dump.name);
-            loaded_checksums.push_back(line_info);
+            loaded_checksums[line_info.checksum] = line_info;
         }
         fclose(fd);
     }
@@ -86,12 +85,8 @@ void dbginfo_load(const char *dbgpak, bool is_fastdump) {
     
 }
 const char *dbginfo_resolve(uint32_t checksum) {
-    std::vector<DbgChecksumInfo>::iterator it = loaded_checksums.begin();
-    while(it != loaded_checksums.end()) {
-        if(it->checksum == checksum) {
-            return it->name;
-        }
-        it++;
+    if (loaded_checksums.find(checksum) == loaded_checksums.end()) {
+        return nullptr;
     }
-    return nullptr;
+    return loaded_checksums[checksum].name;
 }

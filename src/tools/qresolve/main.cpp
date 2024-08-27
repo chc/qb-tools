@@ -1,4 +1,4 @@
- #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <cassert>
 #include <FileStream.h>
@@ -16,13 +16,13 @@ int main(int argc, const char* argv[]) {
 
     uint32_t checksum = (uint32_t)strtol(argv[1], NULL, 0);
 
-    const char* checksum_path = getenv("QTOOLS_DBGPAK_PATH");
+    const char* checksum_path = getenv("QTOOLS_CHECKSUM_PATH");
     if (checksum_path != NULL) {
         printf("** loading checksum path: %s\n", checksum_path);
         
     }
     else {
-        printf("** env var QTOOLS_DBGPAK_PATH is not defined.\n");
+        printf("** env var QTOOLS_CHECKSUM_PATH is not defined.\n");
         return -1;
     }
 

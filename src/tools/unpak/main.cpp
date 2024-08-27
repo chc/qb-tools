@@ -55,13 +55,22 @@ void print_pak_item(PakItem* item) {
 
 void create_dir(char *path) {
     char *p = (char *)path;
+    char* x = p;
+    while (*x) {
+        if (*x == '\\') {
+            *x = '/';
+        }
+        x++;
+    }
+
     while(true) {
-        char *x = strchr(p, '\\');
+        char *x = strchr(p, '/');
         if(x == NULL) {
             break;
         }
         *x = 0;
-#if _WINDOWS
+#ifdef _WINDOWS
+
         CreateDirectoryA(path, NULL);
 #else
         mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -82,21 +91,38 @@ bool unpak_file_info_callback(PakItem item) {
 
     const char* path = get_checksum(item.pakname);
 
+    const char* open_path = path;
+
+    if (open_path) {
+        if (strstr(open_path, "/data/")) {
+            open_path = strstr(open_path, "/data/") + strlen("/data/");
+        }
+    }
+
+
+
     char *name;
     if (item.flags & PAK_FLAGS_HAS_FILENAME) {
-        path = item.filename;
-        name = strdup(path);
+        open_path = item.filename;
+        name = strdup(open_path);
         create_dir(name);
     }
     else {
-        if (path) {
-            name = strdup(path);
+        if (open_path) {
+            name = strdup(open_path);
             create_dir(name);
 
         }
         else {
             char tmp[32];
-            snprintf(tmp, sizeof(tmp), "%08x.bin", item.pakname);
+            const char* ext = get_checksum(item.type);
+            if (ext == NULL) {
+                snprintf(tmp, sizeof(tmp), "%08x.bin", item.pakname);
+            }
+            else {
+                snprintf(tmp, sizeof(tmp), "%08x%s",item.pakname, ext);
+            }
+            
             name = strdup(tmp);
         }
     }
@@ -126,7 +152,7 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
 
-    const char *dbginfo_path = getenv("QTOOLS_DBGPAK_PATH");
+    const char *dbginfo_path = getenv("QTOOLS_CHECKSUM_PATH");
     if(dbginfo_path != NULL) {
         printf("** loading dbginfo path: %s\n", dbginfo_path);
         dbginfo_load(dbginfo_path, getenv("QTOOLS_CHECKSUM_FASTDUMP") != nullptr);
