@@ -13,9 +13,8 @@ extern "C" {
     extern std::map<uint32_t, DbgChecksumInfo> loaded_checksums; //dbg_pak checksums
 }
 
-#define CHUNK_SIZE (0x80000)
+
 int main(int argc, const char* argv[]) {
-    //z_verbose = 1;
     if (argc < 2) {
         fprintf(stderr, "usage: %s [dbg_pak]\n", argv[0]);
         return -1;
