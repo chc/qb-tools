@@ -8,13 +8,13 @@
 #include <FileStream.h>
 #define CHUNK_SIZE (0x80000)
 
-extern "C" {
-    extern int z_verbose;
-}
+// extern "C" {
+//     extern int z_verbose;
+// }
 
 
 int main(int argc, const char *argv[]) {
-    z_verbose = 1;
+    //z_verbose = 1;
     if (argc < 3) {
         fprintf(stderr, "usage: %s [in] [out]\n", argv[0]);
         return -1;
