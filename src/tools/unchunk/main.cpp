@@ -8,7 +8,13 @@
 #include <FileStream.h>
 #define CHUNK_SIZE (0x80000)
 
+extern "C" {
+    extern int z_verbose;
+}
+
+
 int main(int argc, const char *argv[]) {
+    z_verbose = 1;
     if (argc < 3) {
         fprintf(stderr, "usage: %s [in] [out]\n", argv[0]);
         return -1;
@@ -38,7 +44,9 @@ int main(int argc, const char *argv[]) {
     int ret = inflateInit2(&strm, -MAX_WBITS);
     if (ret != Z_OK)
         return ret;
-    uint8_t in_buff[CHUNK_SIZE], out_buff[CHUNK_SIZE];
+    //uint8_t in_buff[CHUNK_SIZE], out_buff[CHUNK_SIZE];
+    uint8_t* in_buff = new uint8_t[CHUNK_SIZE];
+    uint8_t* out_buff = new uint8_t[CHUNK_SIZE];
     while(read_fd.ReadUInt32() == 1128812107) {
         uint32_t file_offset = read_fd.GetOffset() - sizeof(uint32_t);
         
@@ -63,7 +71,7 @@ int main(int argc, const char *argv[]) {
 
         int ret;
         do {
-            strm.next_in = &in_buff[0];
+            strm.next_in = in_buff;
             int read_len = CHUNK_SIZE;
             if(decomp_size < CHUNK_SIZE) {
                 read_len = decomp_size;
@@ -74,8 +82,10 @@ int main(int argc, const char *argv[]) {
             }
 
             do {
+                
                 strm.avail_out = CHUNK_SIZE;
-                strm.next_out = &out_buff[0];
+                strm.next_out = out_buff;
+                inflateReset(&strm);
                 ret = inflate(&strm, Z_SYNC_FLUSH);
                 assert(ret != Z_STREAM_ERROR);
                 int have = CHUNK_SIZE - strm.avail_out;
@@ -89,7 +99,8 @@ int main(int argc, const char *argv[]) {
                 if(have == 0) {
                     break;
                 }
-                int len = fwrite((void *)&out_buff, have, 1, out_fd);
+
+                int len = fwrite((void *)out_buff, have, 1, out_fd);
                 assert(len == 1);
                     
                 if(ret == Z_STREAM_END) {
@@ -111,6 +122,8 @@ int main(int argc, const char *argv[]) {
 
     }
     inflateEnd(&strm);
+    delete[] in_buff;
+    delete[] out_buff;
 
     fclose(out_fd);
 

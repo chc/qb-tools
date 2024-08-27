@@ -7,8 +7,14 @@
 #include <zlib.h>
 #include <FileStream.h>
 
+
+extern "C" {
+    extern int z_verbose;
+}
+
 #define CHUNK_SIZE (0x80000)
 int main(int argc, const char* argv[]) {
+    z_verbose = 1;
     if (argc < 2) {
         fprintf(stderr, "usage: %s [in] [out]\n", argv[0]);
         return -1;
@@ -29,28 +35,31 @@ int main(int argc, const char* argv[]) {
     }    
     out_fd.SetWriteEndian(ISTREAM_PAK_ENDIAN);
 
-    uint8_t in_buff[CHUNK_SIZE], out_buff[CHUNK_SIZE];
+
+    /* allocate inflate state */
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+    strm.avail_in = 0;
+    strm.next_in = Z_NULL;
+    //
+    int ret = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+    if (ret != Z_OK) {
+        fprintf(stderr, "Failed to init zlib: %d\n", ret);
+        return ret;
+    }
+
+
+    uint8_t *in_buff = new uint8_t[CHUNK_SIZE];
+    uint8_t* out_buff = new uint8_t[CHUNK_SIZE];
     int absolute_total_decomp = 0;
-    size_t previous_file, first_next = 0;
+    size_t previous_file = 0, first_next = 0;
     do {
         int total_comp_size = 0;
         int total_decomp_size = 0;
 
-        /* allocate inflate state */
-        strm.zalloc = Z_NULL;
-        strm.zfree = Z_NULL;
-        strm.opaque = Z_NULL;
-        strm.avail_in = 0;
-        strm.next_in = Z_NULL;
-        //
-        int ret = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
-        if (ret != Z_OK) {
-            fprintf(stderr, "Failed to init zlib: %d\n", ret);
-            return ret;
-        }
-
-        strm.avail_in = fread(&in_buff[0], 1, CHUNK_SIZE, in_fd);
-        strm.next_in = &in_buff[0];
+        strm.avail_in = fread(in_buff, 1, CHUNK_SIZE, in_fd);
+        strm.next_in = in_buff;
 
         if(ferror(in_fd)) {
             fprintf(stderr, "File error reading input buffer\n");
@@ -64,7 +73,7 @@ int main(int argc, const char* argv[]) {
 
 
 
-        int flush = feof(in_fd) ? Z_FINISH : Z_SYNC_FLUSH;
+        
         uint32_t file_offset = out_fd.GetOffset();
         out_fd.WriteUInt32(1128812107);
         out_fd.WriteUInt32(0); //offset;
@@ -75,28 +84,45 @@ int main(int argc, const char* argv[]) {
         out_fd.WriteUInt32(0); //out_offset
 
         out_fd.WriteAlign();
-        out_fd.SetCursor(out_fd.GetOffset() + 0x64);
+        size_t new_offset = out_fd.GetOffset();
+        //new_offset += 0x540;
+        while (new_offset % 0x10) {
+            new_offset++;
+        }
+        out_fd.SetCursor(new_offset);
 
         size_t prewrite_offset = out_fd.GetOffset() - file_offset;
 
+        bool flush_written = false;
+        bool write_flush = false;
 
+        deflateReset(&strm);
         do {
+            int flush = write_flush ? Z_FINISH : Z_SYNC_FLUSH;
+            if (write_flush) {
+                write_flush = false;
+                flush_written = true;
+            }
             strm.avail_out = CHUNK_SIZE;
-            strm.next_out = &out_buff[0];
+            strm.next_out = out_buff;
             ret = deflate(&strm, flush);    /* no bad return value */
             assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
             int have = CHUNK_SIZE - strm.avail_out;
             total_comp_size += have;
-            if (fwrite(&out_buff[0], 1, have, out_fd.GetHandle()) != have || ferror(out_fd.GetHandle())) {
+            if (fwrite(out_buff, 1, have, out_fd.GetHandle()) != have || ferror(out_fd.GetHandle())) {
                 (void)deflateEnd(&strm);
                 return Z_ERRNO;
             }
 
-        } while(strm.avail_out == 0);
-        deflateEnd(&strm);
+            if (strm.avail_out) {
+                write_flush = true;
+            }
 
-        size_t new_offset = out_fd.GetOffset();
-        new_offset += 0x540;
+        } while(strm.avail_out == 0 || !flush_written);
+        deflateReset(&strm);
+
+        new_offset = out_fd.GetOffset();
+        //new_offset += 0x540;
         while(new_offset % 0x10) {
             new_offset++;
         }
@@ -116,14 +142,14 @@ int main(int argc, const char* argv[]) {
 
         absolute_total_decomp += total_decomp_size;
 
-        out_fd.SetCursor(previous_file + (sizeof(uint32_t)*4));
-
-        if(first_next == 0) {
+        if (first_next == 0) {
             first_next = next_value;
         }
-        if(next_value == 0xffffffff) {
+        if (next_value == 0xffffffff) {
             next_value = first_next;
         }
+
+        out_fd.SetCursor(previous_file + (sizeof(uint32_t) * 4));
         out_fd.WriteUInt32(next_value);
         
         out_fd.SetCursor(done_offset);
@@ -131,11 +157,14 @@ int main(int argc, const char* argv[]) {
     } while(true);
 
     size_t new_offset = out_fd.GetOffset();
-    new_offset += 0x540;
+    //new_offset += 0x540;
     while(new_offset % 0x10) {
         new_offset++;
     }
     out_fd.SetCursor(new_offset-sizeof(uint8_t));
     out_fd.WriteByte(0);
+
+    delete[] in_buff;
+    delete[] out_buff;
     return 0;
 }
