@@ -20,7 +20,9 @@ void handle_read_token_value(QScriptToken *token) {
     g_QOpt.currentToken = token;
     switch(token->GetType()) {
         case ESCRIPTTOKEN_ARGUMENTPACK:
-            assert(false);
+            g_QOpt.in_argument_pack = true;
+            g_QOpt.last_argpack = reinterpret_cast<ArgumentPackToken*>(token);
+            g_QOpt.currentState = QOptState_ReadTokenValue;
         break;
         case ESCRIPTTOKEN_INTEGER:
         case ESCRIPTTOKEN_FLOAT:
@@ -30,6 +32,7 @@ void handle_read_token_value(QScriptToken *token) {
         case ESCRIPTTOKEN_PAIR:
         case ESCRIPTTOKEN_VECTOR:
             emit_symbol();
+            g_QOpt.in_argument_pack = false;
             break;
         case ESCRIPTTOKEN_STARTARRAY:
             g_QOpt.currentState = QOptState_ReadArrayTokens;
@@ -154,6 +157,7 @@ int main(int argc, const char *argv[]) {
     }
     g_QOpt.currentState = QOptState_ReadNextGlobalToken;
     g_QOpt.depth_index = 0;
+    g_QOpt.in_argument_pack = false;
     FileStream fs(argv[1]);
 
     QStream qs = QStream(&fs);

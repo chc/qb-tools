@@ -17,12 +17,14 @@ enum QOptState {
     QOptState_ReadStructTokens,
 };
 
-
+class ArgumentPackToken;
 typedef struct {
     QOptState currentState;
     uint32_t source_checksum;
     uint32_t root_name_checksum;
     uint32_t depth_index;
+    bool in_argument_pack;
+    ArgumentPackToken *last_argpack;
 
     QScriptToken *currentToken;
     ISStream *write_stream;

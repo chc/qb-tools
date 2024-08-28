@@ -62,7 +62,7 @@ QSymbol *ConvertToken(QScriptToken *token, bool make_reference, ArgumentPackToke
 }
 void emit_symbol() {
     QScriptToken *token = g_QOpt.currentToken;
-    QSymbol *converted = ConvertToken(token);
+    QSymbol *converted = ConvertToken(token, g_QOpt.in_argument_pack, g_QOpt.last_argpack);
     assert(converted);
     converted->SetNameChecksum(g_QOpt.root_name_checksum);
     g_QOpt.write_stream->WriteSymbol(converted);

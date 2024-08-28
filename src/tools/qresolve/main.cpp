@@ -16,17 +16,17 @@ int main(int argc, const char* argv[]) {
 
     uint32_t checksum = (uint32_t)strtol(argv[1], NULL, 0);
 
-    const char* checksum_path = getenv("QTOOLS_CHECKSUM_PATH");
+    const char* checksum_path = getenv("QBTOOLS_CHECKSUM_PATH");
     if (checksum_path != NULL) {
         printf("** loading checksum path: %s\n", checksum_path);
         
     }
     else {
-        printf("** env var QTOOLS_CHECKSUM_PATH is not defined.\n");
+        printf("** env var QBTOOLS_CHECKSUM_PATH is not defined.\n");
         return -1;
     }
 
-    dbginfo_load(checksum_path, getenv("QTOOLS_CHECKSUM_FASTDUMP") != nullptr);
+    dbginfo_load(checksum_path, getenv("QBTOOLS_CHECKSUM_FASTDUMP") != nullptr);
 
     printf("Checksum: 0x%08x / %d\n", checksum, checksum);
     printf("Name: %s\n", dbginfo_resolve(checksum));

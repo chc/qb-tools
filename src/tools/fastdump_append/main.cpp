@@ -22,18 +22,18 @@ int main(int argc, const char* argv[]) {
 
     dbginfo_load(argv[1], 0);
 
-    if(getenv("QTOOLS_CHECKSUM_FASTDUMP") == nullptr) {
-        printf("** QTOOLS_CHECKSUM_PATH must point to fastdump file. If already pointing to this file, set QTOOLS_CHECKSUM_FASTDUMP to 1\n");
+    if(getenv("QBTOOLS_CHECKSUM_FASTDUMP") == nullptr) {
+        printf("** QBTOOLS_CHECKSUM_PATH must point to fastdump file. If already pointing to this file, set QBTOOLS_CHECKSUM_FASTDUMP to 1\n");
         return -1;
     }
 
-    const char* checksum_path = getenv("QTOOLS_CHECKSUM_PATH");
+    const char* checksum_path = getenv("QBTOOLS_CHECKSUM_PATH");
     if (checksum_path != NULL) {
         printf("** appending to checksum path: %s\n", checksum_path);
         
     }
     else {
-        printf("** env var QTOOLS_CHECKSUM_PATH is not defined.\n");
+        printf("** env var QBTOOLS_CHECKSUM_PATH is not defined.\n");
         return -1;
     }
     dbginfo_load(checksum_path, true);
