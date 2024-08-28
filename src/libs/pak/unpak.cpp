@@ -20,7 +20,7 @@ void unpak_iterate_files(const char *pak_path, const char *pab_path, FileInfoCal
         pab_fd = fopen(pab_path, "rb");
         created = true;
         if(!pab_fd) {
-            fprintf(stderr, "Failed to open PAB: %s\n", pak_path);
+            fprintf(stderr, "Failed to open PAB: %s\n", pab_path);
             return;
         }
     }
