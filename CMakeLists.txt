@@ -18,7 +18,7 @@ add_definitions(-DWIDE_LOCALSTRING=1)
 add_definitions(-DPAK_FLAGS_HAS_FILENAME=0x20)
 add_definitions(-DPAK_LAST_ITEM="last")
 
-#THPG
+#THPG / GH3
 # add_definitions(-DISTREAM_PAK_ENDIAN=ISTREAM_BIG_ENDIAN)
 # add_definitions(-DISTREAM_SYMBOL_ENDIAN=ISTREAM_BIG_ENDIAN)
 # add_definitions(-DISTREAM_TOKEN_ENDIAN=ISTREAM_LITTLE_ENDIAN)
@@ -30,7 +30,7 @@ add_definitions(-DPAK_LAST_ITEM="last")
 # add_definitions(-DSYMBOL_STRUCT_TYPE_RSHIFTMASK=0)
 # add_definitions(-DWIDE_LOCALSTRING=1)
 # add_definitions(-DPAK_FLAGS_HAS_FILENAME=0x20)
-# add_definitions(-DPAK_LAST_ITEM="last")
+# add_definitions(-DPAK_LAST_ITEM=".last")
 
 #THAW PC
 # add_definitions(-DISTREAM_PAK_ENDIAN=ISTREAM_LITTLE_ENDIAN)
