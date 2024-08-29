@@ -4,7 +4,7 @@ enable_testing()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-#THPG
+#THP8
 add_definitions(-DISTREAM_PAK_ENDIAN=ISTREAM_BIG_ENDIAN)
 add_definitions(-DISTREAM_SYMBOL_ENDIAN=ISTREAM_BIG_ENDIAN)
 add_definitions(-DISTREAM_TOKEN_ENDIAN=ISTREAM_LITTLE_ENDIAN)
@@ -16,6 +16,21 @@ add_definitions(-DSYMBOL_STRUCT_TYPE_ANDMASK=0x0F)
 add_definitions(-DSYMBOL_STRUCT_TYPE_RSHIFTMASK=0)
 add_definitions(-DWIDE_LOCALSTRING=1)
 add_definitions(-DPAK_FLAGS_HAS_FILENAME=0x20)
+add_definitions(-DPAK_LAST_ITEM="last")
+
+#THPG
+# add_definitions(-DISTREAM_PAK_ENDIAN=ISTREAM_BIG_ENDIAN)
+# add_definitions(-DISTREAM_SYMBOL_ENDIAN=ISTREAM_BIG_ENDIAN)
+# add_definitions(-DISTREAM_TOKEN_ENDIAN=ISTREAM_LITTLE_ENDIAN)
+# add_definitions(-DSYMBOL_STRUCT_FLAG=0x80)
+# add_definitions(-DSYMBOL_ROOT_FLAG=0x20)
+# add_definitions(-DSYMBOL_ISREF_FLAG=0x10)
+# add_definitions(-DARRAY_HEADER_VALUE=1)
+# add_definitions(-DSYMBOL_STRUCT_TYPE_ANDMASK=0x0F)
+# add_definitions(-DSYMBOL_STRUCT_TYPE_RSHIFTMASK=0)
+# add_definitions(-DWIDE_LOCALSTRING=1)
+# add_definitions(-DPAK_FLAGS_HAS_FILENAME=0x20)
+# add_definitions(-DPAK_LAST_ITEM="last")
 
 #THAW PC
 # add_definitions(-DISTREAM_PAK_ENDIAN=ISTREAM_LITTLE_ENDIAN)
@@ -28,6 +43,7 @@ add_definitions(-DPAK_FLAGS_HAS_FILENAME=0x20)
 # add_definitions(-DSYMBOL_STRUCT_TYPE_RSHIFTMASK=1)
 # add_definitions(-DPAK_FLAGS_HAS_FILENAME=0x20)
 # add_definitions(-DPAK_INCLUDE_FILENAME)
+# add_definitions(-DPAK_LAST_ITEM=".last")
 
 #GHWT PS3
 # add_definitions(-DISTREAM_PAK_ENDIAN=ISTREAM_BIG_ENDIAN)
@@ -43,6 +59,7 @@ add_definitions(-DPAK_FLAGS_HAS_FILENAME=0x20)
 # add_definitions(-DPAK_FLAGS_HAS_FILENAME=0x20)
 # add_definitions(-DSYMBOL_STRUCT_SEPERATE_FLAGS)
 # add_definitions(-DSYMBOL_STRUCT_REQUIRED_PARAM_FLAG=0x20)
+# add_definitions(-DPAK_LAST_ITEM=".last")
 
 #GH:WoR PS3 / GH5
 # add_definitions(-DISTREAM_PAK_ENDIAN=ISTREAM_BIG_ENDIAN)
@@ -60,6 +77,7 @@ add_definitions(-DPAK_FLAGS_HAS_FILENAME=0x20)
 # add_definitions(-DSYMBOL_STRUCT_REQUIRED_PARAM_FLAG=0x20)
 # add_definitions(-DWOR_SYMBOLDUMP_HEADER)
 # add_definitions(-DPAK_FLAGS_HAS_FILENAME=0x20)
+# add_definitions(-DPAK_LAST_ITEM=".last")
 
 include_directories("src/include" "src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak" "src/libs/dbginfo")
 

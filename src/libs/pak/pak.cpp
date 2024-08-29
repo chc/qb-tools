@@ -73,7 +73,7 @@ void pak_append_end_file(PakContext *ctx) {
     PakItem *item = new PakItem;
     memset(item, 0, sizeof(PakItem));
 
-    item->type = crc32(0, ".last", 5);
+    item->type = crc32(0, PAK_LAST_ITEM, strlen(PAK_LAST_ITEM));
     item->size = 4;
 
 
@@ -200,12 +200,12 @@ void pak_close(PakContext *ctx) {
     }
 
     ctx->pak_fd->SetCursor(pak_cursor);
-        size_t new_offset = ctx->pab_fd->GetOffset();
-        new_offset += 128;
-        while(new_offset % 0x10) {
-            new_offset++;
-        }
-        ctx->pab_fd->SetCursor(new_offset-sizeof(uint8_t));
-        ctx->pab_fd->WriteByte(0);
+    size_t new_offset = ctx->pab_fd->GetOffset();
+    new_offset += 128;
+    while(new_offset % 0x10) {
+        new_offset++;
+    }
+    ctx->pab_fd->SetCursor(new_offset-sizeof(uint8_t));
+    ctx->pab_fd->WriteByte(0);
 
 }
