@@ -10,6 +10,7 @@
 #include <FloatToken.h>
 #include <EqualsToken.h>
 #include <ChecksumNameToken.h>
+#include <EndOfLineToken.h>
 
 std::map<uint32_t, const char *> m_checksum_names;
 
@@ -74,11 +75,12 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
 }
 void emit_token(int type, FileStream &fs_out) {
     printf("token token of type: %d\n", type);
-    switch(type) {
-        case ESCRIPTTOKEN_EQUALS:
-            EqualsToken et;
-            et.Write(&fs_out);
-        break;
+    if(type == ESCRIPTTOKEN_EQUALS) {
+        EqualsToken et;
+        et.Write(&fs_out);
+    } else if (type == ESCRIPTTOKEN_ENDOFLINE) {
+        EndOfLineToken eol;
+        eol.Write(&fs_out);  
     }
 }
 int main(int argc, const char* argv[]) {
@@ -113,7 +115,10 @@ int main(int argc, const char* argv[]) {
                 emit_type = ESCRIPTTOKEN_EQUALS;
             break;
             case ' ':
+            case '\r':
                 continue;
+            case '\n':
+                emit_type = ESCRIPTTOKEN_ENDOFLINE;
             break;
         }
         if(emit_type != 0) {
