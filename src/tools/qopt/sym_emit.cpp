@@ -65,6 +65,7 @@ void emit_symbol() {
     QSymbol *converted = ConvertToken(token, g_QOpt.in_argument_pack, g_QOpt.last_argpack);
     assert(converted);
     converted->SetNameChecksum(g_QOpt.root_name_checksum);
+    converted->SetIsStructItem(true);
     g_QOpt.write_stream->WriteSymbol(converted);
     delete converted;
 }

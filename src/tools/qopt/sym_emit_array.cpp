@@ -74,14 +74,13 @@ std::vector<QScriptToken *>::iterator read_array_struct_item(std::vector<QScript
             case ESCRIPTTOKEN_ENDARRAY:
                 continue;
             case ESCRIPTTOKEN_STARTARRAY:
-                /*it = read_array_struct_item(it+1, end, &child);
-                child->SetNameChecksum(struct_item_name);
-                child->SetIsStructItem(true);*/
                 it = handle_struct_array(struct_item_name, temp_children, it+1, end);
-                arr_sym = new ArraySymbol(temp_children);
-                arr_sym->SetIsStructItem(true);
+                assert(temp_children.size() == 1);
+                child = temp_children.front();
                 temp_children.clear();
+                arr_sym = reinterpret_cast<ArraySymbol*>(child);
                 children.push_back(arr_sym);
+                
                 in_name_mode = true;
                 in_argument_pack = false;
                 struct_item_name = 0;
@@ -278,6 +277,7 @@ void emit_array_of_structs() {
     }
     ArraySymbol sym(syms, num_syms);
     sym.SetNameChecksum(g_QOpt.root_name_checksum);
+    sym.SetIsStructItem(true);
     g_QOpt.write_stream->WriteSymbol(&sym);
 
     delete[] syms;
@@ -331,6 +331,7 @@ void emit_array_of_arrays() {
     }
     ArraySymbol sym(syms, num_syms);
     sym.SetNameChecksum(g_QOpt.root_name_checksum);
+    sym.SetIsStructItem(true);
     g_QOpt.write_stream->WriteSymbol(&sym);
 
     delete[] syms;
@@ -375,6 +376,7 @@ void emit_array() {
 
     ArraySymbol sym(array_tokens);
     sym.SetNameChecksum(g_QOpt.root_name_checksum);
+    sym.SetIsStructItem(true);
     g_QOpt.write_stream->WriteSymbol(&sym);
 
     g_QOpt.script_tokens.clear();
