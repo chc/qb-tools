@@ -6,6 +6,6 @@
 #include <QScriptToken.h>
 #include <ISStream.h>
 #include <vector>
-
+#include <cassert>
 
 #endif //_QCOMP_H

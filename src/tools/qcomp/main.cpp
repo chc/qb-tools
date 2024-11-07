@@ -11,8 +11,33 @@
 #include <EqualsToken.h>
 #include <ChecksumNameToken.h>
 #include <EndOfLineToken.h>
+#include <PairToken.h>
+#include <VectorToken.h>
+#include <StartArrayToken.h>
+#include <EndArrayToken.h>
+#include <StartStructToken.h>
+#include <EndStructToken.h>
+#include <StringToken.h>
+#include <LocalStringToken.h>
+#include <WideStringToken.h>
 
-std::map<uint32_t, const char *> m_checksum_names;
+enum EReadMode {
+    EReadMode_ReadName,
+    EReadMode_ReadPairOrVector,
+    EReadMode_ReadString,
+};
+
+//these state variables are used interchangably depending on the read mode, so the names are a bit generic due to this
+typedef struct {
+    float floats[3];
+    int read_index;
+    EReadMode read_mode;
+    std::map<uint32_t, std::string> checksum_names;
+    std::string current_token;
+    int emit_type;
+} QCompState;
+
+QCompState g_QCompState;
 
 uint32_t gen_checksum(std::string str) {
     char *name = strdup(str.c_str());
@@ -24,8 +49,8 @@ uint32_t gen_checksum(std::string str) {
 
     uint32_t checksum = crc32(0, name, len);
 
-    m_checksum_names[checksum] = name;
-    //free(name);
+    g_QCompState.checksum_names[checksum] = str;
+    free(name);
     return checksum;
 }
 
@@ -35,7 +60,8 @@ bool string_is_numeric(std::string &s) {
     }
     std::string::iterator it = s.begin();
     while(it != s.end()) {
-        if(!isnumber(*it)) {
+        char ch = *it;
+        if(!isnumber(ch) && ch != '-') {
             return false;
         }
         it++;
@@ -49,7 +75,7 @@ bool string_is_float(std::string &s) {
     std::string::iterator it = s.begin();
     while(it != s.end()) {
         char ch = *it;
-        if(!isnumber(ch) && ch != '.') {
+        if(!isnumber(ch) && ch != '.' && ch != '-') {
             return false;
         }
         it++;
@@ -66,12 +92,11 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
         FloatToken ft(f);
         ft.Write(&fs_out);
     } else {
-        printf("emit name token: %s\n", current_token.c_str());
+        assert(!current_token.empty());
         uint32_t checksum = gen_checksum(current_token);
         NameToken nt(checksum);
         nt.Write(&fs_out);
-    }
-    
+    }    
 }
 void emit_token(int type, FileStream &fs_out) {
     printf("token token of type: %d\n", type);
@@ -81,6 +106,128 @@ void emit_token(int type, FileStream &fs_out) {
     } else if (type == ESCRIPTTOKEN_ENDOFLINE) {
         EndOfLineToken eol;
         eol.Write(&fs_out);  
+    } else if(type == ESCRIPTTOKEN_STARTARRAY) {
+        StartArrayToken sat;
+        sat.Write(&fs_out);
+    } else if(type == ESCRIPTTOKEN_ENDARRAY) {
+        EndArrayToken eat;
+        eat.Write(&fs_out);
+    } else if(type == ESCRIPTTOKEN_STARTSTRUCT) {
+        StartStructToken sst;
+        sst.Write(&fs_out);
+    } else if(type == ESCRIPTTOKEN_ENDSTRUCT) {
+        EndStructToken est;
+        est.Write(&fs_out);
+    }
+     else {
+        assert(false);
+    }
+}
+
+void handle_read_name(char ch, FileStream &fs_out) {
+    switch(ch) {
+        case '=':
+            g_QCompState.emit_type = ESCRIPTTOKEN_EQUALS;
+        break;
+        case '(':
+            g_QCompState.read_mode = EReadMode_ReadPairOrVector;
+            return;
+        break;
+        case '[':
+            g_QCompState.emit_type = ESCRIPTTOKEN_STARTARRAY;
+        break;
+        case ']':
+            g_QCompState.emit_type = ESCRIPTTOKEN_ENDARRAY;
+        break;
+        case '{':
+            g_QCompState.emit_type = ESCRIPTTOKEN_STARTSTRUCT;
+        break;
+        case '}':
+            g_QCompState.emit_type = ESCRIPTTOKEN_ENDSTRUCT;
+        break;
+        case ' ':
+        case '\t':
+        case '\r':
+            return;
+        case '\n':
+            g_QCompState.emit_type = ESCRIPTTOKEN_ENDOFLINE;
+        break;
+        case '\'':
+            g_QCompState.read_mode = EReadMode_ReadString;
+            g_QCompState.emit_type = ESCRIPTTOKEN_LOCALSTRING;
+            return;
+        break;
+        case '"':
+            g_QCompState.read_mode = EReadMode_ReadString;
+            g_QCompState.emit_type = ESCRIPTTOKEN_STRING;
+            return;
+        break;
+    }
+    if(g_QCompState.emit_type != 0) {
+        if(!g_QCompState.current_token.empty()) {
+            emit_token(g_QCompState.current_token, fs_out);
+            g_QCompState.current_token.clear();
+        }
+
+        emit_token(g_QCompState.emit_type, fs_out);
+        g_QCompState.emit_type = 0;
+        return;
+    }
+    g_QCompState.current_token += ch;
+}
+void emit_pair_or_vec(FileStream &fs_out) {
+    if(g_QCompState.read_index == 1) { //pair
+        PairToken pt(g_QCompState.floats[0], g_QCompState.floats[1]);
+        pt.Write(&fs_out);
+    } else if(g_QCompState.read_index == 2) {
+        VectorToken vt(g_QCompState.floats[0], g_QCompState.floats[1], g_QCompState.floats[2]);
+        vt.Write(&fs_out);
+    } else {
+        assert(false);
+    }
+}
+void handle_read_pair_or_vec(char ch, FileStream &fs_out) {
+    switch(ch) {
+        case ')':
+            g_QCompState.floats[g_QCompState.read_index] = atof(g_QCompState.current_token.c_str());
+            emit_pair_or_vec(fs_out);
+            g_QCompState.current_token.clear();
+            g_QCompState.read_index = 0;
+            g_QCompState.read_mode = EReadMode_ReadName;
+        break;
+        case ',':
+            g_QCompState.floats[g_QCompState.read_index++] = atof(g_QCompState.current_token.c_str());
+            g_QCompState.current_token.clear();
+        break;
+        default:
+            g_QCompState.current_token += ch;
+        break;
+    }
+}
+void handle_read_string(char ch, FileStream &fs_out) {
+    bool end_read = false;
+    if(ch == '"' && g_QCompState.emit_type == ESCRIPTTOKEN_STRING) {
+        end_read = true;
+    } else if(ch == '\'' && g_QCompState.emit_type == ESCRIPTTOKEN_LOCALSTRING) {
+        end_read = true;
+    } else {
+        g_QCompState.current_token += ch;
+    }
+
+    if(end_read) {
+        printf("str read: %s\n", g_QCompState.current_token.c_str());
+        if(g_QCompState.emit_type == ESCRIPTTOKEN_STRING) {
+            StringToken st(g_QCompState.current_token);
+            st.Write(&fs_out);
+        } else if(g_QCompState.emit_type == ESCRIPTTOKEN_LOCALSTRING) {
+            LocalStringToken lst(g_QCompState.current_token);
+            lst.Write(&fs_out);  
+        } else {
+            assert(false);
+        }
+        g_QCompState.read_mode = EReadMode_ReadName;
+        g_QCompState.emit_type = 0;
+        g_QCompState.current_token.clear();
     }
 }
 int main(int argc, const char* argv[]) {
@@ -103,44 +250,35 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
 
-    std::string current_token;
+    g_QCompState.read_mode = EReadMode_ReadName;
+    
     while(true) {
         int ch = fgetc(mp_input_fd);
         if(ch == EOF) {
             break;
         }
-        int emit_type = 0;
-        switch(ch) {
-            case '=':
-                emit_type = ESCRIPTTOKEN_EQUALS;
-            break;
-            case ' ':
-            case '\r':
-                continue;
-            case '\n':
-                emit_type = ESCRIPTTOKEN_ENDOFLINE;
-            break;
+        if(g_QCompState.read_mode == EReadMode_ReadName) {
+            handle_read_name(ch, fsout);
+        } else if(g_QCompState.read_mode == EReadMode_ReadPairOrVector) {
+            handle_read_pair_or_vec(ch, fsout);
+        } else if(g_QCompState.read_mode == EReadMode_ReadString) {
+            handle_read_string(ch, fsout);
         }
-        if(emit_type != 0) {
-            emit_token(current_token, fsout);
-            current_token.clear();
-            emit_token(emit_type, fsout);
-            emit_type = 0;
-            continue;
-        }
-
-        current_token += ch;
     }
-    emit_token(current_token, fsout);
+
+    if(!g_QCompState.current_token.empty()) {
+        printf("doing final emit\n");
+        emit_token(g_QCompState.current_token, fsout);
+    }
 
 
-    std::map<uint32_t, const char *>::iterator it = m_checksum_names.begin();
-    while(it != m_checksum_names.end()) {
-        std::pair<uint32_t, const char*> p = *it;
+    std::map<uint32_t, std::string>::iterator it = g_QCompState.checksum_names.begin();
+    while(it != g_QCompState.checksum_names.end()) {
+        std::pair<uint32_t, std::string> p = *it;
         it++;
-        if(p.first == 0 || p.second == NULL)
+        if(p.first == 0 || p.second.empty())
             continue;
-        ChecksumNameToken token(p.first, p.second);
+        ChecksumNameToken token(p.first, p.second.c_str());
         token.Write(&fsout);
     }
     fsout.WriteByte(ESCRIPTTOKEN_ENDOFFILE);
