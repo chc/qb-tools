@@ -20,7 +20,8 @@
 #include <StringToken.h>
 #include <LocalStringToken.h>
 #include <WideStringToken.h>
-
+#include <ScriptToken.h>
+#include <EndScriptToken.h>
 enum EReadMode {
     EReadMode_ReadName,
     EReadMode_ReadPairOrVector,
@@ -83,6 +84,7 @@ bool string_is_float(std::string &s) {
     return true;
 }
 void emit_token(std::string &current_token, FileStream &fs_out) {
+    printf("emit_token: %s\n", current_token.c_str());
     if(string_is_numeric(current_token)) {
         int32_t v = (int32_t)strtol(current_token.c_str(), NULL, 10);
         IntegerToken it(v);
@@ -99,31 +101,52 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
     }    
 }
 void emit_token(int type, FileStream &fs_out) {
-    printf("token token of type: %d\n", type);
-    if(type == ESCRIPTTOKEN_EQUALS) {
-        EqualsToken et;
-        et.Write(&fs_out);
-    } else if (type == ESCRIPTTOKEN_ENDOFLINE) {
-        EndOfLineToken eol;
-        eol.Write(&fs_out);  
-    } else if(type == ESCRIPTTOKEN_STARTARRAY) {
-        StartArrayToken sat;
-        sat.Write(&fs_out);
-    } else if(type == ESCRIPTTOKEN_ENDARRAY) {
-        EndArrayToken eat;
-        eat.Write(&fs_out);
-    } else if(type == ESCRIPTTOKEN_STARTSTRUCT) {
-        StartStructToken sst;
-        sst.Write(&fs_out);
-    } else if(type == ESCRIPTTOKEN_ENDSTRUCT) {
-        EndStructToken est;
-        est.Write(&fs_out);
-    }
-     else {
-        assert(false);
+   printf("token token of type: %d\n", type);
+   QScriptToken *token = NULL;
+
+   switch(type) {
+        case ESCRIPTTOKEN_EQUALS:
+            token = new EqualsToken;
+            break;
+        case ESCRIPTTOKEN_ENDOFLINE:
+            token = new EndOfLineToken;
+        break;
+        case ESCRIPTTOKEN_STARTARRAY:
+            token = new StartArrayToken;
+        break;
+        case ESCRIPTTOKEN_ENDARRAY:
+            token = new EndArrayToken;
+        break;
+        case ESCRIPTTOKEN_STARTSTRUCT:
+            token = new StartStructToken;
+        break;
+        case ESCRIPTTOKEN_ENDSTRUCT:
+            token = new EndStructToken;
+        break;
+        case ESCRIPTTOKEN_KEYWORD_SCRIPT:
+            token = new ScriptToken;
+        break;
+        case ESCRIPTTOKEN_KEYWORD_ENDSCRIPT:
+            token = new EndScriptToken;
+        break;
+        default:
+            assert(false);
+   }
+
+   token->Write(&fs_out);
+   delete token;
+}
+void handle_keyword_check(FileStream &fs_out) {
+    printf("keyword check: %s\n", g_QCompState.current_token.c_str());
+    std::string token = g_QCompState.current_token;
+    if (token.compare("script") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_SCRIPT, fs_out);
+        g_QCompState.current_token.clear();
+    } else if (token.compare("endscript") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_SCRIPT, fs_out);
+        g_QCompState.current_token.clear();
     }
 }
-
 void handle_read_name(char ch, FileStream &fs_out) {
     switch(ch) {
         case '=':
@@ -146,6 +169,9 @@ void handle_read_name(char ch, FileStream &fs_out) {
             g_QCompState.emit_type = ESCRIPTTOKEN_ENDSTRUCT;
         break;
         case ' ':
+            handle_keyword_check(fs_out);
+            return;
+            break;
         case '\t':
         case '\r':
             return;
