@@ -56,7 +56,8 @@ typedef struct {
     bool use_new_ifs;
 
     std::stack<QScriptToken*> if_token_list; //used for offset writing after
-    bool argpack_or_inline_mode;
+    bool got_hash_token;
+    bool do_inlinestruct_token;
 } QCompState;
 
 QCompState g_QCompState;
@@ -121,8 +122,8 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
         FloatToken ft(f);
         ft.Write(&fs_out);
     } else {
-        if(g_QCompState.argpack_or_inline_mode) {
-            g_QCompState.argpack_or_inline_mode = false;
+        if(g_QCompState.got_hash_token) {
+            g_QCompState.got_hash_token = false;
             ArgumentPackToken apt;
             apt.SetRefType(ESCRIPTTOKEN_NAME);
             apt.SetIsRequiredParams(false);
@@ -206,19 +207,10 @@ void emit_token(int type, FileStream &fs_out) {
             assert(false);
    }
 
-   if(g_QCompState.argpack_or_inline_mode) {
-        g_QCompState.argpack_or_inline_mode = false;
-        switch(type) {
-            case ESCRIPTTOKEN_STARTSTRUCT: {
-                //g_QCompState.emit_type = ESCRIPTTOKEN_INLINEPACKSTRUCT;
-                InlinePackStructToken ipst;
-                ipst.Write(&fs_out);
-                break;
-            }
-            default:
-                assert(false);
-            break;
-        }
+   if(g_QCompState.do_inlinestruct_token) {
+        g_QCompState.do_inlinestruct_token = false;
+        InlinePackStructToken ipst = InlinePackStructToken();
+        ipst.Write(&fs_out);
    }
 
    token->Write(&fs_out);
@@ -262,7 +254,7 @@ void handle_read_name(char ch, FileStream &fs_out) {
             return;
         break;
         case '$':
-            g_QCompState.argpack_or_inline_mode = true;
+            g_QCompState.got_hash_token = true;
             return;
         break;
         case '=':
@@ -279,6 +271,10 @@ void handle_read_name(char ch, FileStream &fs_out) {
             g_QCompState.emit_type = ESCRIPTTOKEN_ENDARRAY;
         break;
         case '{':
+            if(g_QCompState.got_hash_token) {
+                g_QCompState.got_hash_token = false;
+                g_QCompState.do_inlinestruct_token = true;
+            }
             g_QCompState.emit_type = ESCRIPTTOKEN_STARTSTRUCT;
         break;
         case '}':
@@ -440,7 +436,7 @@ int main(int argc, const char* argv[]) {
     g_QCompState.read_mode = EReadMode_ReadName;
     g_QCompState.use_eol_line_numbers = false;
     g_QCompState.use_new_ifs = true;
-    g_QCompState.argpack_or_inline_mode = false;
+    g_QCompState.do_inlinestruct_token = false;
     
     while(true) {
         int ch = fgetc(mp_input_fd);
