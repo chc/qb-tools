@@ -27,7 +27,7 @@ void FastIfToken::RewriteOffset(IStream *stream, size_t diff) {
     stream->SetCursor(cursor);
 }
 std::string FastIfToken::ToString() {
-    return AppendSpaceToString ? "if2 " : "if2";
+    return AppendSpaceToString ? "if " : "if";
 }
 int FastIfToken::GetPostTabOffset() {
     return 1;

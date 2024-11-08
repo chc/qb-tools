@@ -27,7 +27,7 @@ void FastElseToken::RewriteOffset(IStream *stream, size_t diff) {
     stream->SetCursor(cursor);
 }
 std::string FastElseToken::ToString() {
-    return "else2";
+    return "else";
 }
 int FastElseToken::GetPreTabOffset() {
     return -1;
