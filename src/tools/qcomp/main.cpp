@@ -125,7 +125,7 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
         if(g_QCompState.got_hash_token) {
             g_QCompState.got_hash_token = false;
             ArgumentPackToken apt;
-            apt.SetRefType(ESCRIPTTOKEN_NAME);
+            apt.SetRefType(ESYMBOLTYPE_STRUCTURE);
             apt.SetIsRequiredParams(false);
             apt.WriteExtendedParams(&fs_out);
         }
