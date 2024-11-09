@@ -18,5 +18,5 @@ void NotEqualToken::LoadParams(IStream *stream) {
 
 }
 std::string NotEqualToken::ToString() {
-    return AppendSpaceToString ? "NOT " : "NOT";
+    return AppendSpaceToString ? "!= " : "!=";
 }

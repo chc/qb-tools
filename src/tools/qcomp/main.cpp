@@ -24,6 +24,7 @@
 #include <ScriptToken.h>
 #include <EndScriptToken.h>
 #include <InlinePackStructToken.h>
+#include <ArgumentPackToken.h>
 
 
 #include <FastIfToken.h>
@@ -35,8 +36,17 @@
 
 #include <OpenParenthesisToken.h>
 #include <CloseParenthesisToken.h>
+#include <NotToken.h>
+#include <AddToken.h>
+#include <MinusToken.h>
+#include <RepeatToken.h>
+#include <BeginToken.h>
+#include <GreaterThanEqualToken.h>
+#include <GreaterThanToken.h>
+#include <LessThanEqualToken.h>
+#include <LessThanToken.h>
+#include <DotToken.h>
 
-#include <ArgumentPackToken.h>
 enum EReadMode {
     EReadMode_ReadName,
     EReadMode_ReadPairOrVector,
@@ -58,6 +68,7 @@ typedef struct {
     std::stack<QScriptToken*> if_token_list; //used for offset writing after
     bool got_hash_token;
     bool do_inlinestruct_token;
+    bool got_negate;
 } QCompState;
 
 QCompState g_QCompState;
@@ -66,8 +77,16 @@ void handle_characters(std::string input, FileStream &fsout);
 void handle_character(char ch, FileStream &fsout);
 bool handle_keyword_check(std::string token, FileStream &fs_out);
 void update_if_offsets(FileStream &fs_out);
+void emit_token(int type, FileStream &fs_out);
 
-uint32_t gen_checksum(std::string str) {
+uint32_t gen_checksum(std::string str, bool with_conversion) {
+    if(with_conversion) {
+        int32_t v = (int32_t)strtol(str.c_str(), NULL, 16);
+        if(v != 0) {
+            return v;
+        }
+    }
+
     char *name = strdup(str.c_str());
     int len = strlen(name);
 
@@ -89,7 +108,7 @@ bool string_is_numeric(std::string &s) {
     std::string::iterator it = s.begin();
     while(it != s.end()) {
         char ch = *it;
-        if(!isnumber(ch) && ch != '-') {
+        if(!isdigit(ch) && ch != '-') {
             return false;
         }
         it++;
@@ -103,7 +122,7 @@ bool string_is_float(std::string &s) {
     std::string::iterator it = s.begin();
     while(it != s.end()) {
         char ch = *it;
-        if(!isnumber(ch) && ch != '.' && ch != '-') {
+        if(!isdigit(ch) && ch != '.' && ch != '-') {
             return false;
         }
         it++;
@@ -116,10 +135,18 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
     }
     if(string_is_numeric(current_token)) {
         int32_t v = (int32_t)strtol(current_token.c_str(), NULL, 10);
+        if(g_QCompState.got_negate) {
+            g_QCompState.got_negate = false;
+            v = -v;
+        }
         IntegerToken it(v);
         it.Write(&fs_out);
     } else if(string_is_float(current_token)) {
         float f = atof(current_token.c_str());
+        if(g_QCompState.got_negate) {
+            g_QCompState.got_negate = false;
+            f = -f;
+        }
         FloatToken ft(f);
         ft.Write(&fs_out);
     } else {
@@ -132,7 +159,13 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
         }
         
         assert(!current_token.empty());
-        uint32_t checksum = gen_checksum(current_token);
+
+        if(current_token[0] == '.') {
+            //emit dot
+            current_token.erase(0,1);
+            emit_token(ESCRIPTTOKEN_DOT, fs_out);
+        }
+        uint32_t checksum = gen_checksum(current_token, false);
         NameToken nt(checksum);
         nt.Write(&fs_out);
     }    
@@ -202,7 +235,37 @@ void emit_token(int type, FileStream &fs_out) {
             token = new OpenParenthesisToken;
         break;
         case ESCRIPTTOKEN_CLOSEPARENTH:
-            token = new  CloseParenthesisToken;
+            token = new CloseParenthesisToken;
+        break;
+        case ESCRIPTTOKEN_ADD:
+            token = new AddToken;
+        break;
+        case ESCRIPTTOKEN_MINUS:
+            token = new MinusToken;
+        break;
+        case ESCRIPTTOKEN_KEYWORD_NOT:
+            token = new NotToken;
+        break;
+        case ESCRIPTTOKEN_KEYWORD_BEGIN:
+            token = new BeginToken;
+        break;
+        case ESCRIPTTOKEN_KEYWORD_REPEAT:
+            token = new RepeatToken;
+        break;
+        case ESCRIPTTOKEN_LESSTHAN:
+            token = new LessThanToken;
+        break;
+        case ESCRIPTTOKEN_LESSTHANEQUAL:
+            token = new LessThanEqualToken;
+        break;
+        case ESCRIPTTOKEN_GREATERTHAN:
+            token = new GreaterThanToken;
+        break;
+        case ESCRIPTTOKEN_GREATERTHANEQUAL:
+            token = new GreaterThanEqualToken;
+        break;
+        case ESCRIPTTOKEN_DOT:
+            token = new DotToken;
         break;
         default:
             assert(false);
@@ -241,12 +304,24 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         emit_token(ESCRIPTTOKEN_KEYWORD_ELSEIF, fs_out);
     } else if(token.compare("endif") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_ENDIF, fs_out);       
-    } else {
+    } else if(token.compare("NOT") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_NOT, fs_out);
+    } else if(token.compare("repeat") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_REPEAT, fs_out);
+    } else if(token.compare("begin") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_BEGIN, fs_out);
+    } else if(token.compare(">=") == 0) {
+        emit_token(ESCRIPTTOKEN_GREATERTHANEQUAL, fs_out);
+    }  else if(token.compare("<=") == 0) {
+        emit_token(ESCRIPTTOKEN_LESSTHANEQUAL, fs_out);
+    } 
+    else {
         return false;
     }
     return true;
 }
 void handle_read_name(char ch, FileStream &fs_out) {
+    bool skip_token = false;
     switch(ch) {
         case '#':
             g_QCompState.read_mode = EReadMode_ReadString;
@@ -256,6 +331,7 @@ void handle_read_name(char ch, FileStream &fs_out) {
         break;
         case '$':
             g_QCompState.got_hash_token = true;
+            skip_token = true;
             return;
         break;
         case '=':
@@ -271,6 +347,15 @@ void handle_read_name(char ch, FileStream &fs_out) {
         case ']':
             g_QCompState.emit_type = ESCRIPTTOKEN_ENDARRAY;
         break;
+        case '>':
+            g_QCompState.emit_type = ESCRIPTTOKEN_GREATERTHAN;
+        break;
+        case '<':
+            g_QCompState.emit_type = ESCRIPTTOKEN_LESSTHAN;
+        break;
+        // case '.':
+        //     g_QCompState.emit_type = ESCRIPTTOKEN_DOT;
+        // break;
         case '{':
             if(g_QCompState.got_hash_token) {
                 g_QCompState.got_hash_token = false;
@@ -281,11 +366,23 @@ void handle_read_name(char ch, FileStream &fs_out) {
         case '}':
             g_QCompState.emit_type = ESCRIPTTOKEN_ENDSTRUCT;
         break;
+        case '+':
+            g_QCompState.emit_type = ESCRIPTTOKEN_ADD;
+        break;
+        case '-':
+            g_QCompState.got_negate = true;
+            return;
+        break;
         case ' ':
             if(handle_keyword_check(g_QCompState.current_token, fs_out)) {
                 g_QCompState.current_token.clear();
             }
-            return;
+            if(g_QCompState.got_negate) {
+                g_QCompState.got_negate = false;
+                g_QCompState.emit_type = ESCRIPTTOKEN_MINUS;
+            } else {
+                skip_token = true;
+            }            
             break;
         case '\t':
         case '\r':
@@ -304,17 +401,23 @@ void handle_read_name(char ch, FileStream &fs_out) {
             return;
         break;
     }
-    if(g_QCompState.emit_type != 0) {
+    if(g_QCompState.emit_type != 0 || ch == ' ') {
         if(!g_QCompState.current_token.empty()) {
             emit_token(g_QCompState.current_token, fs_out);
             g_QCompState.current_token.clear();
         }
+    }
+    
+    if(g_QCompState.emit_type != 0) {
 
         emit_token(g_QCompState.emit_type, fs_out);
         g_QCompState.emit_type = 0;
         return;
     }
-    g_QCompState.current_token += ch;
+    if(!skip_token) {
+        g_QCompState.current_token += ch;
+    }
+    
 }
 void emit_pair_or_vec(FileStream &fs_out) {
     if(g_QCompState.read_index == 1) { //pair
@@ -380,7 +483,7 @@ void handle_read_string(char ch, FileStream &fs_out) {
             LocalStringToken lst(g_QCompState.current_token);
             lst.Write(&fs_out);  
         } else if (g_QCompState.emit_type == ESCRIPTTOKEN_NAME) {
-            uint32_t checksum = gen_checksum(g_QCompState.current_token);
+            uint32_t checksum = gen_checksum(g_QCompState.current_token, true);
             NameToken nt(checksum);
             nt.Write(&fs_out);
         } else {
@@ -439,6 +542,7 @@ int main(int argc, const char* argv[]) {
     g_QCompState.use_new_ifs = true;
     g_QCompState.got_hash_token = false;
     g_QCompState.do_inlinestruct_token = false;
+    g_QCompState.got_negate = false;
     
     while(true) {
         int ch = fgetc(mp_input_fd);
@@ -452,7 +556,9 @@ int main(int argc, const char* argv[]) {
         emit_token(g_QCompState.current_token, fsout);
     }
 
-    fsout.WriteByte(ESCRIPTTOKEN_ENDOFLINE);
+    if(!g_QCompState.checksum_names.empty()) {
+        fsout.WriteByte(ESCRIPTTOKEN_ENDOFLINE);    
+    }    
 
     std::map<uint32_t, std::string>::iterator it = g_QCompState.checksum_names.begin();
     while(it != g_QCompState.checksum_names.end()) {
@@ -474,6 +580,8 @@ void update_if_offsets(FileStream &fs_out) {
     FastElseToken* last_else_token = NULL;
     ElseIfToken* last_elseif_token = NULL;
 
+    std::stack<EndIfToken *> endif_stack;
+
     while(!g_QCompState.if_token_list.empty()) {
         QScriptToken *token = g_QCompState.if_token_list.top();
 
@@ -493,7 +601,13 @@ void update_if_offsets(FileStream &fs_out) {
                 } else {
                     assert(false);
                 }
-                last_endif_token = NULL;
+                if(!endif_stack.empty()) {
+                    last_endif_token = endif_stack.top();
+                    endif_stack.pop();
+                } else {
+                    last_endif_token = NULL;
+                }
+                
                 last_else_token = NULL;
                 last_elseif_token = NULL;
             break;
@@ -517,6 +631,7 @@ void update_if_offsets(FileStream &fs_out) {
             break;
             case ESCRIPTTOKEN_KEYWORD_ENDIF:
                 last_endif_token = reinterpret_cast<EndIfToken*>(token);
+                endif_stack.push(last_endif_token);
             break;
         }
 
