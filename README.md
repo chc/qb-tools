@@ -14,6 +14,8 @@ This tool is used to convert the "symbol dump" files into "token dump" files. Sy
 This tool converts the "token dump" files into "symbol dump" files. Essentially from the older format back into the newer.
 ### QDump
 This tool converts a token dump into a readable format (trying to adhere to the origianl Q language as much as possible) 
+### QComp
+This tool builds Q files (WIP)
 ### Pakdir
 Creates PAK/PAB files
 ### Unpak
@@ -24,6 +26,6 @@ Set the `QBTOOLS_CHECKSUM_PATH` to point to a DBG.PAK if you want to have checks
 
 
 ## TODO
-* QComp tool
+* Finish QComp tool
 * Support structure script symbols
 * Random tokens jump marker `@` is not displaying properly for some entries
