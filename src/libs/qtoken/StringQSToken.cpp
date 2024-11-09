@@ -8,6 +8,9 @@
 StringQSToken::StringQSToken() {
 
 }
+StringQSToken::StringQSToken(uint32_t checksum) : m_checksum(checksum) { 
+
+}
 StringQSToken::~StringQSToken() {
 
 }
@@ -25,6 +28,6 @@ void StringQSToken::Write(IStream *stream) {
 }
 std::string StringQSToken::ToString() {
     std::ostringstream ss;
-    ss << "SQS(" << (int32_t)m_checksum << ")";
+    ss << "SQS " << (int32_t)m_checksum << " ";
     return ss.str();
 }

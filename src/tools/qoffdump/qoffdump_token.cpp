@@ -5,12 +5,7 @@
 #include <SymbolFileStream.h>
 #include <QStream.h>
 #include <QScriptToken.h>
-#include <FastIfToken.h>
-#include <FastElseToken.h>
-#include <ElseIfToken.h>
-#include <JumpToken.h>
-#include <ShortJumpToken.h>
-#include <RandomToken.h>
+#include <ArgumentPackToken.h>
 
 int main(int argc, const char *argv[]) {
     if(argc  < 2) {
@@ -34,13 +29,16 @@ int main(int argc, const char *argv[]) {
         if(token == NULL || token->GetType() == ESCRIPTTOKEN_ENDOFFILE) {
             break;
         }
+        if(token->GetType() == ESCRIPTTOKEN_ARGUMENTPACK) {
+            ArgumentPackToken *apt = reinterpret_cast<ArgumentPackToken*>(token);
+            apt->LoadExtendedParams(&fs);
+        }
         g_tokens.push_back(token);
     }
 
     std::vector<QScriptToken *>::iterator it = g_tokens.begin();
     while(it != g_tokens.end()) {
-        QScriptToken *t = *it;
-        dump_token_offsets(t);
+        dump_token_offsets(*it);
         it++;
     }
     return 0;

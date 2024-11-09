@@ -5,6 +5,7 @@
 class StringQSToken : public QScriptToken {
     public:
         StringQSToken();
+        StringQSToken(uint32_t checksum);
         ~StringQSToken();
         EScriptToken GetType();
         void LoadParams(IStream *stream);

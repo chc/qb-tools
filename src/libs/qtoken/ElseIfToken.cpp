@@ -56,7 +56,7 @@ int ElseIfToken::GetPostTabOffset() {
 std::vector<TokenInjection> ElseIfToken::GetInjections() {
     std::vector<TokenInjection> v;
 
-    TokenInjection i;
+    /*TokenInjection i;
     i.use_next_jump_offset = false;
     i.offset = m_next_offset - 2;
     i.token = "**ELSEIF1**";
@@ -65,6 +65,6 @@ std::vector<TokenInjection> ElseIfToken::GetInjections() {
     i.use_next_jump_offset = false;
     i.offset = m_endif_offset - 2;
     i.token = "**ELSEIF2**";
-    v.push_back(i);
+    v.push_back(i);*/
     return v;
 }

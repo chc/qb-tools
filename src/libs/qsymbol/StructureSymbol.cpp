@@ -98,7 +98,7 @@ void StructureSymbol::LoadParamsNoOffset(IStream *stream) {
             ref->SetValue(stream->ReadUInt32());
             #ifdef SYMBOL_STRUCT_REQUIRED_PARAM_FLAG
             if(is_required_params_info) {
-                assert(ref->GetValue() == 0x69696969);
+                assert(ref->GetValue() == REQUIRED_PARAM_VALUE);
             }
             #endif
             
@@ -132,7 +132,7 @@ void StructureSymbol::WriteSymbol(IStream *stream, QSymbol *sym) {
         flags = (type) << SYMBOL_STRUCT_TYPE_RSHIFTMASK;
         if(ref->GetIsRequiredParams()) {
             assert(ref->GetNameChecksum() != 0);
-            ref->SetValue(0x69696969);
+            ref->SetValue(REQUIRED_PARAM_VALUE);
             #ifdef SYMBOL_STRUCT_REQUIRED_PARAM_FLAG 
             flags |= SYMBOL_STRUCT_REQUIRED_PARAM_FLAG;
             #else

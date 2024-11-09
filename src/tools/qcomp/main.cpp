@@ -46,6 +46,7 @@
 #include <LessThanEqualToken.h>
 #include <LessThanToken.h>
 #include <DotToken.h>
+#include <StringQSToken.h>
 
 enum EReadMode {
     EReadMode_ReadName,
@@ -69,6 +70,7 @@ typedef struct {
     bool got_hash_token;
     bool do_inlinestruct_token;
     bool got_negate;
+    bool got_sqs_token;
 } QCompState;
 
 QCompState g_QCompState;
@@ -139,6 +141,14 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
             g_QCompState.got_negate = false;
             v = -v;
         }
+
+        if(g_QCompState.got_sqs_token) {
+            g_QCompState.got_sqs_token = false;
+            StringQSToken sqs(v);
+            sqs.Write(&fs_out);
+            return;
+        }
+
         IntegerToken it(v);
         it.Write(&fs_out);
     } else if(string_is_float(current_token)) {
@@ -150,14 +160,6 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
         FloatToken ft(f);
         ft.Write(&fs_out);
     } else {
-        if(g_QCompState.got_hash_token) {
-            g_QCompState.got_hash_token = false;
-            ArgumentPackToken apt;
-            apt.SetRefType(ESYMBOLTYPE_STRUCTURE);
-            apt.SetIsRequiredParams(false);
-            apt.WriteExtendedParams(&fs_out);
-        }
-        
         assert(!current_token.empty());
 
         if(current_token[0] == '.') {
@@ -166,6 +168,21 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
             emit_token(ESCRIPTTOKEN_DOT, fs_out);
         }
         uint32_t checksum = gen_checksum(current_token, false);
+
+        if(g_QCompState.got_hash_token) {
+            g_QCompState.got_hash_token = false;
+            ArgumentPackToken apt;
+            apt.SetRefType(ESYMBOLTYPE_STRUCTURE);
+            if(checksum == REQUIRED_PARAM_VALUE) {
+                apt.SetIsRequiredParams(true);
+            } else {
+                apt.SetIsRequiredParams(false);
+            }
+            
+            apt.WriteExtendedParams(&fs_out);
+        }
+        
+
         NameToken nt(checksum);
         nt.Write(&fs_out);
     }    
@@ -314,7 +331,10 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         emit_token(ESCRIPTTOKEN_GREATERTHANEQUAL, fs_out);
     }  else if(token.compare("<=") == 0) {
         emit_token(ESCRIPTTOKEN_LESSTHANEQUAL, fs_out);
-    } 
+    } else if(token.compare("SQS") == 0) {
+        g_QCompState.got_sqs_token = true;
+        return true;
+    }
     else {
         return false;
     }
@@ -377,7 +397,7 @@ void handle_read_name(char ch, FileStream &fs_out) {
             if(handle_keyword_check(g_QCompState.current_token, fs_out)) {
                 g_QCompState.current_token.clear();
             }
-            if(g_QCompState.got_negate) {
+            if(g_QCompState.got_negate && !g_QCompState.got_sqs_token) {
                 g_QCompState.got_negate = false;
                 g_QCompState.emit_type = ESCRIPTTOKEN_MINUS;
             } else {
@@ -484,6 +504,18 @@ void handle_read_string(char ch, FileStream &fs_out) {
             lst.Write(&fs_out);  
         } else if (g_QCompState.emit_type == ESCRIPTTOKEN_NAME) {
             uint32_t checksum = gen_checksum(g_QCompState.current_token, true);
+            if(g_QCompState.got_hash_token) {
+                g_QCompState.got_hash_token = false;
+                ArgumentPackToken apt;
+                apt.SetRefType(ESYMBOLTYPE_STRUCTURE);
+                if(checksum == REQUIRED_PARAM_VALUE) {
+                    apt.SetIsRequiredParams(true);
+                } else {
+                    apt.SetIsRequiredParams(false);
+                }
+                
+                apt.WriteExtendedParams(&fs_out);
+            }
             NameToken nt(checksum);
             nt.Write(&fs_out);
         } else {
@@ -543,6 +575,7 @@ int main(int argc, const char* argv[]) {
     g_QCompState.got_hash_token = false;
     g_QCompState.do_inlinestruct_token = false;
     g_QCompState.got_negate = false;
+    g_QCompState.got_sqs_token = false;
     
     while(true) {
         int ch = fgetc(mp_input_fd);
@@ -585,29 +618,31 @@ void update_if_offsets(FileStream &fs_out) {
     while(!g_QCompState.if_token_list.empty()) {
         QScriptToken *token = g_QCompState.if_token_list.top();
 
+
         FastIfToken *if_token = NULL;
         ElseIfToken *elseif_token = NULL;
 
         switch(token->GetType()) {
             case ESCRIPTTOKEN_KEYWORD_FASTIF:
-                 if_token = reinterpret_cast<FastIfToken*>(token);
-                //set last elseif, or else offset
-                if(last_elseif_token != NULL) {
-                    if_token->RewriteOffset(&fs_out, last_elseif_token->GetFileOffset() - if_token->GetFileOffset() - sizeof(uint8_t));
-                } else if(last_else_token != NULL) {
-                    if_token->RewriteOffset(&fs_out, last_else_token->GetFileOffset() - if_token->GetFileOffset() + sizeof(uint16_t));
-                }  else if(last_endif_token != NULL) {
-                    if_token->RewriteOffset(&fs_out, last_endif_token->GetFileOffset() - if_token->GetFileOffset());
-                } else {
-                    assert(false);
-                }
                 if(!endif_stack.empty()) {
                     last_endif_token = endif_stack.top();
                     endif_stack.pop();
                 } else {
                     last_endif_token = NULL;
                 }
-                
+                 if_token = reinterpret_cast<FastIfToken*>(token);
+                //set last elseif, or else offset
+                if(last_elseif_token != NULL) {
+                    if_token->RewriteOffset(&fs_out, last_elseif_token->GetFileOffset() - if_token->GetFileOffset() - sizeof(uint16_t));
+                } else if(last_else_token != NULL) {
+                    if_token->RewriteOffset(&fs_out, last_else_token->GetFileOffset() - if_token->GetFileOffset() + sizeof(uint16_t));
+                }  else if(last_endif_token != NULL) {
+                    assert(last_endif_token);
+                    if_token->RewriteOffset(&fs_out, last_endif_token->GetFileOffset() - if_token->GetFileOffset());
+                } else {
+                    assert(false);
+                }
+
                 last_else_token = NULL;
                 last_elseif_token = NULL;
             break;
@@ -636,6 +671,6 @@ void update_if_offsets(FileStream &fs_out) {
         }
 
         g_QCompState.if_token_list.pop();
-        
     }
+    assert(endif_stack.empty());
 }
