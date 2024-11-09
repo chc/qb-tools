@@ -13,7 +13,6 @@ void emit_struct() {
     ReadStructure(g_QOpt.script_tokens.begin(), g_QOpt.script_tokens.end(), &sym);
     
     sym->SetNameChecksum(g_QOpt.root_name_checksum);
-    sym->SetIsStructItem(true);
     g_QOpt.write_stream->WriteSymbol(sym);
     g_QOpt.script_tokens.clear();
 }

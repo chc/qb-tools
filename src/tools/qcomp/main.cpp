@@ -436,6 +436,7 @@ int main(int argc, const char* argv[]) {
     g_QCompState.read_mode = EReadMode_ReadName;
     g_QCompState.use_eol_line_numbers = false;
     g_QCompState.use_new_ifs = true;
+    g_QCompState.got_hash_token = false;
     g_QCompState.do_inlinestruct_token = false;
     
     while(true) {
@@ -450,6 +451,7 @@ int main(int argc, const char* argv[]) {
         emit_token(g_QCompState.current_token, fsout);
     }
 
+    fsout.WriteByte(ESCRIPTTOKEN_ENDOFLINE);
 
     std::map<uint32_t, std::string>::iterator it = g_QCompState.checksum_names.begin();
     while(it != g_QCompState.checksum_names.end()) {
