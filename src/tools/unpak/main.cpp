@@ -99,8 +99,6 @@ bool unpak_file_info_callback(PakItem item) {
         }
     }
 
-
-
     char *name;
     if (item.flags & PAK_FLAGS_HAS_FILENAME) {
         open_path = item.filename;
@@ -121,15 +119,10 @@ bool unpak_file_info_callback(PakItem item) {
             }
             else {
                 snprintf(tmp, sizeof(tmp), "%08x%s",item.pakname, ext);
-            }
-            
+            }            
             name = strdup(tmp);
         }
     }
-
-
-
-
 
     FILE* out = fopen(name, "wb");
     if (out) {
@@ -160,9 +153,6 @@ int main(int argc, const char* argv[]) {
         printf("** checksum path not specified\n");
     }
 
-
     unpak_iterate_files(argv[1], argv[2], unpak_file_info_callback);
-    
-    
     return 0;
 }
