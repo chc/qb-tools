@@ -39,6 +39,8 @@
 #include <NotToken.h>
 #include <AddToken.h>
 #include <MinusToken.h>
+#include <MultiplyToken.h>
+#include <DivideToken.h>
 #include <RepeatToken.h>
 #include <BeginToken.h>
 #include <GreaterThanEqualToken.h>
@@ -260,6 +262,12 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_MINUS:
             token = new MinusToken;
         break;
+        case ESCRIPTTOKEN_MULTIPLY:
+            token = new MultiplyToken;
+        break;
+        case ESCRIPTTOKEN_DIVIDE:
+            token = new DivideToken;
+        break;
         case ESCRIPTTOKEN_KEYWORD_NOT:
             token = new NotToken;
         break;
@@ -372,6 +380,12 @@ void handle_read_name(char ch, FileStream &fs_out) {
         break;
         case '<':
             g_QCompState.emit_type = ESCRIPTTOKEN_LESSTHAN;
+        break;
+        case '*':
+            g_QCompState.emit_type = ESCRIPTTOKEN_MULTIPLY;
+        break;
+        case '/':
+            g_QCompState.emit_type = ESCRIPTTOKEN_DIVIDE;
         break;
         // case '.':
         //     g_QCompState.emit_type = ESCRIPTTOKEN_DOT;
