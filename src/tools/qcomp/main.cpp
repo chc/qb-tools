@@ -65,6 +65,7 @@ QCompState g_QCompState;
 void handle_characters(std::string input, FileStream &fsout);
 void handle_character(char ch, FileStream &fsout);
 bool handle_keyword_check(std::string token, FileStream &fs_out);
+void update_if_offsets(FileStream &fs_out);
 
 uint32_t gen_checksum(std::string str) {
     char *name = strdup(str.c_str());
@@ -412,7 +413,7 @@ void handle_characters(std::string input, FileStream &fsout) {
         g_QCompState.current_token.clear();
     }
 }
-void update_if_offsets(FileStream &fs_out);
+
 int main(int argc, const char* argv[]) {
     if (argc < 2) {
         fprintf(stderr, "usage: %s [in] [out]\n", argv[0]);
