@@ -50,6 +50,8 @@
 #include <DotToken.h>
 #include <StringQSToken.h>
 
+#include <ReturnToken.h>
+
 enum EReadMode {
     EReadMode_ReadName,
     EReadMode_ReadPairOrVector,
@@ -292,6 +294,9 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_DOT:
             token = new DotToken;
         break;
+        case ESCRIPTTOKEN_KEYWORD_RETURN:
+            token = new ReturnToken;
+        break;
         default:
             assert(false);
    }
@@ -342,6 +347,8 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
     } else if(token.compare("SQS") == 0) {
         g_QCompState.got_sqs_token = true;
         return true;
+    }  else if(token.compare("return") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_RETURN, fs_out);
     }
     else {
         return false;
