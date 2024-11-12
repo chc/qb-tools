@@ -310,7 +310,7 @@ void emit_token(int type, FileStream &fs_out) {
             token = new ColonToken;
         break;
         case ESCRIPTTOKEN_ARG:
-            token = new ColonToken;
+            token = new ArgToken;
         break;
         default:
             assert(false);
