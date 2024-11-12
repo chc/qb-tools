@@ -37,6 +37,7 @@
 #include <OpenParenthesisToken.h>
 #include <CloseParenthesisToken.h>
 #include <NotToken.h>
+#include <NotEqualToken.h>
 #include <AddToken.h>
 #include <MinusToken.h>
 #include <MultiplyToken.h>
@@ -49,13 +50,16 @@
 #include <LessThanToken.h>
 #include <DotToken.h>
 #include <StringQSToken.h>
-
+#include <BreakToken.h>
 #include <ReturnToken.h>
+#include <AllArgsToken.h>
+#include <ColonToken.h>
 
 enum EReadMode {
     EReadMode_ReadName,
     EReadMode_ReadPairOrVector,
     EReadMode_ReadString,
+    EReadMode_ReadSQSToken,
 };
 
 //these state variables are used interchangably depending on the read mode, so the names are a bit generic due to this
@@ -65,6 +69,7 @@ typedef struct {
     EReadMode read_mode;
     std::map<uint32_t, std::string> checksum_names;
     std::string current_token;
+    std::string temp_token;
     int emit_type;
 
     bool use_eol_line_numbers;
@@ -74,7 +79,6 @@ typedef struct {
     bool got_hash_token;
     bool do_inlinestruct_token;
     bool got_negate;
-    bool got_sqs_token;
 } QCompState;
 
 QCompState g_QCompState;
@@ -84,6 +88,8 @@ void handle_character(char ch, FileStream &fsout);
 bool handle_keyword_check(std::string token, FileStream &fs_out);
 void update_if_offsets(FileStream &fs_out);
 void emit_token(int type, FileStream &fs_out);
+void emit_pair_or_vec(std::string token, FileStream &fs_out);
+void emit_sqs_token(std::string token, FileStream &fs_out);
 
 uint32_t gen_checksum(std::string str, bool with_conversion) {
     if(with_conversion) {
@@ -144,13 +150,6 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
         if(g_QCompState.got_negate) {
             g_QCompState.got_negate = false;
             v = -v;
-        }
-
-        if(g_QCompState.got_sqs_token) {
-            g_QCompState.got_sqs_token = false;
-            StringQSToken sqs(v);
-            sqs.Write(&fs_out);
-            return;
         }
 
         IntegerToken it(v);
@@ -297,6 +296,18 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_KEYWORD_RETURN:
             token = new ReturnToken;
         break;
+        case ESCRIPTTOKEN_KEYWORD_ALLARGS:
+            token = new AllArgsToken;
+        break;
+        case ESCRIPTTOKEN_KEYWORD_BREAK:
+            token = new BreakToken;
+        break;
+        case ESCRIPTTOKEN_NOTEQUAL:
+            token = new NotEqualToken;
+        break;
+        case ESCRIPTTOKEN_COLON:
+            token = new ColonToken;
+        break;
         default:
             assert(false);
    }
@@ -342,18 +353,58 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         emit_token(ESCRIPTTOKEN_KEYWORD_BEGIN, fs_out);
     } else if(token.compare(">=") == 0) {
         emit_token(ESCRIPTTOKEN_GREATERTHANEQUAL, fs_out);
-    }  else if(token.compare("<=") == 0) {
+    } else if(token.compare("<=") == 0) {
         emit_token(ESCRIPTTOKEN_LESSTHANEQUAL, fs_out);
-    } else if(token.compare("SQS") == 0) {
-        g_QCompState.got_sqs_token = true;
-        return true;
-    }  else if(token.compare("return") == 0) {
+    } else if(token.compare("!=") == 0) {
+        emit_token(ESCRIPTTOKEN_NOTEQUAL, fs_out);
+    } else if(token.compare(0, 3, "SQS") == 0 && g_QCompState.emit_type == ESCRIPTTOKEN_OPENPARENTH) {
+        g_QCompState.read_mode = EReadMode_ReadSQSToken;
+        assert(g_QCompState.emit_type == ESCRIPTTOKEN_OPENPARENTH);
+        g_QCompState.emit_type = 0;
+        g_QCompState.temp_token = token + "("; //left over ( is still processed later, will need to clear before changing states again too
+    } else if(token.compare("return") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RETURN, fs_out);
+    } else if(token.compare("break") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_BREAK, fs_out);
+    } else if(token.compare("<...>") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_ALLARGS, fs_out);
+    } else if(token.compare("<") == 0) {
+        emit_token(ESCRIPTTOKEN_LESSTHAN, fs_out);
+    } else if(token.compare(">") == 0) {
+        emit_token(ESCRIPTTOKEN_GREATERTHAN, fs_out);
+    } else if(token.compare("=") == 0) {
+        emit_token(ESCRIPTTOKEN_EQUALS, fs_out);
+    } else if(token.compare("(") == 0) {
+        emit_token(ESCRIPTTOKEN_OPENPARENTH, fs_out);
+    } else if(token.compare(")") == 0) {
+        emit_token(ESCRIPTTOKEN_CLOSEPARENTH, fs_out);
+    } else if(token.compare(0, 4, "Pair") == 0 || token.compare(0, 3, "Vec") == 0 && g_QCompState.emit_type == ESCRIPTTOKEN_OPENPARENTH) {
+        g_QCompState.read_mode = EReadMode_ReadPairOrVector;
+        assert(g_QCompState.emit_type == ESCRIPTTOKEN_OPENPARENTH);
+        g_QCompState.emit_type = 0;
+        g_QCompState.temp_token = token + "("; //left over ( is still processed later, will need to clear before changing states again too
     }
     else {
         return false;
     }
     return true;
+}
+void handle_read_pair_or_vec(char ch, FileStream &fs_out) {
+    bool exit_state = false;
+    switch(ch) {
+        case ')':
+            exit_state = true;
+        //break;
+        default:
+        g_QCompState.temp_token += ch;
+        break;
+    }
+    if(exit_state) {
+        g_QCompState.read_mode = EReadMode_ReadName;
+        emit_pair_or_vec(g_QCompState.temp_token, fs_out);
+        g_QCompState.temp_token.clear();
+        g_QCompState.current_token.clear();
+    }
 }
 void handle_read_name(char ch, FileStream &fs_out) {
     bool skip_token = false;
@@ -369,12 +420,14 @@ void handle_read_name(char ch, FileStream &fs_out) {
             skip_token = true;
             return;
         break;
-        case '=':
-            g_QCompState.emit_type = ESCRIPTTOKEN_EQUALS;
-        break;
+        // case '=':
+        //     g_QCompState.emit_type = ESCRIPTTOKEN_EQUALS;
+        // break;
         case '(':
-            g_QCompState.read_mode = EReadMode_ReadPairOrVector;
-            return;
+            g_QCompState.emit_type = ESCRIPTTOKEN_OPENPARENTH;
+        break;
+        case ')':
+            g_QCompState.emit_type = ESCRIPTTOKEN_CLOSEPARENTH;
         break;
         case '[':
             g_QCompState.emit_type = ESCRIPTTOKEN_STARTARRAY;
@@ -382,17 +435,20 @@ void handle_read_name(char ch, FileStream &fs_out) {
         case ']':
             g_QCompState.emit_type = ESCRIPTTOKEN_ENDARRAY;
         break;
-        case '>':
-            g_QCompState.emit_type = ESCRIPTTOKEN_GREATERTHAN;
-        break;
-        case '<':
-            g_QCompState.emit_type = ESCRIPTTOKEN_LESSTHAN;
-        break;
+        // case '>':
+        //     g_QCompState.emit_type = ESCRIPTTOKEN_GREATERTHAN;
+        // break;
+        // case '<':
+        //     g_QCompState.emit_type = ESCRIPTTOKEN_LESSTHAN;
+        // break;
         case '*':
             g_QCompState.emit_type = ESCRIPTTOKEN_MULTIPLY;
         break;
         case '/':
             g_QCompState.emit_type = ESCRIPTTOKEN_DIVIDE;
+        break;
+        case ':':
+            g_QCompState.emit_type = ESCRIPTTOKEN_COLON;
         break;
         // case '.':
         //     g_QCompState.emit_type = ESCRIPTTOKEN_DOT;
@@ -418,7 +474,7 @@ void handle_read_name(char ch, FileStream &fs_out) {
             if(handle_keyword_check(g_QCompState.current_token, fs_out)) {
                 g_QCompState.current_token.clear();
             }
-            if(g_QCompState.got_negate && !g_QCompState.got_sqs_token) {
+            if(g_QCompState.got_negate) {
                 g_QCompState.got_negate = false;
                 g_QCompState.emit_type = ESCRIPTTOKEN_MINUS;
             } else {
@@ -450,7 +506,6 @@ void handle_read_name(char ch, FileStream &fs_out) {
     }
     
     if(g_QCompState.emit_type != 0) {
-
         emit_token(g_QCompState.emit_type, fs_out);
         g_QCompState.emit_type = 0;
         return;
@@ -460,47 +515,65 @@ void handle_read_name(char ch, FileStream &fs_out) {
     }
     
 }
-void emit_pair_or_vec(FileStream &fs_out) {
-    if(g_QCompState.read_index == 1) { //pair
-        PairToken pt(g_QCompState.floats[0], g_QCompState.floats[1]);
-        pt.Write(&fs_out);
-    } else if(g_QCompState.read_index == 2) {
-        VectorToken vt(g_QCompState.floats[0], g_QCompState.floats[1], g_QCompState.floats[2]);
-        vt.Write(&fs_out);
-    } else if(g_QCompState.read_index == 0) {
-        //no seperator, probably an if statement / use OpenParenthesisToken
-        //bit awkward this way... probably should be cleaned up
+void emit_sqs_token(std::string token, FileStream &fs_out) {
+    std::string t = token.substr(4);
+    size_t end = t.find_first_of(')');
+    assert(end != std::string::npos);
+    t = t.substr(0, end);
+    int32_t v = (int32_t)strtol(t.c_str(), NULL, 10);
 
+    StringQSToken sqs(v);
+    sqs.Write(&fs_out);
+    
+}
+void emit_pair_or_vec(std::string token, FileStream &fs_out) {
+    if(token.compare(0, 5, "Pair(") == 0) {
+        float v[2];
+        std::string t = token.substr(5);
+        size_t comma = t.find_first_of(',');
+        assert(comma != std::string::npos);
+
+        std::string first = t.substr(0, comma);
+        v[0] = atof(first.c_str());
+
+        size_t end = t.find_first_of(')');
+        assert(end != std::string::npos);
+        std::string second = t.substr(comma+1, end-2);
+        v[1] = atof(second.c_str());
         
-        emit_token(ESCRIPTTOKEN_OPENPARENTH, fs_out);
-        std::string input = g_QCompState.current_token;
-        g_QCompState.current_token.clear();
-        g_QCompState.read_mode = EReadMode_ReadName;
-        handle_characters(input, fs_out);
-        emit_token(ESCRIPTTOKEN_CLOSEPARENTH, fs_out);
-        
-    } else {
-        assert(false);
+        PairToken pt(v[0], v[1]);
+        pt.Write(&fs_out);
+
+
+    } else if (token.compare(0, 4, "Vec(") == 0) {
+        float v[3];
+        std::string t = token.substr(4);
+        size_t comma = t.find_first_of(',');
+        assert(comma != std::string::npos);
+       
+        std::string first = t.substr(0, comma);
+        v[0] = atof(first.c_str());
+
+        t = t.substr(comma+1);
+        comma = t.find_first_of(',');
+        assert(comma != std::string::npos);
+
+        std::string second = t.substr(0, comma);
+        v[1] = atof(second.c_str());
+
+        t = t.substr(comma+1);
+        comma = t.find_first_of(')');
+        assert(comma != std::string::npos);
+
+        t = t.substr(0,comma);
+        v[2] = atof(t.c_str());
+
+        VectorToken vt(v[0], v[1], v[2]);
+        vt.Write(&fs_out);
+
     }
 }
-void handle_read_pair_or_vec(char ch, FileStream &fs_out) {
-    switch(ch) {
-        case ')':
-            g_QCompState.floats[g_QCompState.read_index] = atof(g_QCompState.current_token.c_str());
-            emit_pair_or_vec(fs_out);
-            g_QCompState.current_token.clear();
-            g_QCompState.read_index = 0;
-            g_QCompState.read_mode = EReadMode_ReadName;
-        break;
-        case ',':
-            g_QCompState.floats[g_QCompState.read_index++] = atof(g_QCompState.current_token.c_str());
-            g_QCompState.current_token.clear();
-        break;
-        default:
-            g_QCompState.current_token += ch;
-        break;
-    }
-}
+
 void handle_read_string(char ch, FileStream &fs_out) {
     bool end_read = false;
     if(ch == '"' && g_QCompState.emit_type == ESCRIPTTOKEN_STRING) {
@@ -547,6 +620,23 @@ void handle_read_string(char ch, FileStream &fs_out) {
         g_QCompState.current_token.clear();
     }
 }
+void handle_read_sqs_token(char ch, FileStream &fs_out) {
+    bool exit_state = false;
+    switch(ch) {
+        case ')':
+            exit_state = true;
+        //break;
+        default:
+        g_QCompState.temp_token += ch;
+        break;
+    }
+    if(exit_state) {
+        g_QCompState.read_mode = EReadMode_ReadName;
+        emit_sqs_token(g_QCompState.temp_token, fs_out);
+        g_QCompState.temp_token.clear();
+        g_QCompState.current_token.clear();
+    }
+}
 void handle_character(char ch, FileStream &fsout) {
     if(g_QCompState.read_mode == EReadMode_ReadName) {
         handle_read_name(ch, fsout);
@@ -554,6 +644,8 @@ void handle_character(char ch, FileStream &fsout) {
         handle_read_pair_or_vec(ch, fsout);
     } else if(g_QCompState.read_mode == EReadMode_ReadString) {
         handle_read_string(ch, fsout);
+    } else if (g_QCompState.read_mode == EReadMode_ReadSQSToken) {
+        handle_read_sqs_token(ch, fsout);
     }
 }
 void handle_characters(std::string input, FileStream &fsout) {
@@ -596,7 +688,6 @@ int main(int argc, const char* argv[]) {
     g_QCompState.got_hash_token = false;
     g_QCompState.do_inlinestruct_token = false;
     g_QCompState.got_negate = false;
-    g_QCompState.got_sqs_token = false;
     
     while(true) {
         int ch = fgetc(mp_input_fd);
@@ -608,11 +699,7 @@ int main(int argc, const char* argv[]) {
 
     if(!g_QCompState.current_token.empty()) {
         emit_token(g_QCompState.current_token, fsout);
-    }
-
-    if(!g_QCompState.checksum_names.empty()) {
-        fsout.WriteByte(ESCRIPTTOKEN_ENDOFLINE);    
-    }    
+    } 
 
     std::map<uint32_t, std::string>::iterator it = g_QCompState.checksum_names.begin();
     while(it != g_QCompState.checksum_names.end()) {

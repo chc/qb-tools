@@ -29,6 +29,6 @@ void PairToken::Write(IStream *stream) {
 }
 std::string PairToken::ToString() {
     std::ostringstream ss;
-    ss << "(" << m_x << "," << m_y << ")" << (AppendSpaceToString ? " " : "");
+    ss << "Pair(" << m_x << "," << m_y << ")" << (AppendSpaceToString ? " " : "");
     return ss.str();
 }

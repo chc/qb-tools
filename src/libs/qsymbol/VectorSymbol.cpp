@@ -105,6 +105,6 @@ void VectorSymbol::WriteToArray(IStream *stream) {
 }
 std::string VectorSymbol::ToString() {
     std::ostringstream ss;
-    ss << "(" << m_x << "," << m_y << "," << m_z << ")";
+    ss << "Vec(" << m_x << "," << m_y << "," << m_z << ")";
     return ss.str();
 }

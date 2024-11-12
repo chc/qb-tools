@@ -31,6 +31,6 @@ void VectorToken::Write(IStream *stream) {
 }
 std::string VectorToken::ToString() {
     std::ostringstream ss;
-    ss << "(" << m_x << "," << m_y << "," << m_z << ")" << (AppendSpaceToString ? " " : "");
+    ss << "Vec(" << m_x << "," << m_y << "," << m_z << ")" << (AppendSpaceToString ? " " : "");
     return ss.str();
 }

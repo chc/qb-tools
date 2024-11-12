@@ -22,6 +22,6 @@ void RandomIntegerToken::Write(IStream *stream) {
 }
 std::string RandomIntegerToken::ToString() {
     std::ostringstream ss;
-    ss << "RandomInt()";
+    ss << "RandomInt";
     return ss.str();
 }
