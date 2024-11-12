@@ -39,12 +39,6 @@ void map_checksum_names() {
             if(c) {
                 name->SetChecksumName(c);
             }
-        } else if (token->GetType() == ESCRIPTTOKEN_ARG) {
-            ArgToken *name = reinterpret_cast<ArgToken *>(token);
-            ChecksumNameToken *c = resolve_name(name->GetChecksum());
-            if (c) {
-                name->SetChecksumName(c);
-            }
         }
         it++;
     }

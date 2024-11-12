@@ -54,6 +54,7 @@
 #include <ReturnToken.h>
 #include <AllArgsToken.h>
 #include <ColonToken.h>
+#include <ArgToken.h>
 
 enum EReadMode {
     EReadMode_ReadName,
@@ -76,7 +77,7 @@ typedef struct {
     bool use_new_ifs;
 
     std::stack<QScriptToken*> if_token_list; //used for offset writing after
-    bool got_hash_token;
+    bool got_dollar_token;
     bool do_inlinestruct_token;
     bool got_negate;
 } QCompState;
@@ -172,8 +173,8 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
         }
         uint32_t checksum = gen_checksum(current_token, false);
 
-        if(g_QCompState.got_hash_token) {
-            g_QCompState.got_hash_token = false;
+        if(g_QCompState.got_dollar_token) {
+            g_QCompState.got_dollar_token = false;
             ArgumentPackToken apt;
             apt.SetRefType(ESYMBOLTYPE_STRUCTURE);
             if(checksum == REQUIRED_PARAM_VALUE) {
@@ -308,6 +309,9 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_COLON:
             token = new ColonToken;
         break;
+        case ESCRIPTTOKEN_ARG:
+            token = new ColonToken;
+        break;
         default:
             assert(false);
    }
@@ -416,9 +420,12 @@ void handle_read_name(char ch, FileStream &fs_out) {
             return;
         break;
         case '$':
-            g_QCompState.got_hash_token = true;
+            g_QCompState.got_dollar_token = true;
             skip_token = true;
             return;
+        break;
+        case '&':
+            g_QCompState.emit_type = ESCRIPTTOKEN_ARG;
         break;
         // case '=':
         //     g_QCompState.emit_type = ESCRIPTTOKEN_EQUALS;
@@ -454,8 +461,8 @@ void handle_read_name(char ch, FileStream &fs_out) {
         //     g_QCompState.emit_type = ESCRIPTTOKEN_DOT;
         // break;
         case '{':
-            if(g_QCompState.got_hash_token) {
-                g_QCompState.got_hash_token = false;
+            if(g_QCompState.got_dollar_token) {
+                g_QCompState.got_dollar_token = false;
                 g_QCompState.do_inlinestruct_token = true;
             }
             g_QCompState.emit_type = ESCRIPTTOKEN_STARTSTRUCT;
@@ -598,8 +605,8 @@ void handle_read_string(char ch, FileStream &fs_out) {
             lst.Write(&fs_out);  
         } else if (g_QCompState.emit_type == ESCRIPTTOKEN_NAME) {
             uint32_t checksum = gen_checksum(g_QCompState.current_token, true);
-            if(g_QCompState.got_hash_token) {
-                g_QCompState.got_hash_token = false;
+            if(g_QCompState.got_dollar_token) {
+                g_QCompState.got_dollar_token = false;
                 ArgumentPackToken apt;
                 apt.SetRefType(ESYMBOLTYPE_STRUCTURE);
                 if(checksum == REQUIRED_PARAM_VALUE) {
@@ -685,7 +692,7 @@ int main(int argc, const char* argv[]) {
     g_QCompState.read_mode = EReadMode_ReadName;
     g_QCompState.use_eol_line_numbers = false;
     g_QCompState.use_new_ifs = true;
-    g_QCompState.got_hash_token = false;
+    g_QCompState.got_dollar_token = false;
     g_QCompState.do_inlinestruct_token = false;
     g_QCompState.got_negate = false;
     
@@ -741,7 +748,7 @@ void update_if_offsets(FileStream &fs_out) {
                  if_token = reinterpret_cast<FastIfToken*>(token);
                 //set last elseif, or else offset
                 if(last_elseif_token != NULL) {
-                    if_token->RewriteOffset(&fs_out, last_elseif_token->GetFileOffset() - if_token->GetFileOffset() - sizeof(uint16_t));
+                    if_token->RewriteOffset(&fs_out, last_elseif_token->GetFileOffset() - if_token->GetFileOffset() - sizeof(uint8_t));
                 } else if(last_else_token != NULL) {
                     if_token->RewriteOffset(&fs_out, last_else_token->GetFileOffset() - if_token->GetFileOffset() + sizeof(uint16_t));
                 }  else if(last_endif_token != NULL) {
@@ -763,13 +770,15 @@ void update_if_offsets(FileStream &fs_out) {
                 elseif_token = reinterpret_cast<ElseIfToken*>(token);
                 //set last endif, last elseif, or last else
 
-                if(last_else_token != NULL) {
-                    elseif_token->SetNextOffset(&fs_out, last_else_token->GetFileOffset() - elseif_token->GetFileOffset() + sizeof(uint16_t));
-                } else if(last_elseif_token != NULL) {
-                    elseif_token->SetNextOffset(&fs_out, last_elseif_token->GetFileOffset() - elseif_token->GetFileOffset());
+                if(last_elseif_token != NULL) {
+                    elseif_token->SetNextOffset(&fs_out, last_elseif_token->GetFileOffset() - elseif_token->GetFileOffset() - sizeof(uint8_t));
+                } else if(last_else_token != NULL) {
+                    elseif_token->SetNextOffset(&fs_out, last_else_token->GetFileOffset() - elseif_token->GetFileOffset()  + sizeof(uint16_t));
+                } else if (last_endif_token != NULL) {
+                    elseif_token->SetNextOffset(&fs_out, last_endif_token->GetFileOffset() - elseif_token->GetFileOffset());    
                 }
                 
-                elseif_token->SetEndIfOffset(&fs_out, last_endif_token->GetFileOffset() - elseif_token->GetFileOffset());
+                elseif_token->SetEndIfOffset(&fs_out, last_endif_token->GetFileOffset() - elseif_token->GetFileOffset() - sizeof(uint16_t));
                 last_elseif_token = elseif_token;
             break;
             case ESCRIPTTOKEN_KEYWORD_ENDIF:
