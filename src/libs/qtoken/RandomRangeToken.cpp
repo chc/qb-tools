@@ -17,5 +17,5 @@ EScriptToken RandomRangeToken::GetType() {
 void RandomRangeToken::LoadParams(IStream *stream) {
 }
 std::string RandomRangeToken::ToString() {
-    return "RandomRange";
+    return "RandomRange ";
 }

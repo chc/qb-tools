@@ -22,6 +22,6 @@ void RandomFloatToken::Write(IStream *stream) {
 }
 std::string RandomFloatToken::ToString() {
     std::ostringstream ss;
-    ss << "RandomFloat";
+    ss << "RandomFloat ";
     return ss.str();
 }
