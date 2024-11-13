@@ -93,7 +93,7 @@ void emit_pair_or_vec(std::string token, FileStream &fs_out);
 void emit_sqs_token(std::string token, FileStream &fs_out);
 
 uint32_t gen_checksum(std::string str, bool with_conversion) {
-    if(with_conversion) {
+    if(with_conversion && str.length() >= 2 && str.compare(0,2,"0x") == 0) {
         int32_t v = (int32_t)strtol(str.c_str(), NULL, 16);
         if(v != 0) {
             return v;
