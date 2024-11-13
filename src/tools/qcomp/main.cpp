@@ -93,7 +93,7 @@ void emit_pair_or_vec(std::string token, FileStream &fs_out);
 void emit_sqs_token(std::string token, FileStream &fs_out);
 
 uint32_t gen_checksum(std::string str, bool with_conversion) {
-    if(with_conversion && str.length() >= 2 && str.compare(0,2,"0x") == 0) {
+    if(with_conversion && str.length() == 10 && str.compare(0,2,"0x") == 0) {
         int32_t v = (int32_t)strtol(str.c_str(), NULL, 16);
         if(v != 0) {
             return v;
@@ -142,6 +142,27 @@ bool string_is_float(std::string &s) {
     }
     return true;
 }
+void emit_name(std::string name, FileStream &fs_out) {
+    assert(!name.empty());
+    uint32_t checksum = gen_checksum(name, false);
+
+    if(g_QCompState.got_dollar_token) {
+        g_QCompState.got_dollar_token = false;
+        ArgumentPackToken apt;
+        apt.SetRefType(ESYMBOLTYPE_STRUCTURE);
+        if(checksum == REQUIRED_PARAM_VALUE) {
+            apt.SetIsRequiredParams(true);
+        } else {
+            apt.SetIsRequiredParams(false);
+        }
+        
+        apt.WriteExtendedParams(&fs_out);
+    }
+
+
+    NameToken nt(checksum);
+    nt.Write(&fs_out);
+}
 void emit_token(std::string &current_token, FileStream &fs_out) {
     if(handle_keyword_check(current_token, fs_out)) {
         return;
@@ -164,31 +185,37 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
         FloatToken ft(f);
         ft.Write(&fs_out);
     } else {
-        assert(!current_token.empty());
+        std::string::iterator it = current_token.begin();
 
-        if(current_token[0] == '.') {
-            //emit dot
-            current_token.erase(0,1);
-            emit_token(ESCRIPTTOKEN_DOT, fs_out);
-        }
-        uint32_t checksum = gen_checksum(current_token, false);
-
-        if(g_QCompState.got_dollar_token) {
-            g_QCompState.got_dollar_token = false;
-            ArgumentPackToken apt;
-            apt.SetRefType(ESYMBOLTYPE_STRUCTURE);
-            if(checksum == REQUIRED_PARAM_VALUE) {
-                apt.SetIsRequiredParams(true);
-            } else {
-                apt.SetIsRequiredParams(false);
+        std::string accum;
+        while(it != current_token.end()) {
+            char ch = *it;
+            uint8_t token = 0;
+            switch(ch) {
+                case '.':
+                    token = ESCRIPTTOKEN_DOT;
+                    break;
+                case '&':
+                    token = ESCRIPTTOKEN_ARG;
+                break;
+                case '$':
+                    g_QCompState.got_dollar_token = true;
+                break;                
+                default:
+                    accum += ch;
+                break;
             }
-            
-            apt.WriteExtendedParams(&fs_out);
+            if(token != 0) {
+                if(!accum.empty()) {
+                    emit_name(accum, fs_out);
+                    accum.clear();
+                }
+                emit_token(token, fs_out);
+            }
+            it++;        
         }
+        emit_name(accum, fs_out);
         
-
-        NameToken nt(checksum);
-        nt.Write(&fs_out);
     }    
 }
 void emit_token(int type, FileStream &fs_out) {
@@ -314,6 +341,16 @@ void emit_token(int type, FileStream &fs_out) {
         break;
         default:
             assert(false);
+   }
+
+   if(type == ESCRIPTTOKEN_ARG) {
+        if(g_QCompState.got_dollar_token) {
+            g_QCompState.got_dollar_token = false;
+            ArgumentPackToken apt;
+            apt.SetRefType(ESYMBOLTYPE_STRUCTURE);
+            apt.SetIsRequiredParams(false);            
+            apt.WriteExtendedParams(&fs_out);
+        }
    }
 
    if(g_QCompState.do_inlinestruct_token) {
