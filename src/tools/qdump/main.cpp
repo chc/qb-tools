@@ -11,9 +11,20 @@
 #include <ArgumentPackToken.h>
 
 #include <vector>
+#include <crc32.h>
 std::vector<QScriptToken *> token_list;
 void dump_token_list(std::vector<QScriptToken *> token_list, FILE *out);
 
+uint32_t gen_checksum(const char *name) {
+    char *cpy = strdup(name);
+    for(int i=0;i<strlen(cpy);i++) {
+        cpy[i] = tolower(cpy[i]);
+    }
+
+    uint32_t checksum = crc32(0, cpy, strlen(cpy));
+    free((void *)cpy);
+    return checksum;
+}
 ChecksumNameToken *resolve_name(uint32_t checksum) {
     std::vector<QScriptToken *>::iterator it = token_list.begin();
     while(it != token_list.end()) {
@@ -21,6 +32,10 @@ ChecksumNameToken *resolve_name(uint32_t checksum) {
         if(token->GetType() == ESCRIPTTOKEN_CHECKSUM_NAME) {
             ChecksumNameToken *c = reinterpret_cast<ChecksumNameToken *>(token);
             if(c && c->GetChecksum() == checksum) {
+                uint32_t true_checksum = gen_checksum(c->GetName());
+                if(true_checksum != checksum) {
+                    break;
+                }
                 return c;
             }
         }
