@@ -212,7 +212,9 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
             }
             it++;        
         }
-        emit_name(accum, fs_out);
+        if(!accum.empty()) {
+            emit_name(accum, fs_out);
+        }
         
     }    
 }
