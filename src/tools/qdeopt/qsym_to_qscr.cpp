@@ -279,6 +279,9 @@ void WriteArgumentPack(ReferenceItemSymbol *symbol, IStream *stream) {
 
     NameToken nt(symbol->GetValue());
     nt.Write(stream);
+
+    EndOfLineToken eolt;
+    eolt.Write(stream);
 }
 void WriteSymbolAsScriptToken(QSymbol *symbol, IStream *stream) {
     NameToken nt(symbol->GetNameChecksum());
