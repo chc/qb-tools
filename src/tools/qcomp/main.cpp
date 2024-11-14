@@ -54,6 +54,7 @@
 #include <ReturnToken.h>
 #include <AllArgsToken.h>
 #include <ColonToken.h>
+#include <CommaToken.h>
 #include <ArgToken.h>
 
 enum EReadMode {
@@ -339,6 +340,9 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_ARG:
             token = new ArgToken;
         break;
+        case ESCRIPTTOKEN_COMMA:
+            token = new CommaToken;
+        break;
         default:
             assert(false);
    }
@@ -510,6 +514,9 @@ void handle_read_name(char ch, FileStream &fs_out) {
         case '+':
             g_QCompState.emit_type = ESCRIPTTOKEN_ADD;
         break;
+        case ',':
+            g_QCompState.emit_type = ESCRIPTTOKEN_COMMA;
+        break;        
         case '-':
             g_QCompState.got_negate = true;
             return;
