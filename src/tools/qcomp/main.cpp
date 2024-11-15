@@ -856,6 +856,7 @@ void update_switch_offsets(FileStream &fs_out) {
         switch(token->GetType()) {
             case ESCRIPTTOKEN_SHORTJUMP:
                 if(last_shortjump_token != NULL) {
+                    assert(last_endswitch_token);
                     last_shortjump_token->RewriteOffset(&fs_out, last_endswitch_token->GetFileOffset() - last_shortjump_token->GetFileOffset());
                 }
                 last_shortjump_token = reinterpret_cast<ShortJumpToken*>(token);
@@ -870,6 +871,7 @@ void update_switch_offsets(FileStream &fs_out) {
             case ESCRIPTTOKEN_KEYWORD_CASE:
             case ESCRIPTTOKEN_KEYWORD_DEFAULT:
                 if(last_case_or_default_token == NULL) {
+                    assert(last_endswitch_token);
                     last_shortjump_token->RewriteOffset(&fs_out, last_endswitch_token->GetFileOffset() - last_shortjump_token->GetFileOffset() - sizeof(uint8_t));
                 } else {
                     last_shortjump_token->RewriteOffset(&fs_out, last_case_or_default_token->GetFileOffset() - last_shortjump_token->GetFileOffset() - sizeof(uint8_t));
