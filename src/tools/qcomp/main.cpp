@@ -57,6 +57,12 @@
 #include <CommaToken.h>
 #include <ArgToken.h>
 
+#include <SwitchToken.h>
+#include <CaseToken.h>
+#include <DefaultToken.h>
+#include <EndSwitchToken.h>
+#include <ShortJumpToken.h>
+
 enum EReadMode {
     EReadMode_ReadName,
     EReadMode_ReadPairOrVector,
@@ -66,7 +72,6 @@ enum EReadMode {
 
 //these state variables are used interchangably depending on the read mode, so the names are a bit generic due to this
 typedef struct {
-    float floats[3];
     int read_index;
     EReadMode read_mode;
     std::map<uint32_t, std::string> checksum_names;
@@ -81,6 +86,9 @@ typedef struct {
     bool got_dollar_token;
     bool do_inlinestruct_token;
     bool got_negate;
+
+    int case_count;
+    std::stack<QScriptToken *> switch_token_list;
 } QCompState;
 
 QCompState g_QCompState;
@@ -89,6 +97,7 @@ void handle_characters(std::string input, FileStream &fsout);
 void handle_character(char ch, FileStream &fsout);
 bool handle_keyword_check(std::string token, FileStream &fs_out);
 void update_if_offsets(FileStream &fs_out);
+void update_switch_offsets(FileStream &fs_out);
 void emit_token(int type, FileStream &fs_out);
 void emit_pair_or_vec(std::string token, FileStream &fs_out);
 void emit_sqs_token(std::string token, FileStream &fs_out);
@@ -249,6 +258,21 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_KEYWORD_ENDSCRIPT:
             token = new EndScriptToken;
         break;
+        case ESCRIPTTOKEN_KEYWORD_SWITCH:
+            token = new SwitchToken;
+        break;
+        case ESCRIPTTOKEN_KEYWORD_CASE:
+            token = new CaseToken;
+        break;
+        case ESCRIPTTOKEN_KEYWORD_DEFAULT:
+            token = new DefaultToken;
+        break;
+        case ESCRIPTTOKEN_KEYWORD_ENDSWITCH:
+            token = new EndSwitchToken;
+        break;
+        case ESCRIPTTOKEN_SHORTJUMP:
+            assert(false);
+        break;
         case ESCRIPTTOKEN_INLINEPACKSTRUCT:
             token = new InlinePackStructToken;
         break;
@@ -363,10 +387,53 @@ void emit_token(int type, FileStream &fs_out) {
         ipst.Write(&fs_out);
    }
 
+   bool insert_shortjump_before = false;
+   bool insert_shortjump_after = false;
+   bool is_switch = false;
+
+   switch(type) {
+        case ESCRIPTTOKEN_KEYWORD_SWITCH:
+            g_QCompState.case_count = 0;
+            is_switch = true;
+        break;
+        case ESCRIPTTOKEN_KEYWORD_ENDSWITCH:
+            is_switch = true;
+        break;
+        case ESCRIPTTOKEN_KEYWORD_CASE:
+        case ESCRIPTTOKEN_KEYWORD_DEFAULT:
+            is_switch = true;
+            g_QCompState.case_count++;
+            if(g_QCompState.case_count > 1) {
+                insert_shortjump_before = true;    
+            }
+            insert_shortjump_after = true;
+            
+   }
+
+   if(insert_shortjump_before) {
+        ShortJumpToken *sjt = new ShortJumpToken;
+        sjt->Write(&fs_out);
+        g_QCompState.switch_token_list.push(sjt);
+   }
+
    token->Write(&fs_out);
+
+   if(is_switch) {
+    no_free = true;
+    g_QCompState.switch_token_list.push(token);
+   }
+
+
+   if(insert_shortjump_after) {
+        ShortJumpToken *sjt = new ShortJumpToken;
+        sjt->Write(&fs_out);
+        g_QCompState.switch_token_list.push(sjt);
+        
+
+   }
    if(!no_free) {
         delete token;
-   }    
+   }
 }
 bool handle_keyword_check(std::string token, FileStream &fs_out) {
     if (token.compare("script") == 0) {
@@ -390,6 +457,14 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         emit_token(ESCRIPTTOKEN_KEYWORD_ELSEIF, fs_out);
     } else if(token.compare("endif") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_ENDIF, fs_out);       
+    }else if(token.compare("switch") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_SWITCH, fs_out);       
+    }else if(token.compare("endswitch") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_ENDSWITCH, fs_out);       
+    }else if(token.compare("case") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_CASE, fs_out);       
+    }else if(token.compare("default") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_DEFAULT, fs_out);       
     } else if(token.compare("NOT") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_NOT, fs_out);
     } else if(token.compare("repeat") == 0) {
@@ -764,7 +839,47 @@ int main(int argc, const char* argv[]) {
     fsout.WriteByte(ESCRIPTTOKEN_ENDOFFILE);
 
     update_if_offsets(fsout);
+    update_switch_offsets(fsout);
     return 0;
+}
+
+void update_switch_offsets(FileStream &fs_out) {
+    EndSwitchToken *last_endswitch_token = NULL;
+    QScriptToken *last_case_or_default_token = NULL;
+    ShortJumpToken *last_shortjump_token = NULL;
+
+
+    while(!g_QCompState.switch_token_list.empty()) {
+        QScriptToken *token = g_QCompState.switch_token_list.top();
+        g_QCompState.switch_token_list.pop();
+
+        switch(token->GetType()) {
+            case ESCRIPTTOKEN_SHORTJUMP:
+                if(last_shortjump_token != NULL) {
+                    last_shortjump_token->RewriteOffset(&fs_out, last_endswitch_token->GetFileOffset() - last_shortjump_token->GetFileOffset());
+                }
+                last_shortjump_token = reinterpret_cast<ShortJumpToken*>(token);
+            break;
+            case ESCRIPTTOKEN_KEYWORD_ENDSWITCH:
+                assert(last_endswitch_token == NULL);
+                last_endswitch_token = reinterpret_cast<EndSwitchToken*>(token);
+            break;
+            case ESCRIPTTOKEN_KEYWORD_SWITCH:
+                last_endswitch_token = NULL;
+            break;
+            case ESCRIPTTOKEN_KEYWORD_CASE:
+            case ESCRIPTTOKEN_KEYWORD_DEFAULT:
+                if(last_case_or_default_token == NULL) {
+                    last_shortjump_token->RewriteOffset(&fs_out, last_endswitch_token->GetFileOffset() - last_shortjump_token->GetFileOffset() - sizeof(uint8_t));
+                } else {
+                    last_shortjump_token->RewriteOffset(&fs_out, last_case_or_default_token->GetFileOffset() - last_shortjump_token->GetFileOffset() - sizeof(uint8_t));
+                }
+                
+                last_case_or_default_token = token;
+                last_shortjump_token = NULL;
+            break;
+        }
+    }
 }
 
 void update_if_offsets(FileStream &fs_out) {
