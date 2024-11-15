@@ -393,17 +393,18 @@ void emit_token(int type, FileStream &fs_out) {
 
    switch(type) {
         case ESCRIPTTOKEN_KEYWORD_SWITCH:
-            g_QCompState.case_count = 0;
+            g_QCompState.case_count = 1;
             is_switch = true;
         break;
         case ESCRIPTTOKEN_KEYWORD_ENDSWITCH:
+            g_QCompState.case_count = 0;
             is_switch = true;
         break;
         case ESCRIPTTOKEN_KEYWORD_CASE:
         case ESCRIPTTOKEN_KEYWORD_DEFAULT:
             is_switch = true;
             g_QCompState.case_count++;
-            if(g_QCompState.case_count > 1) {
+            if(g_QCompState.case_count > 2) {
                 insert_shortjump_before = true;    
             }
             insert_shortjump_after = true;
@@ -463,7 +464,7 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         emit_token(ESCRIPTTOKEN_KEYWORD_ENDSWITCH, fs_out);       
     }else if(token.compare("case") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_CASE, fs_out);       
-    }else if(token.compare("default") == 0) {
+    }else if(token.compare("default") == 0 && g_QCompState.case_count > 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_DEFAULT, fs_out);       
     } else if(token.compare("NOT") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_NOT, fs_out);
