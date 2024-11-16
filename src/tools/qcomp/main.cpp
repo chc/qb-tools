@@ -63,6 +63,9 @@
 #include <EndSwitchToken.h>
 #include <ShortJumpToken.h>
 
+#include <AndToken.h>
+#include <OrToken.h>
+
 enum EReadMode {
     EReadMode_ReadName,
     EReadMode_ReadPairOrVector,
@@ -367,6 +370,12 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_COMMA:
             token = new CommaToken;
         break;
+        case ESCRIPTTOKEN_OR:
+            token = new OrToken;
+        break;
+        case ESCRIPTTOKEN_AND:
+            token = new AndToken;
+        break;
         default:
             assert(false);
    }
@@ -487,6 +496,10 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RETURN, fs_out);
     } else if(token.compare("break") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_BREAK, fs_out);
+    } else if(token.compare("&&") == 0) {
+        emit_token(ESCRIPTTOKEN_AND, fs_out);
+    } else if(token.compare("||") == 0) {
+        emit_token(ESCRIPTTOKEN_OR, fs_out);
     } else if(token.compare("<...>") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_ALLARGS, fs_out);
     } else if(token.compare("<") == 0) {
