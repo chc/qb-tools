@@ -199,15 +199,35 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
         std::string::iterator it = current_token.begin();
 
         std::string accum;
+        bool got_less = false;
+        int dot_count = 0;
+
+        //ideally this logic gets cleaned up, would be best to eliminate it and have it exist solely within one of the existing functions
         while(it != current_token.end()) {
             char ch = *it;
             uint8_t token = 0;
             switch(ch) {
                 case '.':
-                    token = ESCRIPTTOKEN_DOT;
+                    if(!got_less) {
+                        token = ESCRIPTTOKEN_DOT;
+                    } else {
+                        dot_count++;
+                    }                    
                     break;
                 case '&':
                     token = ESCRIPTTOKEN_ARG;
+                break;
+                case '<':
+                    got_less = true;
+                break;
+                case '>':
+                    if(got_less && dot_count == 3) {
+                        got_less = false;
+                        dot_count = 0;
+                        token = ESCRIPTTOKEN_KEYWORD_ALLARGS;
+                    } else {
+                        assert(false);
+                    }
                 break;
                 case '$':
                     g_QCompState.got_dollar_token = true;
