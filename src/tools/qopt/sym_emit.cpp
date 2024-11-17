@@ -27,7 +27,6 @@
 #include <ArgumentPackToken.h>
 QSymbol *ConvertToken(QScriptToken *token, bool make_reference, ArgumentPackToken *last_argpack) {
     if(make_reference) {      
-        assert(token->GetType() == ESCRIPTTOKEN_NAME);
         assert(last_argpack);
         ReferenceItemSymbol *ref = new ReferenceItemSymbol(last_argpack->GetRefType(), last_argpack->GetIsRequiredParams());
         //for now refs always point to structs... maybe it works this way?

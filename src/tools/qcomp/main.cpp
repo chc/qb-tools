@@ -71,6 +71,7 @@ enum EReadMode {
     EReadMode_ReadPairOrVector,
     EReadMode_ReadString,
     EReadMode_ReadSQSToken,
+    EReadMode_ReadDollarToken,
 };
 
 //these state variables are used interchangably depending on the read mode, so the names are a bit generic due to this
@@ -86,9 +87,14 @@ typedef struct {
     bool use_new_ifs;
 
     std::stack<QScriptToken*> if_token_list; //used for offset writing after
-    bool got_dollar_token;
+    //bool got_dollar_token;
+    //bool got_double_dollar_token;
     bool do_inlinestruct_token;
     bool got_negate;
+
+    bool do_arg_pack;
+    ESymbolType argpack_type;
+    bool argpack_isreqparam;
 
     int case_count;
     std::stack<QScriptToken *> switch_token_list;
@@ -104,6 +110,10 @@ void update_switch_offsets(FileStream &fs_out);
 void emit_token(int type, FileStream &fs_out);
 void emit_pair_or_vec(std::string token, FileStream &fs_out);
 void emit_sqs_token(std::string token, FileStream &fs_out);
+
+void handle_read_dollar_token(char ch, FileStream &fs_out);
+void handle_dollar_char_str(std::string &accum);
+bool handle_dollar_char_accum(char ch, std::string &accum);
 
 uint32_t gen_checksum(std::string str, bool with_conversion) {
     if(with_conversion && str.length() > 2 && str.length() <= 10 && str.compare(0,2,"0x") == 0) {
@@ -157,15 +167,11 @@ void emit_name(std::string name, FileStream &fs_out) {
     assert(!name.empty());
     uint32_t checksum = gen_checksum(name, false);
 
-    if(g_QCompState.got_dollar_token) {
-        g_QCompState.got_dollar_token = false;
+    if(g_QCompState.do_arg_pack) {
+        g_QCompState.do_arg_pack = false;
         ArgumentPackToken apt;
-        apt.SetRefType(ESYMBOLTYPE_STRUCTURE);
-        if(checksum == REQUIRED_PARAM_VALUE) {
-            apt.SetIsRequiredParams(true);
-        } else {
-            apt.SetIsRequiredParams(false);
-        }
+        apt.SetRefType(g_QCompState.argpack_type);
+        apt.SetIsRequiredParams(g_QCompState.argpack_isreqparam);
         
         apt.WriteExtendedParams(&fs_out);
     }
@@ -201,11 +207,27 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
         std::string accum;
         bool got_less = false;
         int dot_count = 0;
+        bool got_dollar = false;
+        std::string dollar_accum;
 
         //ideally this logic gets cleaned up, would be best to eliminate it and have it exist solely within one of the existing functions
         while(it != current_token.end()) {
             char ch = *it;
             uint8_t token = 0;
+
+            if(got_dollar) {
+                if(!handle_dollar_char_accum(ch, dollar_accum)) {
+                    if(!dollar_accum.empty()) {
+                        handle_dollar_char_str(dollar_accum);
+                    } else {
+                        assert(false);
+                    }
+                    got_dollar = false;
+                }
+
+                it++;
+                continue;
+            }
             switch(ch) {
                 case '.':
                     if(!got_less) {
@@ -230,7 +252,7 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
                     }
                 break;
                 case '$':
-                    g_QCompState.got_dollar_token = true;
+                    got_dollar = true;                   
                 break;                
                 default:
                     accum += ch;
@@ -401,11 +423,11 @@ void emit_token(int type, FileStream &fs_out) {
    }
 
    if(type == ESCRIPTTOKEN_ARG) {
-        if(g_QCompState.got_dollar_token) {
-            g_QCompState.got_dollar_token = false;
+        if(g_QCompState.do_arg_pack) {
+            g_QCompState.do_arg_pack = false;
             ArgumentPackToken apt;
-            apt.SetRefType(ESYMBOLTYPE_STRUCTURE);
-            apt.SetIsRequiredParams(false);            
+            apt.SetRefType(g_QCompState.argpack_type);            
+            apt.SetIsRequiredParams(g_QCompState.argpack_isreqparam);
             apt.WriteExtendedParams(&fs_out);
         }
    }
@@ -560,6 +582,7 @@ void handle_read_pair_or_vec(char ch, FileStream &fs_out) {
         g_QCompState.current_token.clear();
     }
 }
+
 void handle_read_name(char ch, FileStream &fs_out) {
     bool skip_token = false;
     switch(ch) {
@@ -570,8 +593,11 @@ void handle_read_name(char ch, FileStream &fs_out) {
             return;
         break;
         case '$':
-            g_QCompState.got_dollar_token = true;
             skip_token = true;
+            g_QCompState.read_mode = EReadMode_ReadDollarToken;
+            g_QCompState.do_arg_pack = false;
+            g_QCompState.argpack_isreqparam = false;            
+            g_QCompState.temp_token.clear();
             return;
         break;
         case '&':
@@ -611,10 +637,6 @@ void handle_read_name(char ch, FileStream &fs_out) {
         //     g_QCompState.emit_type = ESCRIPTTOKEN_DOT;
         // break;
         case '{':
-            if(g_QCompState.got_dollar_token) {
-                g_QCompState.got_dollar_token = false;
-                g_QCompState.do_inlinestruct_token = true;
-            }
             g_QCompState.emit_type = ESCRIPTTOKEN_STARTSTRUCT;
         break;
         case '}':
@@ -758,15 +780,11 @@ void handle_read_string(char ch, FileStream &fs_out) {
             lst.Write(&fs_out);  
         } else if (g_QCompState.emit_type == ESCRIPTTOKEN_NAME) {
             uint32_t checksum = gen_checksum(g_QCompState.current_token, true);
-            if(g_QCompState.got_dollar_token) {
-                g_QCompState.got_dollar_token = false;
+            if(g_QCompState.do_arg_pack) {
+                g_QCompState.do_arg_pack = false;
                 ArgumentPackToken apt;
-                apt.SetRefType(ESYMBOLTYPE_STRUCTURE);
-                if(checksum == REQUIRED_PARAM_VALUE) {
-                    apt.SetIsRequiredParams(true);
-                } else {
-                    apt.SetIsRequiredParams(false);
-                }
+                apt.SetRefType(g_QCompState.argpack_type);
+                apt.SetIsRequiredParams(g_QCompState.argpack_isreqparam);
                 
                 apt.WriteExtendedParams(&fs_out);
             }
@@ -806,6 +824,8 @@ void handle_character(char ch, FileStream &fsout) {
         handle_read_string(ch, fsout);
     } else if (g_QCompState.read_mode == EReadMode_ReadSQSToken) {
         handle_read_sqs_token(ch, fsout);
+    } else if(g_QCompState.read_mode == EReadMode_ReadDollarToken) {
+        handle_read_dollar_token(ch, fsout);
     }
 }
 void handle_characters(std::string input, FileStream &fsout) {
@@ -845,7 +865,8 @@ int main(int argc, const char* argv[]) {
     g_QCompState.read_mode = EReadMode_ReadName;
     g_QCompState.use_eol_line_numbers = false;
     g_QCompState.use_new_ifs = true;
-    g_QCompState.got_dollar_token = false;
+    g_QCompState.do_arg_pack = false;
+    g_QCompState.argpack_isreqparam = false;
     g_QCompState.do_inlinestruct_token = false;
     g_QCompState.got_negate = false;
     
@@ -985,4 +1006,71 @@ void update_if_offsets(FileStream &fs_out) {
         g_QCompState.if_token_list.pop();
     }
     assert(endif_stack.empty());
+}
+
+bool handle_dollar_char_accum(char ch, std::string &accum) {
+    switch(ch) {
+        case '$':
+            return false;
+        case '{':
+            accum.clear();
+            g_QCompState.do_inlinestruct_token = true;
+            g_QCompState.do_arg_pack = false;
+            return false;
+        default:
+            accum += ch;
+        break;
+    }
+    return true;
+}
+
+void handle_dollar_char_str(std::string &accum) {
+    if(accum.substr(0, 4).compare("req_") == 0) {
+        g_QCompState.argpack_isreqparam = true;
+        accum = accum.substr(4);
+    }
+
+    if(accum.compare("int") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_INTEGER;
+    } else if(accum.compare("float") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_FLOAT;
+    } else if(accum.compare("string") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_STRING;
+    } else if(accum.compare("localstring") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_LOCALSTRING;
+    } else if(accum.compare("pair") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_PAIR;
+    } else if(accum.compare("vec") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_VECTOR;
+    } else if(accum.compare("script") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_QSCRIPT;
+    } else if(accum.compare("struct") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_STRUCTURE;
+    } else if(accum.compare("array") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_ARRAY;
+    } else if(accum.compare("name") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_NAME;
+    } else if(accum.compare("none") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_NONE;
+    } else {
+        assert(false);
+    }
+
+    accum.clear();
+}
+void handle_read_dollar_token(char ch, FileStream &fs_out) {
+    if(!handle_dollar_char_accum(ch, g_QCompState.temp_token)) {
+        g_QCompState.read_mode = EReadMode_ReadName;
+        g_QCompState.do_arg_pack = true;
+
+        if(!g_QCompState.temp_token.empty()) {
+            handle_dollar_char_str(g_QCompState.temp_token);
+        } else {
+            if(g_QCompState.do_inlinestruct_token) {
+                g_QCompState.do_arg_pack = false;
+                emit_token(ESCRIPTTOKEN_STARTSTRUCT, fs_out);
+            }            
+        }
+    }
+    
 }

@@ -3,8 +3,6 @@
 #include "QSymbol.h"
 #include <vector>
 
-#define REQUIRED_PARAM_VALUE 0x69696969
-
 class StructureSymbol : public QSymbol {
     public:
         StructureSymbol();
