@@ -87,8 +87,6 @@ typedef struct {
     bool use_new_ifs;
 
     std::stack<QScriptToken*> if_token_list; //used for offset writing after
-    //bool got_dollar_token;
-    //bool got_double_dollar_token;
     bool do_inlinestruct_token;
     bool got_negate;
 
