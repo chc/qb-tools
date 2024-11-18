@@ -963,6 +963,8 @@ void update_if_offsets(FileStream &fs_out) {
     FastElseToken* last_else_token = NULL;
     ElseIfToken* last_elseif_token = NULL;
 
+    std::stack<FastElseToken *> else_stack;
+    std::stack<ElseIfToken *> elseif_stack;
     std::stack<EndIfToken *> endif_stack;
 
     while(!g_QCompState.if_token_list.empty()) {
@@ -980,6 +982,20 @@ void update_if_offsets(FileStream &fs_out) {
                 } else {
                     last_endif_token = NULL;
                 }
+
+                if(!else_stack.empty()) {
+                    last_else_token = else_stack.top();
+                    else_stack.pop();
+                } else {
+                    last_else_token = NULL;
+                }
+
+                if(!elseif_stack.empty()) {
+                    last_elseif_token = elseif_stack.top();
+                    elseif_stack.pop();
+                } else {
+                    last_elseif_token = NULL;
+                }
                  if_token = reinterpret_cast<FastIfToken*>(token);
                 //set last elseif, or else offset
                 if(last_elseif_token != NULL) {
@@ -992,19 +1008,18 @@ void update_if_offsets(FileStream &fs_out) {
                 } else {
                     assert(false);
                 }
-
-                last_else_token = NULL;
-                last_elseif_token = NULL;
             break;
             case ESCRIPTTOKEN_KEYWORD_FASTELSE:
                 last_else_token = reinterpret_cast<FastElseToken*>(token);
-                //set last endif
+                else_stack.push(last_else_token);
+
+                //set last endif offset
                 last_else_token->RewriteOffset(&fs_out, last_endif_token->GetFileOffset() - last_else_token->GetFileOffset());
             break;
             case ESCRIPTTOKEN_KEYWORD_ELSEIF:
                 elseif_token = reinterpret_cast<ElseIfToken*>(token);
-                //set last endif, last elseif, or last else
 
+                //set last endif, last elseif, or last else offset
                 if(last_elseif_token != NULL) {
                     elseif_token->SetNextOffset(&fs_out, last_elseif_token->GetFileOffset() - elseif_token->GetFileOffset() - sizeof(uint8_t));
                 } else if(last_else_token != NULL) {
@@ -1014,7 +1029,9 @@ void update_if_offsets(FileStream &fs_out) {
                 }
                 
                 elseif_token->SetEndIfOffset(&fs_out, last_endif_token->GetFileOffset() - elseif_token->GetFileOffset() - sizeof(uint16_t));
+                
                 last_elseif_token = elseif_token;
+                elseif_stack.push(last_elseif_token);
             break;
             case ESCRIPTTOKEN_KEYWORD_ENDIF:
                 last_endif_token = reinterpret_cast<EndIfToken*>(token);
@@ -1024,6 +1041,9 @@ void update_if_offsets(FileStream &fs_out) {
 
         g_QCompState.if_token_list.pop();
     }
+    
+    assert(else_stack.empty());
+    assert(elseif_stack.empty());
     assert(endif_stack.empty());
 }
 
