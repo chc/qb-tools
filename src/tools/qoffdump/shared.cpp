@@ -13,6 +13,7 @@
 #include <JumpToken.h>
 #include <ShortJumpToken.h>
 #include <RandomToken.h>
+#include <NameToken.h>
 #include <cassert>
 
 std::vector<QScriptToken *> g_tokens;
@@ -85,6 +86,7 @@ void dump_random(RandomToken *fif) {
     }
 }
 void dump_token_offsets(QScriptToken *token) {
+    static bool got_script = false;
     switch(token->GetType()) {
         case ESCRIPTTOKEN_KEYWORD_FASTIF:
             dump_fastif(reinterpret_cast<FastIfToken*>(token));
@@ -95,6 +97,15 @@ void dump_token_offsets(QScriptToken *token) {
         case ESCRIPTTOKEN_KEYWORD_ELSEIF:
             dump_fastelseif(reinterpret_cast<ElseIfToken*>(token));
             break;
+        case ESCRIPTTOKEN_KEYWORD_SCRIPT:
+            got_script = true;
+        break;
+        case ESCRIPTTOKEN_NAME:
+            if(got_script) {
+                got_script = false;
+                printf("on script: %08x\n", reinterpret_cast<NameToken*>(token)->GetChecksum());
+            }
+        break;
         case ESCRIPTTOKEN_JUMP:
             dump_jump(reinterpret_cast<JumpToken*>(token));
             break;
