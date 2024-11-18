@@ -18,5 +18,5 @@ void AndToken::LoadParams(IStream *stream) {
 
 }
 std::string AndToken::ToString() {
-    return AppendSpaceToString ? "&& " : "&&";
+    return AppendSpaceToString ? "AND " : "AND";
 }

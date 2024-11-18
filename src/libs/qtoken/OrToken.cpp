@@ -18,5 +18,5 @@ void OrToken::LoadParams(IStream *stream) {
 
 }
 std::string OrToken::ToString() {
-    return AppendSpaceToString ? "|| " : "||";
+    return AppendSpaceToString ? "OR " : "OR";
 }

@@ -545,9 +545,9 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RETURN, fs_out);
     } else if(token.compare("break") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_BREAK, fs_out);
-    } else if(token.compare("&&") == 0) {
+    } else if(token.compare("AND") == 0) {
         emit_token(ESCRIPTTOKEN_AND, fs_out);
-    } else if(token.compare("||") == 0) {
+    } else if(token.compare("OR") == 0) {
         emit_token(ESCRIPTTOKEN_OR, fs_out);
     } else if(token.compare("<...>") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_ALLARGS, fs_out);
