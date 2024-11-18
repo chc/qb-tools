@@ -1063,6 +1063,8 @@ void handle_dollar_char_str(std::string &accum) {
         g_QCompState.argpack_type = ESYMBOLTYPE_VECTOR;
     } else if(accum.compare("script") == 0) {
         g_QCompState.argpack_type = ESYMBOLTYPE_QSCRIPT;
+    } else if(accum.compare("cfunc") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_CFUNCTION;
     } else if(accum.compare("struct") == 0) {
         g_QCompState.argpack_type = ESYMBOLTYPE_STRUCTURE;
     } else if(accum.compare("array") == 0) {

@@ -67,6 +67,9 @@ std::string ArgumentPackToken::ToString() {
         case 7: //ESYMBOLTYPE_QSCRIPT
             result += "script$";
         break;
+        case 8: //ESYMBOLTYPE_CFUNCTION
+            result += "cfunc$";
+        break;
         case 10: // ESYMBOLTYPE_STRUCTURE
             result += "struct$";
         break;
