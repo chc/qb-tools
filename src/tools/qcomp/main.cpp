@@ -66,6 +66,9 @@
 #include <AndToken.h>
 #include <OrToken.h>
 
+#include <RandomIntegerToken.h>
+#include <RandomFloatToken.h>
+
 enum EReadMode {
     EReadMode_ReadName,
     EReadMode_ReadPairOrVector,
@@ -416,6 +419,12 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_AND:
             token = new AndToken;
         break;
+        case ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER:
+            token = new RandomIntegerToken;
+        break;
+        case ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT:
+            token = new RandomFloatToken;
+        break;
         default:
             assert(false);
    }
@@ -557,6 +566,10 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         assert(g_QCompState.emit_type == ESCRIPTTOKEN_OPENPARENTH);
         g_QCompState.emit_type = 0;
         g_QCompState.temp_token = token + "("; //left over ( is still processed later, will need to clear before changing states again too
+    } else if(token.compare("RandomInt") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER, fs_out);
+    } else if(token.compare("RandomFloat") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT, fs_out);
     }
     else {
         return false;
@@ -901,6 +914,8 @@ void update_switch_offsets(FileStream &fs_out) {
     QScriptToken *last_case_or_default_token = NULL;
     ShortJumpToken *last_shortjump_token = NULL;
 
+    std::stack<EndSwitchToken *> endswitch_stack;
+
 
     while(!g_QCompState.switch_token_list.empty()) {
         QScriptToken *token = g_QCompState.switch_token_list.top();
@@ -915,11 +930,16 @@ void update_switch_offsets(FileStream &fs_out) {
                 last_shortjump_token = reinterpret_cast<ShortJumpToken*>(token);
             break;
             case ESCRIPTTOKEN_KEYWORD_ENDSWITCH:
-                assert(last_endswitch_token == NULL);
                 last_endswitch_token = reinterpret_cast<EndSwitchToken*>(token);
+                endswitch_stack.push(last_endswitch_token);
             break;
             case ESCRIPTTOKEN_KEYWORD_SWITCH:
-                last_endswitch_token = NULL;
+                if(!endswitch_stack.empty()) {
+                    last_endswitch_token = endswitch_stack.top();
+                    endswitch_stack.pop();
+                } else {
+                    last_endswitch_token = NULL;
+                }
             break;
             case ESCRIPTTOKEN_KEYWORD_CASE:
             case ESCRIPTTOKEN_KEYWORD_DEFAULT:
@@ -935,6 +955,7 @@ void update_switch_offsets(FileStream &fs_out) {
             break;
         }
     }
+    assert(endswitch_stack.empty());
 }
 
 void update_if_offsets(FileStream &fs_out) {
