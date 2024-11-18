@@ -8,7 +8,8 @@
 
 
 ArgumentPackToken::ArgumentPackToken() {
-
+    m_ref_type = 0;
+    m_is_required_params = false;
 }
 ArgumentPackToken::~ArgumentPackToken() {
 
