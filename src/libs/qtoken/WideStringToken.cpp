@@ -10,6 +10,9 @@
 #include <iostream>
 #include <codecvt>
 
+WideStringToken::WideStringToken(std::u16string value) : m_value(value) {
+
+}
 WideStringToken::WideStringToken() {
 
 }

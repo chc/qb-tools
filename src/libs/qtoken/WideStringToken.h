@@ -4,6 +4,7 @@
 
 class WideStringToken : public QScriptToken {
     public:
+        WideStringToken(std::u16string value);
         WideStringToken();
         ~WideStringToken();
         EScriptToken GetType();

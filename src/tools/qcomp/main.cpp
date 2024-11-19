@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <map>
+#include <locale>
+#include <codecvt>
+#include <stack>
+
 #include <FileStream.h>
 #include <crc32.h>
-#include <stack>
 #include "qcomp.h"
 
 #include <NameToken.h>
@@ -96,6 +99,7 @@ typedef struct {
     bool do_arg_pack;
     ESymbolType argpack_type;
     bool argpack_isreqparam;
+    bool do_widestring;
 
     int case_count;
     std::stack<QScriptToken *> switch_token_list;
@@ -880,6 +884,7 @@ int main(int argc, const char* argv[]) {
     g_QCompState.argpack_isreqparam = false;
     g_QCompState.do_inlinestruct_token = false;
     g_QCompState.got_negate = false;
+    g_QCompState.do_widestring = false;
     
     while(true) {
         int ch = fgetc(mp_input_fd);
@@ -1040,6 +1045,12 @@ void update_if_offsets(FileStream &fs_out) {
 
 bool handle_dollar_char_accum(char ch, std::string &accum) {
     switch(ch) {
+        case '\'': //wide string token
+            if(g_QCompState.do_widestring) {
+                return false;
+            }
+            g_QCompState.do_widestring = true;
+            break;
         case '$':
             return false;
         case '{':
@@ -1093,6 +1104,19 @@ void handle_dollar_char_str(std::string &accum) {
 void handle_read_dollar_token(char ch, FileStream &fs_out) {
     if(!handle_dollar_char_accum(ch, g_QCompState.temp_token)) {
         g_QCompState.read_mode = EReadMode_ReadName;
+        
+        if(g_QCompState.do_widestring) {
+            std::wstring_convert<std::codecvt_utf8_utf16<char16_t, 0x10ffff,
+                    std::codecvt_mode::little_endian>, char16_t> cnv;
+            std::u16string s = cnv.from_bytes(g_QCompState.temp_token);
+
+            WideStringToken wst(s);
+            wst.Write(&fs_out);
+            g_QCompState.temp_token.clear();
+            g_QCompState.do_widestring = false;
+            return;
+        }
+        
         g_QCompState.do_arg_pack = true;
 
         if(!g_QCompState.temp_token.empty()) {
