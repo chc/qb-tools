@@ -933,6 +933,7 @@ void update_switch_offsets(FileStream &fs_out) {
                 last_endswitch_token = reinterpret_cast<EndSwitchToken*>(token);
             break;
             case ESCRIPTTOKEN_KEYWORD_SWITCH:
+                assert(!endswitch_stack.empty());
                 last_endswitch_token = endswitch_stack.top();
                 endswitch_stack.pop();
             break;
@@ -965,7 +966,6 @@ void update_if_offsets(FileStream &fs_out) {
     while(!g_QCompState.if_token_list.empty()) {
         QScriptToken *token = g_QCompState.if_token_list.top();
 
-
         FastIfToken *if_token = NULL;
         ElseIfToken *elseif_token = NULL;
 
@@ -983,12 +983,16 @@ void update_if_offsets(FileStream &fs_out) {
                     assert(false);
                 }
 
+                assert(!endif_stack.empty());
                 last_endif_token = endif_stack.top();
                 endif_stack.pop();
 
+                assert(!else_stack.empty());
                 last_else_token = else_stack.top();
                 else_stack.pop();
 
+
+                assert(!elseif_stack.empty());
                 last_elseif_token = elseif_stack.top();
                 elseif_stack.pop();
 
