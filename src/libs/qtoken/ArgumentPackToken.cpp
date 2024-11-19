@@ -43,8 +43,10 @@ std::string ArgumentPackToken::ToString() {
     if(m_is_required_params) {
         result += "req_";
     }
+
+    //this does not seem to actually be linked to type, but since i have no idea i'll just go with it until i figure out what it is
     switch (m_ref_type) {
-        case 0: //understand this more, qdeopt bug or maybe i'm forgetting something
+        case 0: 
             result += "none$";
         break;
         case 1: //ESYMBOLTYPE_INTEGER
@@ -73,6 +75,9 @@ std::string ArgumentPackToken::ToString() {
         break;
         case 10: // ESYMBOLTYPE_STRUCTURE
             result += "struct$";
+        break;
+        case 11: // ESYMBOLTYPE_STRUCTUREPOINTER
+            result += "ptr_struct$";
         break;
         case 12: //ESYMBOLTYPE_ARRAY
             result += "array$";

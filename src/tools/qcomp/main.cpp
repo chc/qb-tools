@@ -1092,6 +1092,8 @@ void handle_dollar_char_str(std::string &accum) {
         g_QCompState.argpack_type = ESYMBOLTYPE_CFUNCTION;
     } else if(accum.compare("struct") == 0) {
         g_QCompState.argpack_type = ESYMBOLTYPE_STRUCTURE;
+    } else if(accum.compare("ptr_struct") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_STRUCTUREPOINTER;
     } else if(accum.compare("array") == 0) {
         g_QCompState.argpack_type = ESYMBOLTYPE_ARRAY;
     } else if(accum.compare("name") == 0) {
