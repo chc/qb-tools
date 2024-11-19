@@ -942,6 +942,8 @@ void update_switch_offsets(FileStream &fs_out) {
                 assert(!endswitch_stack.empty());
                 last_endswitch_token = endswitch_stack.top();
                 endswitch_stack.pop();
+                last_shortjump_token = NULL;
+                last_case_or_default_token = NULL;
             break;
             case ESCRIPTTOKEN_KEYWORD_CASE:
             case ESCRIPTTOKEN_KEYWORD_DEFAULT:
