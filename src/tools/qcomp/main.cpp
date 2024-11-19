@@ -938,6 +938,7 @@ void update_switch_offsets(FileStream &fs_out) {
                 last_endswitch_token = reinterpret_cast<EndSwitchToken*>(token);
             break;
             case ESCRIPTTOKEN_KEYWORD_SWITCH:
+                assert(last_endswitch_token);
                 assert(!endswitch_stack.empty());
                 last_endswitch_token = endswitch_stack.top();
                 endswitch_stack.pop();
@@ -996,13 +997,13 @@ void update_if_offsets(FileStream &fs_out) {
                 last_else_token = else_stack.top();
                 else_stack.pop();
 
-
                 assert(!elseif_stack.empty());
                 last_elseif_token = elseif_stack.top();
                 elseif_stack.pop();
 
             break;
             case ESCRIPTTOKEN_KEYWORD_FASTELSE:
+                assert(last_endif_token);
                 last_else_token = reinterpret_cast<FastElseToken*>(token);
 
                 //set last endif offset
@@ -1018,6 +1019,8 @@ void update_if_offsets(FileStream &fs_out) {
                     elseif_token->SetNextOffset(&fs_out, last_else_token->GetFileOffset() - elseif_token->GetFileOffset()  + sizeof(uint16_t));
                 } else if (last_endif_token != NULL) {
                     elseif_token->SetNextOffset(&fs_out, last_endif_token->GetFileOffset() - elseif_token->GetFileOffset());    
+                } else {
+                    assert(false);
                 }
                 
                 elseif_token->SetEndIfOffset(&fs_out, last_endif_token->GetFileOffset() - elseif_token->GetFileOffset() - sizeof(uint16_t));
