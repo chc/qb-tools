@@ -510,14 +510,14 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
             emit_token(ESCRIPTTOKEN_KEYWORD_IF, fs_out);
         }
         
+    } else if(token.compare("elseif") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_ELSEIF, fs_out);
     } else if(token.compare("else") == 0) {
         if(g_QCompState.use_new_ifs) {
             emit_token(ESCRIPTTOKEN_KEYWORD_FASTELSE, fs_out);
         } else {
             emit_token(ESCRIPTTOKEN_KEYWORD_ELSE, fs_out);
         }        
-    } else if(token.compare("elseif") == 0) {
-        emit_token(ESCRIPTTOKEN_KEYWORD_ELSEIF, fs_out);
     } else if(token.compare("endif") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_ENDIF, fs_out);       
     }else if(token.compare("switch") == 0) {
