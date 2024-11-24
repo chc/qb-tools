@@ -71,6 +71,7 @@
 
 #include <RandomIntegerToken.h>
 #include <RandomFloatToken.h>
+#include <RandomRangeToken.h>
 
 enum EReadMode {
     EReadMode_ReadName,
@@ -429,6 +430,9 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT:
             token = new RandomFloatToken;
         break;
+        case ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE:
+            token = new RandomRangeToken;
+        break;
         default:
             assert(false);
    }
@@ -574,6 +578,8 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER, fs_out);
     } else if(token.compare("RandomFloat") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT, fs_out);
+    } else if(token.compare("RandomRange") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE, fs_out);
     }
     else {
         return false;
