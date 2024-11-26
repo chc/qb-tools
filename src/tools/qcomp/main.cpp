@@ -159,17 +159,26 @@ bool string_is_float(std::string &s) {
     if (s.empty()) {
         return false;
     }
+    bool got_digit = false;
     std::string::iterator it = s.begin();
     while(it != s.end()) {
         char ch = *it;
-        if(!isdigit(ch) && ch != '.' && ch != '-') {
+        bool is_digit = isdigit(ch);
+        if(is_digit) {
+            got_digit = true;
+        }
+        if(!is_digit && ch != '.' && ch != '-') {
             return false;
         }
         it++;
     }
-    return true;
+    
+    return got_digit;
 }
 void emit_name(std::string name, FileStream &fs_out) {
+    if(handle_keyword_check(name, fs_out)) {
+        return;
+    }
     assert(!name.empty());
     uint32_t checksum = gen_checksum(name, false);
 
