@@ -1,0 +1,97 @@
+name: Build QB tools
+
+on:
+  release:
+    types: [published]
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      matrix:
+        #os: [ubuntu-latest, windows-latest]
+        os: [windows-latest]
+        #qb_build_type: [thp8, thpg]
+        qb_build_type: [thawpc, thp8, thpg, gh3, gh4, gh5]
+        build_type: [Release]
+        c_compiler: [gcc, clang, cl]
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+          # - os: ubuntu-latest
+          #   c_compiler: gcc
+          #   cpp_compiler: g++
+          # - os: ubuntu-latest
+          #   c_compiler: clang
+          #   cpp_compiler: clang++
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: windows-latest
+            c_compiler: clang
+          # - os: ubuntu-latest
+          #   c_compiler: cl
+          # - os: ubuntu-latest
+          #   c_compiler: clang
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: "Set environmental variables"
+      shell: bash
+      run: |
+        echo "VCPKG_TC_PATH=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
+    - name: vcpkg Install
+      run: vcpkg install
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_TOOLCHAIN_FILE=${{env.VCPKG_TC_PATH}}
+        -DCMAKE_INSTALL_PREFIX=build_dir
+        -DQBTOOLS_BUILD_TYPE=${{matrix.qb_build_type }}
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+    - name: Install
+      run: cmake --install ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+    - name: Archive Release
+      uses: thedoctor0/zip-release@0.7.5
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        type: 'zip'
+        filename: ${{matrix.qb_build_type }}-${{ matrix.os }}.zip
+        path: build_dir
+
+    - name: Upload Release
+      uses: ncipollo/release-action@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        allowUpdates: true
+        replacesArtifacts: true
+        artifacts: ${{matrix.qb_build_type }}-${{ matrix.os }}.zip
+        token: ${{ secrets.GITHUB_TOKEN }}    
