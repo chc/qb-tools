@@ -154,11 +154,11 @@ target_link_libraries(qoffdump_token qtoken qsymbol)
 
 file (GLOB UNCHUNK_SRCS "src/tools/unchunk/*.cpp")
 add_executable (unchunk ${UNCHUNK_SRCS})
-target_link_libraries(unchunk qtoken ZLIB::ZLIB)
+target_link_libraries(unchunk PRIVATE qtoken ZLIB::ZLIB)
 
 file (GLOB CHUNK_SRCS "src/tools/chunk/*.cpp")
 add_executable (chunk ${CHUNK_SRCS})
-target_link_libraries(chunk qtoken ZLIB::ZLIB)
+target_link_libraries(chunk PRIVATE qtoken ZLIB::ZLIB)
 
 file (GLOB FASTDUMPAPPEND_SRCS "src/tools/fastdump_append/*.cpp")
 source_group("Sources" FILES ${FASTDUMPAPPEND_SRCS})

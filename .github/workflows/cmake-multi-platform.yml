@@ -84,8 +84,8 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         type: 'zip'
-        filename: ${{matrix.qb_build_type }}-${{ matrix.os }}.zip
-        path: build_dir
+        filename: ../${{matrix.qb_build_type }}-${{ matrix.os }}.zip
+        directory: build_dir
 
     - name: Upload Release
       uses: ncipollo/release-action@v1
