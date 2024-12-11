@@ -81,7 +81,7 @@ jobs:
 
     - name: Copy zlib dll
       if: startsWith(matrix.os, 'windows')
-      run: cp ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/zlib1.dll build_dir/
+      run: cp ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/zlib1.dll build_dir/bin/
 
     - name: Upload build dir
       uses: actions/upload-artifact@v4
