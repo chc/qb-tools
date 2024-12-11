@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.24)
 project(qbtools)
 enable_testing()
 
+set(ZLIB_USE_STATIC_LIBS ON)
 find_package(ZLIB REQUIRED)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
