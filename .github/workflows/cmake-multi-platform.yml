@@ -79,6 +79,18 @@ jobs:
     - name: Install
       run: cmake --install ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
+    - name: Upload build dir
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-dir
+        path: build_dir
+
+    - name: Upload output dir
+      uses: actions/upload-artifact@v4
+      with:
+        name: output-dir
+        path: ${{ steps.strings.outputs.build-output-dir }}
+
     - name: Archive Release
       uses: thedoctor0/zip-release@0.7.5
       if: startsWith(github.ref, 'refs/tags/')
