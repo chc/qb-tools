@@ -79,16 +79,20 @@ jobs:
     - name: Install
       run: cmake --install ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
+    - name: Copy zlib dll
+      if: startsWith(matrix.os, 'windows')
+      run: cp ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/zlib1.dll build_dir/
+
     - name: Upload build dir
       uses: actions/upload-artifact@v4
       with:
-        name: build-dir
+        name: build-dir-${{matrix.qb_build_type }}-${{ matrix.os }}-${{matrix.build_type}}
         path: build_dir
 
     - name: Upload output dir
       uses: actions/upload-artifact@v4
       with:
-        name: output-dir
+        name: output-dir-${{matrix.qb_build_type }}-${{ matrix.os }}-${{matrix.build_type}}
         path: ${{ steps.strings.outputs.build-output-dir }}
 
     - name: Archive Release
