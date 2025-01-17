@@ -11,11 +11,7 @@ typedef struct _DbgChecksumInfo {
     const char* name;
 } DbgChecksumInfo;
 
-typedef struct _FastDumpChecksumDumpData {
-    uint32_t checksum;
-    char name[CHECKSUM_MAX];
-} FastDumpChecksumDumpData; //fastdump info
-
-void dbginfo_load(const char *dbgpak, bool is_fastdump);
+void dbginfo_load_pak(const char* pak, const char* pab);
+void dbginfo_load_dbg(const char* path);
 const char *dbginfo_resolve(uint32_t checksum);
 #endif //_DBGINFO_H

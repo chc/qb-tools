@@ -69,7 +69,7 @@ std::vector<TokenInjection> RandomToken::GetInjections() {
         std::ostringstream ss;
         TokenInjection injection;
         injection.use_next_jump_offset = false;
-        injection.offset = m_offsets[i].offset + CalculateTokenOffset(i) - m_total_size - 1; //-1 for skip token type byte
+        injection.offset = m_offsets[i].offset + CalculateTokenOffset(i) - m_total_size;
 
         ss << "@";
         if(m_offsets[i].weight != 1) {

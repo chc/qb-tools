@@ -60,29 +60,31 @@ bool pak_file_info_callback(PakItem item) {
 }
 
 
-void dbginfo_load(const char *dbgpak, bool is_fastdump) {
-    if (is_fastdump) {
-        FILE* fd = fopen(dbgpak, "rb");
-        if (fd == NULL) {
-            return;
-        }
-        while (true) {
-            FastDumpChecksumDumpData dump;
-            int len = fread(&dump, sizeof(FastDumpChecksumDumpData), 1, fd);
-            if (len != 1) {
-                break;
-            }
-            DbgChecksumInfo line_info;
-            line_info.checksum = dump.checksum;
-            line_info.name = strdup(dump.name);
-            loaded_checksums[line_info.checksum] = line_info;
-        }
-        fclose(fd);
+void dbginfo_load_pak(const char *pak, const char *pab) {
+   unpak_iterate_files(pak, pab, pak_file_info_callback);    
+}
+void dbginfo_load_dbg(const char* path) {
+    FILE* fd = fopen(path, "rb");
+    if (!fd) {
+        return;
     }
-    else {
-        unpak_iterate_files(dbgpak, nullptr, pak_file_info_callback);
-    }
+    fseek(fd, 0, SEEK_END);
+    long len = ftell(fd);
+
+    fseek(fd, 0, SEEK_SET);
+
+    uint8_t* buf = (uint8_t*)malloc(len);
     
+    if (buf != NULL) {
+        if (fread(buf, 1, len, fd) > 0) {
+            handle_dbgfile(buf, len);
+        }
+    }
+
+
+    free(buf);
+
+    fclose(fd);
 }
 const char *dbginfo_resolve(uint32_t checksum) {
     if (loaded_checksums.find(checksum) == loaded_checksums.end()) {
