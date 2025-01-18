@@ -44,19 +44,8 @@ QScriptToken *find_by_offset(std::map<QScriptToken *, size_t> &offsets, size_t o
 }
 
 
-
-bool is_random_token(EScriptToken type) {
-    switch(type) {
-        case ESCRIPTTOKEN_KEYWORD_RANDOM:
-        case ESCRIPTTOKEN_KEYWORD_RANDOM_PERMUTE:
-        case ESCRIPTTOKEN_KEYWORD_RANDOM_NO_REPEAT:
-            return true;
-        break;
-    }
-    return false;
-}
 void rewrite_offsets(IStream *stream, QScriptToken *token) {
-    if(is_random_token(token->GetType())) {
+    if(RandomToken::is_random_token(token->GetType())) {
         RandomToken *rnd = reinterpret_cast<RandomToken*>(token);
         for(int i=0;i<rnd->GetNumItems();i++) {
             uint32_t offset = original_offsets[token] + rnd->CalculateTokenOffset(i) +  rnd->GetRandomOffset(i);

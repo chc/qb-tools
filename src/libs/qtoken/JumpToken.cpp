@@ -33,8 +33,8 @@ void JumpToken::RewriteOffset(IStream *stream, size_t diff) {
     stream->SetCursor(cursor);
 }
 std::string JumpToken::ToString() {
-    /*std::ostringstream ss;
-    ss << "JMP(" << m_offset << ")";
-    return ss.str();*/
+    //std::ostringstream ss;
+    //ss << "JMP(" << m_offset << ")";
+    //return ss.str();
     return "";
 }

@@ -6,10 +6,20 @@
 #include <iomanip>
 #include <cassert>
 
-RandomToken::RandomToken() {
-    m_offsets = nullptr;
-    m_num_items = 0;
-
+RandomToken::RandomToken() : RandomToken(0) {
+}
+RandomToken::RandomToken(int num_items) {
+    if (num_items > 0) {
+        m_offsets = new RandomOffset[num_items];
+        for (int i = 0; i < num_items; i++) {
+            m_offsets[i].weight = 1;
+        }
+    }
+    else {
+        m_offsets = nullptr;
+    }
+    
+    m_num_items = num_items;
 }
 RandomToken::~RandomToken() {
     if(m_offsets) {
