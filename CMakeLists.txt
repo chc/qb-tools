@@ -160,4 +160,4 @@ file (GLOB CHUNK_SRCS "src/tools/chunk/*.cpp")
 add_executable (chunk ${CHUNK_SRCS})
 target_link_libraries(chunk PRIVATE qtoken ZLIB::ZLIB)
 
-INSTALL(TARGETS qcomp qdump qopt qdeopt pakdir unpak unchunk chunk)
+INSTALL(TARGETS qcomp qdump qopt qdeopt qgenname qresolve pakdir unpak unchunk chunk)
