@@ -11,6 +11,7 @@
 #include <ArgumentPackToken.h>
 
 #include <vector>
+#include <map>
 #include <crc32.h>
 std::vector<QScriptToken *> token_list;
 void dump_token_list(std::vector<QScriptToken *> token_list, FILE *out);
@@ -25,32 +26,27 @@ uint32_t gen_checksum(const char *name) {
     free((void *)cpy);
     return checksum;
 }
-ChecksumNameToken *resolve_name(uint32_t checksum) {
-    std::vector<QScriptToken *>::iterator it = token_list.begin();
-    while(it != token_list.end()) {
-        QScriptToken *token = *it;
-        if(token->GetType() == ESCRIPTTOKEN_CHECKSUM_NAME) {
-            ChecksumNameToken *c = reinterpret_cast<ChecksumNameToken *>(token);
-            if(c && c->GetChecksum() == checksum) {
-                uint32_t true_checksum = gen_checksum(c->GetName());
-                if(true_checksum != checksum) {
-                    break;
-                }
-                return c;
-            }
+
+
+void map_checksum_names() {
+    std::map<uint32_t, ChecksumNameToken*> checksum_map;
+    std::vector<QScriptToken*>::iterator it = token_list.begin();
+    while (it != token_list.end()) {
+        QScriptToken* token = *it;
+        if (token->GetType() == ESCRIPTTOKEN_CHECKSUM_NAME) {
+            ChecksumNameToken* c = reinterpret_cast<ChecksumNameToken *>(token);
+            checksum_map[c->GetChecksum()] = c;
         }
         it++;
     }
-    return NULL;
-}
 
-void map_checksum_names() {
-    std::vector<QScriptToken *>::iterator it = token_list.begin();
+
+    it = token_list.begin();    
     while(it != token_list.end()) {
         QScriptToken *token = *it;
         if(token->GetType() == ESCRIPTTOKEN_NAME) {
             NameToken *name = reinterpret_cast<NameToken *>(token);
-            ChecksumNameToken *c = resolve_name(name->GetChecksum());
+            ChecksumNameToken *c = checksum_map[name->GetChecksum()];
             if(c) {
                 name->SetChecksumName(c);
             }
