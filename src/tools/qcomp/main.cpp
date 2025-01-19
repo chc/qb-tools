@@ -134,6 +134,7 @@ typedef struct {
 } QCompState;
 
 QCompState g_QCompState;
+FILE* mp_input_fd;
 
 void handle_characters(std::string input, FileStream &fsout);
 void handle_character(char ch, FileStream &fsout);
@@ -149,7 +150,7 @@ void handle_read_dollar_token(char ch, FileStream &fs_out);
 void handle_dollar_char_str(std::string &accum);
 bool handle_dollar_char_accum(char ch, std::string &accum);
 
-int predict_token_num_items();
+int calculate_token_num_items();
 
 uint32_t gen_checksum(std::string str, bool with_conversion) {
     if(with_conversion && str.length() > 2 && str.length() <= 10 && str.compare(0,2,"0x") == 0) {
@@ -432,7 +433,7 @@ void emit_token(int type, FileStream &fs_out) {
             no_free = true;
         break;
         case ESCRIPTTOKEN_KEYWORD_RANDOM:
-            token = new RandomToken(predict_token_num_items());
+            token = new RandomToken(calculate_token_num_items());
             
             g_QCompState.current_random = new RandomData(g_QCompState.current_random, reinterpret_cast<RandomToken*>(token));
             if (g_QCompState.current_random->prev != nullptr) {
@@ -1034,7 +1035,7 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
 
-    FILE *mp_input_fd = fopen(argv[1], "r");
+    mp_input_fd = fopen(argv[1], "r");
 
     if(!mp_input_fd) {
         fprintf(stderr, "Failed to open input file: %s\n", argv[1]);
@@ -1340,6 +1341,32 @@ void handle_read_dollar_token(char ch, FileStream &fs_out) {
         }
     }
 }
-int predict_token_num_items() {
-    return 2;
+int calculate_token_num_items() {
+    long pos = ftell(mp_input_fd);
+
+    int num_items = 0;
+    int depth = 1;
+
+    while (depth > 0) {
+        int c = fgetc(mp_input_fd);
+        if (c == EOF) {
+            break;
+        }
+        switch (c) {
+            case '@':
+                if(depth == 1)
+                    num_items++;
+            break;
+            case '(':
+                depth++;
+            break;
+            case ')':
+                depth--;
+                break;
+        }
+    }
+
+
+    fseek(mp_input_fd, pos, SEEK_SET);
+    return num_items;
 }
