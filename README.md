@@ -26,6 +26,4 @@ Set the `QBTOOLS_CHECKSUM_PATH` to point to a DBG.PAK if you want to have checks
 
 
 ## TODO
-* Finish QComp tool
 * Support structure script symbols
-* Random tokens jump marker `@` is not displaying properly for some entries
