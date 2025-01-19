@@ -526,7 +526,14 @@ void emit_token(int type, FileStream &fs_out) {
             token = new JumpToken;
             assert(g_QCompState.random_depth > 0);
             assert(g_QCompState.current_random);
-            g_QCompState.current_random->jumps.push(reinterpret_cast<JumpToken*>(token));
+            if (g_QCompState.current_random->jumps.size()+1 >= g_QCompState.current_random->root->GetNumItems()) {
+                assert(g_QCompState.current_random->prev);
+                g_QCompState.current_random->prev->jumps.push(reinterpret_cast<JumpToken*>(token));
+            }
+            else {
+                g_QCompState.current_random->jumps.push(reinterpret_cast<JumpToken*>(token));
+            }
+            
             no_free = true;
         break;
         default:
