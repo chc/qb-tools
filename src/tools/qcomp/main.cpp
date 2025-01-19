@@ -160,7 +160,7 @@ int calculate_token_num_items();
 
 uint32_t gen_checksum(std::string str, bool with_conversion) {
     if(with_conversion && str.length() > 2 && str.length() <= 10 && str.compare(0,2,"0x") == 0) {
-        int32_t v = (int32_t)strtol(str.c_str(), NULL, 16);
+        uint32_t v = (uint32_t)strtoul(str.c_str(), NULL, 16);
         return v;
     }
 
