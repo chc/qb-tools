@@ -133,6 +133,8 @@ typedef struct {
     bool skip_next_random_jump;
     int random_depth;
     int mark_end_of_random;
+    bool random_read_weight;
+    int random_next_weight;
 } QCompState;
 
 QCompState g_QCompState;
@@ -239,7 +241,14 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
             v = -v;
         }
 
+        if (g_QCompState.random_read_weight) {
+            g_QCompState.random_read_weight = false;
+            g_QCompState.random_next_weight = v;
+            return;
+        }
+
         IntegerToken *it = new IntegerToken(v);
+
         it->Write(&fs_out);
 
         g_QCompState.last_emitted_type = it->GetType();
@@ -247,6 +256,9 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
         if (g_QCompState.next_is_random_start_token) {
             g_QCompState.next_is_random_start_token = false;
             g_QCompState.current_random->values.push(it);
+            g_QCompState.current_random->root->SetWeight(g_QCompState.current_random->values.size()-1, g_QCompState.random_next_weight);
+            g_QCompState.random_next_weight = 1;
+            
         } else if (g_QCompState.mark_end_of_random) {
             g_QCompState.current_random->end_token = it;
             g_QCompState.current_random = g_QCompState.current_random->prev;
@@ -268,6 +280,8 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
         if (g_QCompState.next_is_random_start_token) {
             g_QCompState.next_is_random_start_token = false;
             g_QCompState.current_random->values.push(ft);
+            g_QCompState.current_random->root->SetWeight(g_QCompState.current_random->values.size() - 1, g_QCompState.random_next_weight);
+            g_QCompState.random_next_weight = 1;
         } else if (g_QCompState.mark_end_of_random) {
             g_QCompState.current_random->end_token = ft;
             g_QCompState.current_random = g_QCompState.current_random->prev;
@@ -444,6 +458,8 @@ void emit_token(int type, FileStream &fs_out) {
             g_QCompState.current_random = new RandomData(g_QCompState.current_random, reinterpret_cast<RandomToken*>(token));
             if (g_QCompState.current_random->prev != nullptr) {
                 g_QCompState.current_random->prev->values.push(token);
+                g_QCompState.current_random->prev->root->SetWeight(g_QCompState.current_random->prev->values.size() - 1, g_QCompState.random_next_weight);
+                g_QCompState.random_next_weight = 1;
             }
             g_QCompState.randoms.push(g_QCompState.current_random);
 
@@ -622,6 +638,8 @@ void emit_token(int type, FileStream &fs_out) {
        g_QCompState.next_is_random_start_token = false;
        if (!RandomToken::is_random_token(token->GetType())) {
            g_QCompState.current_random->values.push(token);
+           g_QCompState.current_random->root->SetWeight(g_QCompState.current_random->values.size() - 1, g_QCompState.random_next_weight);
+           g_QCompState.random_next_weight = 1;
        }       
        
        no_free = true;
@@ -779,7 +797,14 @@ void handle_read_name(char ch, FileStream &fs_out) {
         //     g_QCompState.emit_type = ESCRIPTTOKEN_LESSTHAN;
         // break;
         case '*':
-            g_QCompState.emit_type = ESCRIPTTOKEN_MULTIPLY;
+            if (g_QCompState.next_is_random_start_token) { //indicates this is a weight
+                g_QCompState.random_read_weight = true;
+                skip_token = true;
+            }
+            else {
+                g_QCompState.emit_type = ESCRIPTTOKEN_MULTIPLY;
+            }
+            
         break;
         case '/':
             g_QCompState.emit_type = ESCRIPTTOKEN_DIVIDE;
@@ -947,6 +972,8 @@ void handle_read_string(char ch, FileStream &fs_out) {
             if (g_QCompState.next_is_random_start_token) {
                 g_QCompState.next_is_random_start_token = false;
                 g_QCompState.current_random->values.push(st);
+                g_QCompState.current_random->root->SetWeight(g_QCompState.current_random->values.size() - 1, g_QCompState.random_next_weight);
+                g_QCompState.random_next_weight = 1;
             }
             else if (g_QCompState.mark_end_of_random) {
                 while (g_QCompState.mark_end_of_random > 0) {
@@ -965,6 +992,8 @@ void handle_read_string(char ch, FileStream &fs_out) {
             if (g_QCompState.next_is_random_start_token) {
                 g_QCompState.next_is_random_start_token = false;
                 g_QCompState.current_random->values.push(lst);
+                g_QCompState.current_random->root->SetWeight(g_QCompState.current_random->values.size() - 1, g_QCompState.random_next_weight);
+                g_QCompState.random_next_weight = 1;
             }
             else if (g_QCompState.mark_end_of_random) {
                 while (g_QCompState.mark_end_of_random > 0) {
@@ -1098,6 +1127,7 @@ int main(int argc, const char* argv[]) {
     g_QCompState.skip_next_random_jump = false;
     g_QCompState.last_emitted_type = 0;
     g_QCompState.random_depth = 0;
+    g_QCompState.random_read_weight = false;
 
     while(true) {
         int ch = fgetc(mp_input_fd);
