@@ -1226,8 +1226,6 @@ void update_if_offsets(FileStream &fs_out) {
     assert(endif_stack.empty());
 }
 void update_random_offsets(FileStream& fs_out) {
-    printf("update randoms\n");
-    
     while (!g_QCompState.randoms.empty()) {
         RandomData* rnd = g_QCompState.randoms.top();
         g_QCompState.randoms.pop();
@@ -1237,8 +1235,8 @@ void update_random_offsets(FileStream& fs_out) {
             rnd->values.pop();
             
             uint32_t diff = token->GetFileOffset() - rnd->root->GetFileOffset();
-            diff -= rnd->root->CalculateTokenOffset(i);
-            rnd->root->SetRandomOffset(i, diff);
+            diff -= rnd->root->CalculateTokenOffset(i-1);
+            rnd->root->SetRandomOffset(i-1, diff);
         }
         assert(rnd->values.empty());
 
@@ -1251,7 +1249,6 @@ void update_random_offsets(FileStream& fs_out) {
             uint32_t diff = rnd->end_token->GetFileOffset() - jump_token->GetFileOffset() - sizeof(uint32_t) - sizeof(uint8_t);
             jump_token->RewriteOffset(&fs_out, diff);
         }
-        assert(rnd->jumps.empty());
     }
 }
 
