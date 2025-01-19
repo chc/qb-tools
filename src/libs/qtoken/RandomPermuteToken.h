@@ -5,6 +5,7 @@
 class RandomPermuteToken : public RandomToken {
     public:
         RandomPermuteToken();
+        RandomPermuteToken(int num_items);
         ~RandomPermuteToken();
         EScriptToken GetType();
         std::string ToString();

@@ -145,10 +145,11 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
 
-    const char *dbginfo_path = getenv("QBTOOLS_CHECKSUM_PATH");
-    if(dbginfo_path != NULL) {
-        printf("** loading dbginfo path: %s\n", dbginfo_path);
-        dbginfo_load(dbginfo_path, getenv("QBTOOLS_CHECKSUM_FASTDUMP") != nullptr);
+    const char* dbginfo_pak = getenv("QBTOOLS_DBG_PAK");
+    const char* dbginfo_pab = getenv("QBTOOLS_DBG_PAB");
+    if(dbginfo_pak != NULL) {
+        printf("** loading dbginfo path: %s\n", dbginfo_pak);
+        dbginfo_load_pak(dbginfo_pak, dbginfo_pab);
     } else {
         printf("** checksum path not specified\n");
     }

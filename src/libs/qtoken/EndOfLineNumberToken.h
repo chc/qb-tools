@@ -5,9 +5,11 @@
 class EndOfLineNumberToken : public QScriptToken {
     public:
         EndOfLineNumberToken();
+        EndOfLineNumberToken(uint32_t line_number);
         ~EndOfLineNumberToken();
         EScriptToken GetType();
         void LoadParams(IStream *stream);
+        void Write(IStream* stream);
         uint32_t GetLineNumber();
         std::string ToString();
     private:

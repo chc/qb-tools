@@ -6,7 +6,10 @@
 #include <iomanip>
 #include <sstream>
 
-RandomPermuteToken::RandomPermuteToken() {
+RandomPermuteToken::RandomPermuteToken() : RandomToken() {
+
+}
+RandomPermuteToken::RandomPermuteToken(int num_items) : RandomToken(num_items) {
 
 }
 RandomPermuteToken::~RandomPermuteToken() {

@@ -4,6 +4,7 @@
 #include <locale>
 #include <codecvt>
 #include <stack>
+#include <queue>
 
 #include <FileStream.h>
 #include <crc32.h>
@@ -15,6 +16,7 @@
 #include <EqualsToken.h>
 #include <ChecksumNameToken.h>
 #include <EndOfLineToken.h>
+#include <EndOfLineNumberToken.h>
 #include <PairToken.h>
 #include <VectorToken.h>
 #include <StartArrayToken.h>
@@ -73,6 +75,26 @@
 #include <RandomFloatToken.h>
 #include <RandomRangeToken.h>
 
+#include <RandomToken.h>
+#include <RandomNoRepeatToken.h>
+#include <RandomPermuteToken.h>
+#include <JumpToken.h>
+
+class RandomData {
+public:
+    RandomData::RandomData(RandomData* prev, RandomToken* root) {
+        this->prev = prev;
+        this->root = root;
+        end_token = nullptr;
+    }
+    RandomToken* root;
+    std::stack<QScriptToken*> values;
+    std::stack<JumpToken*> jumps;
+    QScriptToken* end_token;
+
+    RandomData* prev;
+};
+
 enum EReadMode {
     EReadMode_ReadName,
     EReadMode_ReadPairOrVector,
@@ -89,9 +111,11 @@ typedef struct {
     std::string current_token;
     std::string temp_token;
     int emit_type;
+    int last_emitted_type;
 
     bool use_eol_line_numbers;
     bool use_new_ifs;
+    int current_line_number;
 
     std::stack<QScriptToken*> if_token_list; //used for offset writing after
     bool do_inlinestruct_token;
@@ -104,15 +128,26 @@ typedef struct {
 
     int case_count;
     std::stack<QScriptToken *> switch_token_list;
+
+    std::stack<RandomData*> randoms;
+    RandomData* current_random;
+    bool next_is_random_start_token;
+    bool skip_next_random_jump;
+    int random_depth;
+    int mark_end_of_random;
+    bool random_read_weight;
+    int random_next_weight;
 } QCompState;
 
 QCompState g_QCompState;
+FILE* mp_input_fd;
 
 void handle_characters(std::string input, FileStream &fsout);
 void handle_character(char ch, FileStream &fsout);
 bool handle_keyword_check(std::string token, FileStream &fs_out);
 void update_if_offsets(FileStream &fs_out);
-void update_switch_offsets(FileStream &fs_out);
+void update_switch_offsets(FileStream& fs_out);
+void update_random_offsets(FileStream& fs_out);
 void emit_token(int type, FileStream &fs_out);
 void emit_pair_or_vec(std::string token, FileStream &fs_out);
 void emit_sqs_token(std::string token, FileStream &fs_out);
@@ -120,6 +155,8 @@ void emit_sqs_token(std::string token, FileStream &fs_out);
 void handle_read_dollar_token(char ch, FileStream &fs_out);
 void handle_dollar_char_str(std::string &accum);
 bool handle_dollar_char_accum(char ch, std::string &accum);
+
+int calculate_token_num_items();
 
 uint32_t gen_checksum(std::string str, bool with_conversion) {
     if(with_conversion && str.length() > 2 && str.length() <= 10 && str.compare(0,2,"0x") == 0) {
@@ -206,16 +243,54 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
             v = -v;
         }
 
-        IntegerToken it(v);
-        it.Write(&fs_out);
+        if (g_QCompState.random_read_weight) {
+            g_QCompState.random_read_weight = false;
+            g_QCompState.random_next_weight = v;
+            return;
+        }
+
+        IntegerToken *it = new IntegerToken(v);
+
+        it->Write(&fs_out);
+
+        g_QCompState.last_emitted_type = it->GetType();
+
+        if (g_QCompState.next_is_random_start_token) {
+            g_QCompState.next_is_random_start_token = false;
+            g_QCompState.current_random->values.push(it);
+            g_QCompState.current_random->root->SetWeight(g_QCompState.current_random->values.size()-1, g_QCompState.random_next_weight);
+            g_QCompState.random_next_weight = 1;
+            
+        } else if (g_QCompState.mark_end_of_random) {
+            g_QCompState.current_random->end_token = it;
+            g_QCompState.current_random = g_QCompState.current_random->prev;
+            g_QCompState.mark_end_of_random--;
+        } else {
+            delete it;
+        }
     } else if(string_is_float(current_token)) {
         float f = atof(current_token.c_str());
         if(g_QCompState.got_negate) {
             g_QCompState.got_negate = false;
             f = -f;
         }
-        FloatToken ft(f);
-        ft.Write(&fs_out);
+        FloatToken *ft = new FloatToken(f);
+        ft->Write(&fs_out);
+
+        g_QCompState.last_emitted_type = ft->GetType();
+
+        if (g_QCompState.next_is_random_start_token) {
+            g_QCompState.next_is_random_start_token = false;
+            g_QCompState.current_random->values.push(ft);
+            g_QCompState.current_random->root->SetWeight(g_QCompState.current_random->values.size() - 1, g_QCompState.random_next_weight);
+            g_QCompState.random_next_weight = 1;
+        } else if (g_QCompState.mark_end_of_random) {
+            g_QCompState.current_random->end_token = ft;
+            g_QCompState.current_random = g_QCompState.current_random->prev;
+            g_QCompState.mark_end_of_random--;
+        } else {
+            delete ft;
+        }
     } else {
         std::string::iterator it = current_token.begin();
 
@@ -289,16 +364,31 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
     }    
 }
 void emit_token(int type, FileStream &fs_out) {
-   QScriptToken *token = NULL;
+    if (RandomToken::is_random_token((EScriptToken)g_QCompState.last_emitted_type)) {
+        if (type == ESCRIPTTOKEN_OPENPARENTH) { //do not emit open parenthesis token if last token was random token
+            return;
+        }
+    }
+    if (type == ESCRIPTTOKEN_CLOSEPARENTH && g_QCompState.random_depth > 0) {
+        g_QCompState.random_depth--;
+        g_QCompState.mark_end_of_random++;
+        return;
+    }
+
+   QScriptToken *token = nullptr;
 
    bool no_free = false;
 
    switch(type) {
         case ESCRIPTTOKEN_EQUALS:
             token = new EqualsToken;
-            break;
+        break;
         case ESCRIPTTOKEN_ENDOFLINE:
             token = new EndOfLineToken;
+            g_QCompState.current_line_number++;
+        break;
+        case ESCRIPTTOKEN_ENDOFLINENUMBER:
+            token = new EndOfLineNumberToken(g_QCompState.current_line_number++);
         break;
         case ESCRIPTTOKEN_STARTARRAY:
             token = new StartArrayToken;
@@ -364,6 +454,29 @@ void emit_token(int type, FileStream &fs_out) {
             g_QCompState.if_token_list.push(token);
             no_free = true;
         break;
+        case ESCRIPTTOKEN_KEYWORD_RANDOM_PERMUTE:
+            if (token == nullptr)
+                token = new RandomPermuteToken(calculate_token_num_items());
+        case ESCRIPTTOKEN_KEYWORD_RANDOM_NO_REPEAT:
+            if (token == nullptr)
+                token = new RandomNoRepeatToken(calculate_token_num_items());
+        case ESCRIPTTOKEN_KEYWORD_RANDOM:
+            if(token == nullptr)
+                token = new RandomToken(calculate_token_num_items());
+            
+            
+            g_QCompState.current_random = new RandomData(g_QCompState.current_random, reinterpret_cast<RandomToken*>(token));
+            if (g_QCompState.current_random->prev != nullptr) {
+                g_QCompState.current_random->prev->values.push(token);
+                g_QCompState.current_random->prev->root->SetWeight(g_QCompState.current_random->prev->values.size() - 1, g_QCompState.random_next_weight);
+                g_QCompState.random_next_weight = 1;
+            }
+            g_QCompState.randoms.push(g_QCompState.current_random);
+
+            g_QCompState.skip_next_random_jump = true;
+            g_QCompState.random_depth++;
+            no_free = true;
+            break;
         case ESCRIPTTOKEN_OPENPARENTH:
             token = new OpenParenthesisToken;
         break;
@@ -442,6 +555,20 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE:
             token = new RandomRangeToken;
         break;
+        case ESCRIPTTOKEN_JUMP:
+            token = new JumpToken;
+            assert(g_QCompState.random_depth > 0);
+            assert(g_QCompState.current_random);
+            if (g_QCompState.current_random->jumps.size()+1 >= g_QCompState.current_random->root->GetNumItems()) {
+                assert(g_QCompState.current_random->prev);
+                g_QCompState.current_random->prev->jumps.push(reinterpret_cast<JumpToken*>(token));
+            }
+            else {
+                g_QCompState.current_random->jumps.push(reinterpret_cast<JumpToken*>(token));
+            }
+            
+            no_free = true;
+        break;
         default:
             assert(false);
    }
@@ -492,21 +619,42 @@ void emit_token(int type, FileStream &fs_out) {
         g_QCompState.switch_token_list.push(sjt);
    }
 
-   token->Write(&fs_out);
+   g_QCompState.last_emitted_type = token->GetType();
 
-   if(is_switch) {
-    no_free = true;
-    g_QCompState.switch_token_list.push(token);
+   token->Write(&fs_out);
+   if (g_QCompState.mark_end_of_random) {
+       while (g_QCompState.mark_end_of_random > 0) {
+           g_QCompState.current_random->end_token = token;
+           g_QCompState.current_random = g_QCompState.current_random->prev;
+           g_QCompState.mark_end_of_random--;
+       }
+
+       no_free = true;
    }
+
+    if(is_switch) {
+        no_free = true;
+        g_QCompState.switch_token_list.push(token);
+    }
 
 
    if(insert_shortjump_after) {
         ShortJumpToken *sjt = new ShortJumpToken;
         sjt->Write(&fs_out);
         g_QCompState.switch_token_list.push(sjt);
-        
-
    }
+
+   if (g_QCompState.next_is_random_start_token && token->GetType() != ESCRIPTTOKEN_JUMP) {
+       g_QCompState.next_is_random_start_token = false;
+       if (!RandomToken::is_random_token(token->GetType())) {
+           g_QCompState.current_random->values.push(token);
+           g_QCompState.current_random->root->SetWeight(g_QCompState.current_random->values.size() - 1, g_QCompState.random_next_weight);
+           g_QCompState.random_next_weight = 1;
+       }       
+       
+       no_free = true;
+   }
+
    if(!no_free) {
         delete token;
    }
@@ -587,8 +735,18 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER, fs_out);
     } else if(token.compare("RandomFloat") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT, fs_out);
-    } else if(token.compare("RandomRange") == 0) {
+    }
+    else if (token.compare("RandomRange") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE, fs_out);
+    }
+    else if (token.compare("RandomPermute") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_RANDOM_PERMUTE, fs_out);
+    }
+    else if (token.compare("RandomNoRepeat") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_RANDOM_NO_REPEAT, fs_out);
+    }
+    else if (token.compare("Random") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_RANDOM, fs_out);
     }
     else {
         return false;
@@ -637,10 +795,10 @@ void handle_read_name(char ch, FileStream &fs_out) {
         //     g_QCompState.emit_type = ESCRIPTTOKEN_EQUALS;
         // break;
         case '(':
-            g_QCompState.emit_type = ESCRIPTTOKEN_OPENPARENTH;
+           g_QCompState.emit_type = ESCRIPTTOKEN_OPENPARENTH;         
         break;
         case ')':
-            g_QCompState.emit_type = ESCRIPTTOKEN_CLOSEPARENTH;
+            g_QCompState.emit_type = ESCRIPTTOKEN_CLOSEPARENTH;            
         break;
         case '[':
             g_QCompState.emit_type = ESCRIPTTOKEN_STARTARRAY;
@@ -655,7 +813,14 @@ void handle_read_name(char ch, FileStream &fs_out) {
         //     g_QCompState.emit_type = ESCRIPTTOKEN_LESSTHAN;
         // break;
         case '*':
-            g_QCompState.emit_type = ESCRIPTTOKEN_MULTIPLY;
+            if (g_QCompState.next_is_random_start_token) { //indicates this is a weight
+                g_QCompState.random_read_weight = true;
+                skip_token = true;
+            }
+            else {
+                g_QCompState.emit_type = ESCRIPTTOKEN_MULTIPLY;
+            }
+            
         break;
         case '/':
             g_QCompState.emit_type = ESCRIPTTOKEN_DIVIDE;
@@ -682,6 +847,15 @@ void handle_read_name(char ch, FileStream &fs_out) {
             g_QCompState.got_negate = true;
             return;
         break;
+        case '@':
+            assert(g_QCompState.next_is_random_start_token == false);
+            g_QCompState.next_is_random_start_token = true;
+            skip_token = true;
+            if (!g_QCompState.skip_next_random_jump) {
+                g_QCompState.emit_type = ESCRIPTTOKEN_JUMP;
+            }
+            g_QCompState.skip_next_random_jump = false;
+        break;
         case ' ':
             if(handle_keyword_check(g_QCompState.current_token, fs_out)) {
                 g_QCompState.current_token.clear();
@@ -697,7 +871,12 @@ void handle_read_name(char ch, FileStream &fs_out) {
         case '\r':
             return;
         case '\n':
-            g_QCompState.emit_type = ESCRIPTTOKEN_ENDOFLINE;
+            if (g_QCompState.use_eol_line_numbers) {
+                g_QCompState.emit_type = ESCRIPTTOKEN_ENDOFLINENUMBER;
+            }
+            else {
+                g_QCompState.emit_type = ESCRIPTTOKEN_ENDOFLINE;
+            }            
         break;
         case '\'':
             g_QCompState.read_mode = EReadMode_ReadString;
@@ -803,11 +982,45 @@ void handle_read_string(char ch, FileStream &fs_out) {
 
     if(end_read) {
         if(g_QCompState.emit_type == ESCRIPTTOKEN_STRING) {
-            StringToken st(g_QCompState.current_token);
-            st.Write(&fs_out);
+            StringToken *st = new StringToken(g_QCompState.current_token);
+            st->Write(&fs_out);
+
+            if (g_QCompState.next_is_random_start_token) {
+                g_QCompState.next_is_random_start_token = false;
+                g_QCompState.current_random->values.push(st);
+                g_QCompState.current_random->root->SetWeight(g_QCompState.current_random->values.size() - 1, g_QCompState.random_next_weight);
+                g_QCompState.random_next_weight = 1;
+            }
+            else if (g_QCompState.mark_end_of_random) {
+                while (g_QCompState.mark_end_of_random > 0) {
+                    g_QCompState.current_random->end_token = st;
+                    g_QCompState.current_random = g_QCompState.current_random->prev;
+                    g_QCompState.mark_end_of_random--;
+                }
+            }
+            else {
+                delete st;
+            }
         } else if(g_QCompState.emit_type == ESCRIPTTOKEN_LOCALSTRING) {
-            LocalStringToken lst(g_QCompState.current_token);
-            lst.Write(&fs_out);  
+            LocalStringToken *lst = new LocalStringToken(g_QCompState.current_token);
+            lst->Write(&fs_out);  
+
+            if (g_QCompState.next_is_random_start_token) {
+                g_QCompState.next_is_random_start_token = false;
+                g_QCompState.current_random->values.push(lst);
+                g_QCompState.current_random->root->SetWeight(g_QCompState.current_random->values.size() - 1, g_QCompState.random_next_weight);
+                g_QCompState.random_next_weight = 1;
+            }
+            else if (g_QCompState.mark_end_of_random) {
+                while (g_QCompState.mark_end_of_random > 0) {
+                    g_QCompState.current_random->end_token = lst;
+                    g_QCompState.current_random = g_QCompState.current_random->prev;
+                    g_QCompState.mark_end_of_random--;
+                }
+            }
+            else {
+                delete lst;
+            }
         } else if (g_QCompState.emit_type == ESCRIPTTOKEN_NAME) {
             uint32_t checksum = gen_checksum(g_QCompState.current_token, true);
             if(g_QCompState.do_arg_pack) {
@@ -874,33 +1087,65 @@ void handle_characters(std::string input, FileStream &fsout) {
 
 int main(int argc, const char* argv[]) {
     if (argc < 2) {
-        fprintf(stderr, "usage: %s [in] [out]\n", argv[0]);
+        fprintf(stderr, "usage: %s (options) [in] [out]\n", argv[0]);
+        fprintf(stderr, "options: \n");
+        fprintf(stderr, "\t-linenumber - Enable line numbers\n");
+        fprintf(stderr, "\t-oldifs - Enable old (THUG style) if statements\n");
         return -1;
     }
 
-    FILE *mp_input_fd = fopen(argv[1], "r");
+    g_QCompState.use_eol_line_numbers = false;
+    g_QCompState.use_new_ifs = true;
+
+    int arg_index = 1;
+    for (int i = 1; i < argc - 1; i++) {
+        if (strstr(argv[i], "-linenumber")) {
+            g_QCompState.use_eol_line_numbers = true;
+            arg_index = i+1;
+        }
+        if (strstr(argv[i], "-oldifs")) {
+            g_QCompState.use_new_ifs = false;
+            arg_index = i+1;
+        }
+    }
+
+    if (arg_index+1 >= argc) {
+        fprintf(stderr, "missing expected file params, run without params to see usage!\n");
+        return -1;
+    }
+
+    mp_input_fd = fopen(argv[arg_index], "r");
 
     if(!mp_input_fd) {
-        fprintf(stderr, "Failed to open input file: %s\n", argv[1]);
+        fprintf(stderr, "Failed to open input file: %s\n", argv[arg_index]);
         return -1;
     }
 
-    FileStream fsout(argv[2], true);
+    FileStream fsout(argv[arg_index + 1], true);
 
     if(!fsout.IsFileOpened()) {
-        fprintf(stderr, "Failed to open file: %s\n", argv[2]);
+        fprintf(stderr, "Failed to open file: %s\n", argv[arg_index + 1]);
         return -1;
     }
 
     g_QCompState.read_mode = EReadMode_ReadName;
-    g_QCompState.use_eol_line_numbers = false;
-    g_QCompState.use_new_ifs = true;
+
+    g_QCompState.current_line_number = 1;
+
     g_QCompState.do_arg_pack = false;
     g_QCompState.argpack_isreqparam = false;
     g_QCompState.do_inlinestruct_token = false;
     g_QCompState.got_negate = false;
     g_QCompState.do_widestring = false;
-    
+    g_QCompState.next_is_random_start_token = false;
+
+    g_QCompState.mark_end_of_random = 0;
+    g_QCompState.skip_next_random_jump = false;
+    g_QCompState.last_emitted_type = 0;
+    g_QCompState.random_depth = 0;
+    g_QCompState.random_read_weight = false;
+    g_QCompState.random_next_weight = 1;
+
     while(true) {
         int ch = fgetc(mp_input_fd);
         if(ch == EOF) {
@@ -926,6 +1171,7 @@ int main(int argc, const char* argv[]) {
 
     update_if_offsets(fsout);
     update_switch_offsets(fsout);
+    update_random_offsets(fsout);
     return 0;
 }
 
@@ -1062,6 +1308,32 @@ void update_if_offsets(FileStream &fs_out) {
     assert(elseif_stack.empty());
     assert(endif_stack.empty());
 }
+void update_random_offsets(FileStream& fs_out) {
+    while (!g_QCompState.randoms.empty()) {
+        RandomData* rnd = g_QCompState.randoms.top();
+        g_QCompState.randoms.pop();
+
+        for (int i = rnd->root->GetNumItems(); i>0; i--) {
+            QScriptToken* token = rnd->values.top();
+            rnd->values.pop();
+            
+            uint32_t diff = token->GetFileOffset() - rnd->root->GetFileOffset();
+            diff -= rnd->root->CalculateTokenOffset(i-1);
+            rnd->root->SetRandomOffset(i-1, diff);
+        }
+        assert(rnd->values.empty());
+
+        rnd->root->Rewrite(&fs_out);
+
+        while (!rnd->jumps.empty()) {
+            JumpToken* jump_token = rnd->jumps.top();
+            rnd->jumps.pop();
+
+            uint32_t diff = rnd->end_token->GetFileOffset() - jump_token->GetFileOffset() - sizeof(uint32_t) - sizeof(uint8_t);
+            jump_token->RewriteOffset(&fs_out, diff);
+        }
+    }
+}
 
 bool handle_dollar_char_accum(char ch, std::string &accum) {
     switch(ch) {
@@ -1150,5 +1422,33 @@ void handle_read_dollar_token(char ch, FileStream &fs_out) {
             }            
         }
     }
-    
+}
+int calculate_token_num_items() {
+    long pos = ftell(mp_input_fd);
+
+    int num_items = 0;
+    int depth = 1;
+
+    while (depth > 0) {
+        int c = fgetc(mp_input_fd);
+        if (c == EOF) {
+            break;
+        }
+        switch (c) {
+            case '@':
+                if(depth == 1)
+                    num_items++;
+            break;
+            case '(':
+                depth++;
+            break;
+            case ')':
+                depth--;
+                break;
+        }
+    }
+
+
+    fseek(mp_input_fd, pos, SEEK_SET);
+    return num_items;
 }

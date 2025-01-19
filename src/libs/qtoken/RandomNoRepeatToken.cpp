@@ -6,7 +6,10 @@
 #include <iomanip>
 #include <sstream>
 
-RandomNoRepeatToken::RandomNoRepeatToken() {
+RandomNoRepeatToken::RandomNoRepeatToken() : RandomToken() {
+
+}
+RandomNoRepeatToken::RandomNoRepeatToken(int num_items) : RandomToken(num_items) {
 
 }
 RandomNoRepeatToken::~RandomNoRepeatToken() {

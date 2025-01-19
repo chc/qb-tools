@@ -6,10 +6,20 @@
 #include <iomanip>
 #include <cassert>
 
-RandomToken::RandomToken() {
-    m_offsets = nullptr;
-    m_num_items = 0;
-
+RandomToken::RandomToken() : RandomToken(0) {
+}
+RandomToken::RandomToken(int num_items) {
+    if (num_items > 0) {
+        m_offsets = new RandomOffset[num_items];
+        for (int i = 0; i < num_items; i++) {
+            m_offsets[i].weight = 1;
+        }
+    }
+    else {
+        m_offsets = nullptr;
+    }
+    
+    m_num_items = num_items;
 }
 RandomToken::~RandomToken() {
     if(m_offsets) {
@@ -69,7 +79,7 @@ std::vector<TokenInjection> RandomToken::GetInjections() {
         std::ostringstream ss;
         TokenInjection injection;
         injection.use_next_jump_offset = false;
-        injection.offset = m_offsets[i].offset + CalculateTokenOffset(i) - m_total_size - 1; //-1 for skip token type byte
+        injection.offset = m_offsets[i].offset + CalculateTokenOffset(i) - m_total_size;
 
         ss << "@";
         if(m_offsets[i].weight != 1) {
