@@ -76,6 +76,8 @@
 #include <RandomRangeToken.h>
 
 #include <RandomToken.h>
+#include <RandomNoRepeatToken.h>
+#include <RandomPermuteToken.h>
 #include <JumpToken.h>
 
 class RandomData {
@@ -373,7 +375,7 @@ void emit_token(int type, FileStream &fs_out) {
         return;
     }
 
-   QScriptToken *token = NULL;
+   QScriptToken *token = nullptr;
 
    bool no_free = false;
 
@@ -452,8 +454,16 @@ void emit_token(int type, FileStream &fs_out) {
             g_QCompState.if_token_list.push(token);
             no_free = true;
         break;
+        case ESCRIPTTOKEN_KEYWORD_RANDOM_PERMUTE:
+            if (token == nullptr)
+                token = new RandomPermuteToken(calculate_token_num_items());
+        case ESCRIPTTOKEN_KEYWORD_RANDOM_NO_REPEAT:
+            if (token == nullptr)
+                token = new RandomNoRepeatToken(calculate_token_num_items());
         case ESCRIPTTOKEN_KEYWORD_RANDOM:
-            token = new RandomToken(calculate_token_num_items());
+            if(token == nullptr)
+                token = new RandomToken(calculate_token_num_items());
+            
             
             g_QCompState.current_random = new RandomData(g_QCompState.current_random, reinterpret_cast<RandomToken*>(token));
             if (g_QCompState.current_random->prev != nullptr) {
@@ -728,6 +738,12 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
     }
     else if (token.compare("RandomRange") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE, fs_out);
+    }
+    else if (token.compare("RandomPermute") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_RANDOM_PERMUTE, fs_out);
+    }
+    else if (token.compare("RandomNoRepeat") == 0) {
+        emit_token(ESCRIPTTOKEN_KEYWORD_RANDOM_NO_REPEAT, fs_out);
     }
     else if (token.compare("Random") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RANDOM, fs_out);

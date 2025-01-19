@@ -5,6 +5,7 @@
 class RandomNoRepeatToken : public RandomToken {
     public:
         RandomNoRepeatToken();
+        RandomNoRepeatToken(int num_items);
         ~RandomNoRepeatToken();
         EScriptToken GetType();
         std::string ToString();
