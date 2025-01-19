@@ -1128,6 +1128,7 @@ int main(int argc, const char* argv[]) {
     g_QCompState.last_emitted_type = 0;
     g_QCompState.random_depth = 0;
     g_QCompState.random_read_weight = false;
+    g_QCompState.random_next_weight = 1;
 
     while(true) {
         int ch = fgetc(mp_input_fd);
