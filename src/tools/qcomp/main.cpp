@@ -16,6 +16,7 @@
 #include <EqualsToken.h>
 #include <ChecksumNameToken.h>
 #include <EndOfLineToken.h>
+#include <EndOfLineNumberToken.h>
 #include <PairToken.h>
 #include <VectorToken.h>
 #include <StartArrayToken.h>
@@ -112,6 +113,7 @@ typedef struct {
 
     bool use_eol_line_numbers;
     bool use_new_ifs;
+    int current_line_number;
 
     std::stack<QScriptToken*> if_token_list; //used for offset writing after
     bool do_inlinestruct_token;
@@ -367,6 +369,10 @@ void emit_token(int type, FileStream &fs_out) {
         break;
         case ESCRIPTTOKEN_ENDOFLINE:
             token = new EndOfLineToken;
+            g_QCompState.current_line_number++;
+        break;
+        case ESCRIPTTOKEN_ENDOFLINENUMBER:
+            token = new EndOfLineNumberToken(g_QCompState.current_line_number++);
         break;
         case ESCRIPTTOKEN_STARTARRAY:
             token = new StartArrayToken;
@@ -824,7 +830,12 @@ void handle_read_name(char ch, FileStream &fs_out) {
         case '\r':
             return;
         case '\n':
-            g_QCompState.emit_type = ESCRIPTTOKEN_ENDOFLINE;
+            if (g_QCompState.use_eol_line_numbers) {
+                g_QCompState.emit_type = ESCRIPTTOKEN_ENDOFLINENUMBER;
+            }
+            else {
+                g_QCompState.emit_type = ESCRIPTTOKEN_ENDOFLINE;
+            }            
         break;
         case '\'':
             g_QCompState.read_mode = EReadMode_ReadString;
@@ -1031,27 +1042,51 @@ void handle_characters(std::string input, FileStream &fsout) {
 
 int main(int argc, const char* argv[]) {
     if (argc < 2) {
-        fprintf(stderr, "usage: %s [in] [out]\n", argv[0]);
+        fprintf(stderr, "usage: %s (options) [in] [out]\n", argv[0]);
+        fprintf(stderr, "options: \n");
+        fprintf(stderr, "\t-linenumber - Enable line numbers\n");
+        fprintf(stderr, "\t-oldifs - Enable old (THUG style) if statements\n");
         return -1;
     }
 
-    mp_input_fd = fopen(argv[1], "r");
+    g_QCompState.use_eol_line_numbers = false;
+    g_QCompState.use_new_ifs = true;
+
+    int arg_index = 1;
+    for (int i = 1; i < argc - 1; i++) {
+        if (strstr(argv[i], "-linenumber")) {
+            g_QCompState.use_eol_line_numbers = true;
+            arg_index = i+1;
+        }
+        if (strstr(argv[i], "-oldifs")) {
+            g_QCompState.use_new_ifs = false;
+            arg_index = i+1;
+        }
+    }
+
+    if (arg_index+1 >= argc) {
+        fprintf(stderr, "missing expected file params, run without params to see usage!\n");
+        return -1;
+    }
+
+    mp_input_fd = fopen(argv[arg_index], "r");
 
     if(!mp_input_fd) {
-        fprintf(stderr, "Failed to open input file: %s\n", argv[1]);
+        fprintf(stderr, "Failed to open input file: %s\n", argv[arg_index]);
         return -1;
     }
 
-    FileStream fsout(argv[2], true);
+    FileStream fsout(argv[arg_index + 1], true);
 
     if(!fsout.IsFileOpened()) {
-        fprintf(stderr, "Failed to open file: %s\n", argv[2]);
+        fprintf(stderr, "Failed to open file: %s\n", argv[arg_index + 1]);
         return -1;
     }
 
     g_QCompState.read_mode = EReadMode_ReadName;
-    g_QCompState.use_eol_line_numbers = false;
-    g_QCompState.use_new_ifs = true;
+
+    g_QCompState.current_line_number = 1;
+
     g_QCompState.do_arg_pack = false;
     g_QCompState.argpack_isreqparam = false;
     g_QCompState.do_inlinestruct_token = false;
