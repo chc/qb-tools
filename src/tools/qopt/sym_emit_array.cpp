@@ -128,7 +128,7 @@ std::vector<QScriptToken *>::iterator handle_struct_array(uint32_t name, std::ve
 
     ArraySymbol *arr_sym;
     std::vector<QSymbol *> child_arr_items;
-    ArgumentPackToken *last_argpack;
+    ArgumentPackToken *last_argpack = nullptr;
     QSymbol *sym;
 
     int depth = 1;

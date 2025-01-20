@@ -52,7 +52,7 @@ void calculate_pak_name_checksums(PakItem *item, const char *name) {
         item->type = crc32(0, ext, strlen(ext));
     }
     
-    item->pakname = crc32(0, tmpstr, strlen(tmpstr));
+    item->fullname = crc32(0, tmpstr, strlen(tmpstr));
     
     const char *end = strrchr(tmpstr, '\\');
     if(end) {

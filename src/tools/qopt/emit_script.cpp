@@ -150,7 +150,7 @@ std::vector<QScriptToken *>::iterator ReadStructure(std::vector<QScriptToken *>:
 
     std::vector<QSymbol *> children;
 
-    ArgumentPackToken *last_argpack;
+    ArgumentPackToken *last_argpack = nullptr;
 
     int depth = 1;
     while(it != end && depth > 0) {
