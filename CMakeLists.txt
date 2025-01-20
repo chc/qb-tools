@@ -6,7 +6,19 @@ set (CMAKE_CXX_STANDARD 11)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-if(QBTOOLS_BUILD_TYPE STREQUAL "thawpc")
+if(QBTOOLS_BUILD_TYPE STREQUAL "thug2")
+    add_definitions(-DISTREAM_SYMBOL_ENDIAN=ISTREAM_LITTLE_ENDIAN)
+    add_definitions(-DISTREAM_TOKEN_ENDIAN=ISTREAM_LITTLE_ENDIAN)
+    set(QBTOOLS_BUILD_CHUNKER OFF)
+    set(QBTOOLS_BUILD_SYMBOLTOOLS OFF)
+    set(QBTOOLS_BUILD_PAKTOOLS OFF)
+    set(QBTOOLS_BUILD_PRETOOLS ON)
+
+    #temporarily needed...
+    add_definitions(-DPAK_FLAGS_HAS_FILENAME=0x20)
+    add_definitions(-DISTREAM_PAK_ENDIAN=ISTREAM_LITTLE_ENDIAN)
+    add_definitions(-DPAK_LAST_ITEM="last")
+elseif(QBTOOLS_BUILD_TYPE STREQUAL "thawpc")
     add_definitions(-DISTREAM_PAK_ENDIAN=ISTREAM_LITTLE_ENDIAN)
     add_definitions(-DISTREAM_SYMBOL_ENDIAN=ISTREAM_LITTLE_ENDIAN)
     add_definitions(-DISTREAM_TOKEN_ENDIAN=ISTREAM_LITTLE_ENDIAN)
@@ -154,6 +166,20 @@ if(QBTOOLS_BUILD_SYMBOLTOOLS)
 endif()
 
 
+if(QBTOOLS_BUILD_PRETOOLS)
+# target_include_directories
+    file (GLOB LIBPRE_SRCS "src/libs/pre/*.cpp")
+    include_directories("src/libs/pre")
+    add_library(pre ${LIBPRE_SRCS})
+    target_link_libraries(pre lzss)
+    INSTALL(TARGETS pre)
+
+    file (GLOB UNPRE_SRCS "src/tools/unpre/*.cpp")
+    source_group("Sources" FILES ${UNPRE_SRCS})
+    add_executable (unpre ${UNPRE_SRCS})
+    target_link_libraries(unpre pre)
+    INSTALL(TARGETS unpre)
+endif()
 
 
 file (GLOB LIBPAK_SRCS "src/libs/pak/*.cpp")
