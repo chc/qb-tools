@@ -1,4 +1,5 @@
 #include "pre.h"
+#include <stdlib.h>
 #include <cassert>
 #include <FileStream.h>
 #include <stdio.h>
