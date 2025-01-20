@@ -3,7 +3,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define PRE_VERSION 0xABCD0003
+class FileStream;
+
+#define PRE_VERSION 0xABCD0003 //version 3 is used in THUG/THUG2
+
 typedef struct _PreItem {
     uint32_t original_size;
     uint32_t compressed_size;
@@ -14,13 +17,23 @@ typedef struct _PreItem {
 
     //internal
     FILE *file_fd;
+    const char *file_path;
+    _PreItem *next;
 } PreItem;
 
 typedef bool (*FileInfoCallback)(PreItem item);
 
-
-//void unpak_iterate_files(const char *pak_path, const char *pab_path, FileInfoCallback callback);
-
 void unpre_iterate_files(const char *path, FileInfoCallback callback, bool alignment_hack = false);
 void unpre_read_file(PreItem *item, uint8_t *output_buffer);
+
+typedef struct {
+    FileStream *pre_fd;
+    
+    PreItem *first_pre_item;
+    PreItem *last_pre_item;
+} PreContext;
+
+PreContext *pre_create(const char *pre_path);
+void pre_append_file(PreContext *ctx, const char *path);
+void pre_close(PreContext *ctx);
 #endif //_LIBPRE_H

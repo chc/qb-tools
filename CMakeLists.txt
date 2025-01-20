@@ -175,6 +175,13 @@ if(QBTOOLS_BUILD_PRETOOLS)
     target_link_libraries(pre qtoken lzss)
     INSTALL(TARGETS pre)
 
+
+    file (GLOB PREDIR_SRCS "src/tools/predir/*.cpp")
+    source_group("Sources" FILES ${PREDIR_SRCS})
+    add_executable (predir ${PREDIR_SRCS})
+    target_link_libraries(predir pre)
+    INSTALL(TARGETS predir)
+
     file (GLOB UNPRE_SRCS "src/tools/unpre/*.cpp")
     source_group("Sources" FILES ${UNPRE_SRCS})
     add_executable (unpre ${UNPRE_SRCS})
