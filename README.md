@@ -22,8 +22,9 @@ Creates PAK/PAB files
 Unpaks PAK/PAB files
 
 ## Misc
-Set the `QBTOOLS_CHECKSUM_PATH` to point to a DBG.PAK if you want to have checksum names injected into the token dump from qdeopt, or file names from unpak.
+Set the `QBTOOLS_DBG_PAK` to point to a DBG.PAK if you want to have checksum names injected into the token dump from qdeopt, or file names from unpak.
 
 
 ## TODO
 * Support structure script symbols
+* Better error handling / user friendly errors
