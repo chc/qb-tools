@@ -172,7 +172,7 @@ if(QBTOOLS_BUILD_PRETOOLS)
     file (GLOB LIBPRE_SRCS "src/libs/pre/*.cpp")
     include_directories("src/libs/pre")
     add_library(pre ${LIBPRE_SRCS})
-    target_link_libraries(pre qtoken lzss)
+    target_link_libraries(pre qtoken lzss crc)
     INSTALL(TARGETS pre)
 
 

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <lzss.h>
 #include <string.h>
+#include <crc32.h>
 
 PreContext *pre_create(const char *pre_path) {
     if(!pre_path) {
@@ -87,7 +88,14 @@ void pre_close(PreContext *ctx) {
         uint32_t namelen = strlen(current_item->file_path) + 1;
         ctx->pre_fd->WriteUInt32(namelen);
         
-        ctx->pre_fd->WriteUInt32(0); //checksum
+
+        uint32_t checksum = 0;
+        if(comp_len > 0) {
+            checksum = crc32(0, compress_buffer, comp_len);
+        } else {
+            checksum = crc32(0, input_buffer, current_item->original_size);
+        }
+        ctx->pre_fd->WriteUInt32(checksum); //checksum
 
         ctx->pre_fd->WriteBuffer((uint8_t *)current_item->file_path, namelen);
 
