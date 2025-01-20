@@ -212,6 +212,12 @@ if(QBTOOLS_BUILD_PAKTOOLS)
     add_executable (pakdir ${PAK_SRCS})
     target_link_libraries(pakdir pak qtoken dbginfo crc)
     INSTALL(TARGETS pakdir)
+
+    file (GLOB DBGINFO_PAKIMPORT_SRCS "src/tools/dbginfo_pakimport/*.cpp")
+    source_group("Sources" FILES ${DBGINFO_PAKIMPORT_SRCS})
+    add_executable (dbginfo_pakimport ${DBGINFO_PAKIMPORT_SRCS})
+    target_link_libraries(dbginfo_pakimport pak qtoken dbginfo crc)
+    INSTALL(TARGETS dbginfo_pakimport)
 endif()
 
 
@@ -226,7 +232,7 @@ INSTALL(TARGETS qresolve)
 file (GLOB QGENNAME_SRCS "src/tools/qgenname/*.cpp")
 source_group("Sources" FILES ${QGENNAME_SRCS})
 add_executable (qgenname ${QGENNAME_SRCS})
-target_link_libraries(qgenname crc)
+target_link_libraries(qgenname crc dbginfo)
 INSTALL(TARGETS qgenname)
 
 if(QBTOOLS_BUILD_SYMBOLTOOLS)

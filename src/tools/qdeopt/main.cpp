@@ -17,7 +17,7 @@ std::map<uint32_t, const char *> m_checksum_names;
 
 int main(int argc, const char *argv[]) {
     if(argc  < 3) {
-        fprintf(stderr, "usage: %s [inpath] [outpath] (dbgpath)\n",argv[0]);
+        fprintf(stderr, "usage: %s [inpath] [outpath]\n",argv[0]);
         return -1;
     }
     FileStream fs(argv[1]);
@@ -35,11 +35,6 @@ int main(int argc, const char *argv[]) {
     if(!fsout.IsFileOpened()) {
         fprintf(stderr, "Failed to open file: %s\n", argv[2]);
         return -1;
-    }
-
-    const char* dbgpath = NULL;
-    if (argc == 4) {
-        dbgpath = argv[3];
     }
 
     fs.ReadUInt32();
@@ -63,16 +58,10 @@ int main(int argc, const char *argv[]) {
         WriteSymbolAsScriptToken(symbol, &fsout);        
     }
     
-    if (dbgpath != NULL) {
-        printf("** loading dbg .dbg file: %s\n", dbgpath);
-        dbginfo_load_dbg(dbgpath);
-    }
-
-    const char* dbg_pak_path = getenv("QBTOOLS_DBG_PAK");
-    const char* dbg_pab_path = getenv("QBTOOLS_DBG_PAB");
-    if (dbg_pak_path != NULL) {
-        printf("** loading dbg pak\n", dbg_pak_path);
-        dbginfo_load_pak(dbg_pak_path, dbg_pab_path);
+    const char* dbgcache_path = getenv("QBTOOLS_DBGINFO_PATH");
+    if (dbgcache_path != NULL) {
+        printf("** loading dbginfo: %s\n", dbgcache_path);
+        dbginfo_load_cache(dbgcache_path);
     }
     else {
         printf("** no dbg data specified\n");
