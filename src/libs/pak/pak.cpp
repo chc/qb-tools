@@ -20,7 +20,7 @@ PakContext *pak_create(const char *pak_path, const char *pab_path) {
         fprintf(stderr, "Failed to open PAK %s for writing\n", pak_path);
         return nullptr;
     }
-    ctx->pak_fd->SetWriteEndian(ISTREAM_BIG_ENDIAN);
+    ctx->pak_fd->SetWriteEndian(ISTREAM_PAK_ENDIAN);
 
     if(pab_path == nullptr) {
         ctx->pab_fd = ctx->pak_fd;
@@ -30,7 +30,7 @@ PakContext *pak_create(const char *pak_path, const char *pab_path) {
             fprintf(stderr, "Failed to open PAK %s for writing\n", pab_path);
             return nullptr;
         }        
-        ctx->pab_fd->SetWriteEndian(ISTREAM_BIG_ENDIAN);
+        ctx->pab_fd->SetWriteEndian(ISTREAM_PAK_ENDIAN);
     }
 
 
@@ -104,7 +104,8 @@ void pak_append_file(PakContext *ctx, const char *path) {
     
     fseek(fd, 0, SEEK_SET);
     fclose(fd);
-    
+
+   
     calculate_pak_name_checksums(item, path);
 
     if(ctx->first_pak_item == nullptr) {
@@ -131,7 +132,9 @@ void pak_close(PakContext *ctx) {
         ctx->pak_fd->WriteUInt32(current_item->short_name);
         ctx->pak_fd->WriteUInt32(current_item->fileNameKey);
         #ifdef PAK_INCLUDE_FILENAME
-        current_item->flags |= PAK_FLAGS_HAS_FILENAME;
+        if (current_item->file_path != nullptr) {
+            current_item->flags |= PAK_FLAGS_HAS_FILENAME;
+        }
         #endif
         ctx->pak_fd->WriteUInt32(current_item->flags);
            

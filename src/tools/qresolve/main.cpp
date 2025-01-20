@@ -19,7 +19,7 @@ int main(int argc, const char* argv[]) {
         dbgpath = argv[2];
     }
 
-    uint32_t checksum = (uint32_t)strtol(argv[1], NULL, 0);
+    uint32_t checksum = (uint32_t)strtoul(argv[1], NULL, 0);
 
     if (dbgpath != NULL) {
         printf("** loading dbg .dbg file: %s\n", dbgpath);
