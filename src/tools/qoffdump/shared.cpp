@@ -3,8 +3,6 @@
 #include <vector>
 
 #include <FileStream.h>
-#include <ISStream.h>
-#include <SymbolFileStream.h>
 #include <QStream.h>
 #include <QScriptToken.h>
 #include <FastIfToken.h>

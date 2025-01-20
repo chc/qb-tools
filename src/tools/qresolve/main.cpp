@@ -29,7 +29,7 @@ int main(int argc, const char* argv[]) {
     const char* dbg_pak_path = getenv("QBTOOLS_DBG_PAK");
     const char* dbg_pab_path = getenv("QBTOOLS_DBG_PAB");
     if (dbg_pak_path != NULL) {
-        printf("** loading dbg pak\n", dbg_pak_path);
+        printf("** loading dbg pak: %s\n", dbg_pak_path);
         dbginfo_load_pak(dbg_pak_path, dbg_pab_path);
     }
     else {

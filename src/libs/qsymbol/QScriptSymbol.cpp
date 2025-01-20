@@ -4,8 +4,8 @@
 #include <iomanip>
 #include <cassert>
 
-#include "crc32.h"
-#include "lzss.h"
+#include <crc32.h>
+#include <lzss.h>
 
 // #define NO_LZSS_COMPRESS
 

@@ -82,7 +82,7 @@
 
 class RandomData {
 public:
-    RandomData::RandomData(RandomData* prev, RandomToken* root) {
+    RandomData(RandomData* prev, RandomToken* root) {
         this->prev = prev;
         this->root = root;
         end_token = nullptr;
@@ -122,7 +122,9 @@ typedef struct {
     bool got_negate;
 
     bool do_arg_pack;
-    ESymbolType argpack_type;
+    #ifdef WITH_SYMBOL_SUPPORT
+        ESymbolType argpack_type;
+    #endif
     bool argpack_isreqparam;
     bool do_widestring;
 
@@ -220,12 +222,16 @@ void emit_name(std::string name, FileStream &fs_out) {
     uint32_t checksum = gen_checksum(name, false);
 
     if(g_QCompState.do_arg_pack) {
+        #ifdef WITH_SYMBOL_SUPPORT
         g_QCompState.do_arg_pack = false;
         ArgumentPackToken apt;
         apt.SetRefType(g_QCompState.argpack_type);
         apt.SetIsRequiredParams(g_QCompState.argpack_isreqparam);
         
         apt.WriteExtendedParams(&fs_out);
+        #else
+        assert(false);
+        #endif
     }
 
 
@@ -424,7 +430,11 @@ void emit_token(int type, FileStream &fs_out) {
             assert(false);
         break;
         case ESCRIPTTOKEN_INLINEPACKSTRUCT:
+        #ifdef WITH_SYMBOL_SUPPORT
             token = new InlinePackStructToken;
+        #else
+            assert(false);
+        #endif
         break;
         case ESCRIPTTOKEN_KEYWORD_IF:
             token = new IfToken;
@@ -574,6 +584,7 @@ void emit_token(int type, FileStream &fs_out) {
    }
 
    if(type == ESCRIPTTOKEN_ARG) {
+    #ifdef WITH_SYMBOL_SUPPORT
         if(g_QCompState.do_arg_pack) {
             g_QCompState.do_arg_pack = false;
             ArgumentPackToken apt;
@@ -581,12 +592,19 @@ void emit_token(int type, FileStream &fs_out) {
             apt.SetIsRequiredParams(g_QCompState.argpack_isreqparam);
             apt.WriteExtendedParams(&fs_out);
         }
+    #else
+    assert(false);
+    #endif
    }
 
    if(g_QCompState.do_inlinestruct_token) {
+    #ifdef WITH_SYMBOL_SUPPORT
         g_QCompState.do_inlinestruct_token = false;
         InlinePackStructToken ipst = InlinePackStructToken();
         ipst.Write(&fs_out);
+    #else
+        assert(false);
+    #endif
    }
 
    bool insert_shortjump_before = false;
@@ -1024,12 +1042,16 @@ void handle_read_string(char ch, FileStream &fs_out) {
         } else if (g_QCompState.emit_type == ESCRIPTTOKEN_NAME) {
             uint32_t checksum = gen_checksum(g_QCompState.current_token, true);
             if(g_QCompState.do_arg_pack) {
+            #ifdef WITH_SYMBOL_SUPPORT
                 g_QCompState.do_arg_pack = false;
                 ArgumentPackToken apt;
                 apt.SetRefType(g_QCompState.argpack_type);
                 apt.SetIsRequiredParams(g_QCompState.argpack_isreqparam);
                 
                 apt.WriteExtendedParams(&fs_out);
+            #else
+                assert(false);
+            #endif
             }
             NameToken nt(checksum);
             nt.Write(&fs_out);
@@ -1362,7 +1384,7 @@ void handle_dollar_char_str(std::string &accum) {
         g_QCompState.argpack_isreqparam = true;
         accum = accum.substr(4);
     }
-
+#ifdef WITH_SYMBOL_SUPPORT
     if(accum.compare("int") == 0) {
         g_QCompState.argpack_type = ESYMBOLTYPE_INTEGER;
     } else if(accum.compare("float") == 0) {
@@ -1392,6 +1414,9 @@ void handle_dollar_char_str(std::string &accum) {
     } else {
         assert(false);
     }
+    #else
+    assert(false);
+    #endif
 
     accum.clear();
 }

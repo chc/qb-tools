@@ -1,3 +1,5 @@
+#ifdef WITH_SYMBOL_SUPPORT
+
 #include "InlinePackStructToken.h"
 #include "IQStream.h"
 
@@ -90,3 +92,4 @@ void InlinePackStructToken::SetValue(StructureSymbol *sym) {
 std::string InlinePackStructToken::ToString() {
     return "$";
 }
+#endif

@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <QScriptToken.h>
-#include <ISStream.h>
 #include <vector>
 #include <cassert>
 
