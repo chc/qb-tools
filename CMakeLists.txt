@@ -207,7 +207,7 @@ if(QBTOOLS_BUILD_PAKTOOLS)
     target_link_libraries(unpak pak qtoken dbginfo)
     INSTALL(TARGETS unpak)
 
-    file (GLOB PAK_SRCS "src/tools/pak/*.cpp")
+    file (GLOB PAK_SRCS "src/tools/pakdir/*.cpp")
     source_group("Sources" FILES ${PAK_SRCS})
     add_executable (pakdir ${PAK_SRCS})
     target_link_libraries(pakdir pak qtoken dbginfo crc)
