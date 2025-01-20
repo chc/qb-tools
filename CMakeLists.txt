@@ -6,7 +6,7 @@ set (CMAKE_CXX_STANDARD 11)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-if(QBTOOLS_BUILD_TYPE STREQUAL "thug2")
+if(QBTOOLS_BUILD_TYPE STREQUAL "thug") #thug / thug2 - to actually properly use thug qcomp needs the -oldifs flag
     add_definitions(-DISTREAM_TOKEN_ENDIAN=ISTREAM_LITTLE_ENDIAN)
     add_definitions(-DISTREAM_PRE_ENDIAN=ISTREAM_LITTLE_ENDIAN)
     set(QBTOOLS_BUILD_CHUNKER OFF)
