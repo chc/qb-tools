@@ -76,7 +76,6 @@ void pak_append_end_file(PakContext *ctx) {
     item->type = crc32(0, PAK_LAST_ITEM, strlen(PAK_LAST_ITEM));
     item->size = 4;
 
-
     if(ctx->first_pak_item == nullptr) {
         ctx->first_pak_item = item;
         ctx->last_pak_item = item;
