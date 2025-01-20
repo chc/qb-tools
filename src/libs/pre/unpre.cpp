@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <lzss.h>
 
-void unpre_iterate_files(const char *path, FileInfoCallback callback) {
+//alignment_hack is required to extract PREs from old mod tools like GK
+void unpre_iterate_files(const char *path, FileInfoCallback callback, bool alignment_hack) {
     FileStream pre_fd(path);
     if (!pre_fd.IsFileOpened()) {
         fprintf(stderr, "Failed to open PRE: %s\n", path);
@@ -15,6 +16,7 @@ void unpre_iterate_files(const char *path, FileInfoCallback callback) {
 
     uint32_t total_size = pre_fd.ReadUInt32();
     uint32_t version = pre_fd.ReadUInt32();
+    assert(version == PRE_VERSION);
     uint32_t num_files = pre_fd.ReadUInt32();
 
     PreItem item;
@@ -36,23 +38,37 @@ void unpre_iterate_files(const char *path, FileInfoCallback callback) {
 
         callback(item);
 
+        int skip_size;
+
         if(item.compressed_size == 0) {
-            pre_fd.SetCursor(item.data_offset + item.original_size);
+            skip_size = item.original_size;
         } else {
-            pre_fd.SetCursor(item.data_offset + item.compressed_size);  
+            skip_size = item.compressed_size;
         }
 
-        pre_fd.Align();
+        //old THUG2 mods like GK need this for extracting to work
+        if(alignment_hack) {
+            if(4 - (skip_size % 4) != 4) {
+                skip_size += 4 - (skip_size % 4);
+            }
+        }
+        
+        pre_fd.SetCursor(item.data_offset + skip_size);
 
+        if(!alignment_hack) {
+            pre_fd.Align();
+        }
     }
 }
 void unpre_read_file(PreItem *item, uint8_t *output_buffer) {
     if(item->compressed_size == 0) {
         //uncompressed, just read it
-        fread(output_buffer, sizeof(uint8_t), item->original_size, item->file_fd);
+        int len = fread(output_buffer, sizeof(uint8_t), item->original_size, item->file_fd);
+        assert(len == item->original_size);
     } else {
         uint8_t *comp_buff = (uint8_t*)malloc(item->compressed_size);
-        fread(comp_buff, sizeof(uint8_t), item->compressed_size, item->file_fd);
+        int len = fread(comp_buff, sizeof(uint8_t), item->compressed_size, item->file_fd);
+        assert(len == item->compressed_size);
         decompress_lzss(comp_buff, item->compressed_size, output_buffer);
         free(comp_buff);
     }

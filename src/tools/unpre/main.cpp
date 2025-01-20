@@ -73,10 +73,29 @@ bool unpre_file_info_callback(PreItem item) {
 
 int main(int argc, const char* argv[]) {
     if (argc < 2) {
-        fprintf(stderr, "usage: %s [pre_path]\n", argv[0]);
+        fprintf(stderr, "usage: %s (options) [pre_path]\n", argv[0]);
+        fprintf(stderr, "options: \n");
+        fprintf(stderr, "\t-alignhack - Enable alignment logic required to extract PREs built with old modding tools\n");
         return -1;
     }
 
-    unpre_iterate_files(argv[1], unpre_file_info_callback);
+    bool alignment_hack = false;
+    int arg_index = 1;
+    for (int i = 1; i < argc; i++) {
+        if (strstr(argv[i], "-alignhack")) {
+            alignment_hack = true;
+            arg_index = i+1;
+        }
+    }
+    
+
+    if (arg_index >= argc) {
+        fprintf(stderr, "missing expected file params, run without params to see usage!\n");
+        return -1;
+    }
+
+    printf("Extracting pre at: %s\n", argv[arg_index]);
+
+    unpre_iterate_files(argv[arg_index], unpre_file_info_callback, alignment_hack);
     return 0;
 }
