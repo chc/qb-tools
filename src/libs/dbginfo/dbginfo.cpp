@@ -80,7 +80,6 @@ bool dbginfo_append_cache(const char* path, DbgChecksumInfo *info) {
 
     uint64_t offset;
     if(dbginfo_get_checksum_offset(info->checksum, offset, head)) {
-        printf("*** already added\n");
         fclose(head);
         return false;
     }
@@ -113,10 +112,13 @@ const char *dbginfo_resolve(uint32_t checksum) {
     }
 
     uint64_t offset;
-    char temp_buffer[256];
+    char temp_buffer[1024];
     int idx = 0;
     if(dbginfo_get_checksum_offset(checksum, offset, mp_read_dbginfo_head)) {
-        fseek(mp_read_dbginfo_body, offset, SEEK_SET);
+        if(fseek(mp_read_dbginfo_body, offset, SEEK_SET)) {
+            loaded_checksums[checksum] = nullptr;
+            return loaded_checksums[checksum];
+        }
         do {
             
             uint8_t c;
@@ -129,7 +131,8 @@ const char *dbginfo_resolve(uint32_t checksum) {
             if(c == 0) break;
         } while(true);
     } else {
-        return nullptr;
+        loaded_checksums[checksum] = nullptr;
+        return loaded_checksums[checksum];
     }
 
     temp_buffer[idx] = 0;

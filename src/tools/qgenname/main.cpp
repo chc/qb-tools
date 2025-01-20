@@ -9,13 +9,8 @@ void append_checksum(const char *name, uint32_t checksum) {
     info.checksum = checksum;
     info.name = name;
 
-    static bool loaded = false;
-
     const char* dbginfo_path = getenv("QBTOOLS_DBGINFO_PATH");
     if (dbginfo_path != NULL) {
-        if(!loaded) {
-            loaded = true;
-        }
         printf("** loadin dbginfo: %s\n", dbginfo_path);
             dbginfo_append_cache(dbginfo_path, &info);
     }
