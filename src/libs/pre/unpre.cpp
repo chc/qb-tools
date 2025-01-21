@@ -5,8 +5,7 @@
 #include <stdio.h>
 #include <lzss.h>
 
-//alignment_hack is required to extract PREs from old mod tools like GK
-void unpre_iterate_files(const char *path, FileInfoCallback callback, bool alignment_hack) {
+void unpre_iterate_files(const char *path, FileInfoCallback callback) {
     FileStream pre_fd(path);
     if (!pre_fd.IsFileOpened()) {
         fprintf(stderr, "Failed to open PRE: %s\n", path);
@@ -47,18 +46,9 @@ void unpre_iterate_files(const char *path, FileInfoCallback callback, bool align
             skip_size = item.compressed_size;
         }
 
-        //old THUG2 mods like GK need this for extracting to work
-        if(alignment_hack) {
-            if(4 - (skip_size % 4) != 4) {
-                skip_size += 4 - (skip_size % 4);
-            }
-        }
+        skip_size = (skip_size + 3) & (~3);
         
         pre_fd.SetCursor(item.data_offset + skip_size);
-
-        if(!alignment_hack) {
-            pre_fd.Align();
-        }
     }
 }
 void unpre_read_file(PreItem *item, uint8_t *output_buffer) {

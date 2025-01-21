@@ -24,7 +24,39 @@ PreContext *pre_create(const char *pre_path) {
     }
     ctx->pre_fd->SetWriteEndian(ISTREAM_PRE_ENDIAN);
 
+    ctx->pre_fd->WriteUInt32(sizeof(uint32_t) * 3); //total size
+    ctx->pre_fd->WriteUInt32(PRE_VERSION); //version PRE_VERSION
+    ctx->pre_fd->WriteUInt32(0); //total files
+
+    ctx->total_files = 0;
+
     return ctx;
+}
+PreContext *pre_open(const char *pre_path) {
+    if(!pre_path) {
+        return nullptr;
+    }
+
+    PreContext *ctx = new PreContext;
+    ctx->first_pre_item = nullptr;
+    ctx->last_pre_item = nullptr;
+    ctx->pre_fd = nullptr;
+
+    ctx->pre_fd = new FileStream(pre_path, false);
+    if(!ctx->pre_fd->IsFileOpened()) {
+        fprintf(stderr, "Failed to open PAK %s for writing\n", pre_path);
+        return nullptr;
+    }
+    ctx->pre_fd->SetWriteEndian(ISTREAM_PRE_ENDIAN);
+
+    uint32_t total_size = ctx->pre_fd->ReadUInt32();
+    uint32_t version = ctx->pre_fd->ReadUInt32();
+    assert(version == PRE_VERSION);
+    ctx->total_files = ctx->pre_fd->ReadUInt32();
+
+    ctx->pre_fd->SetCursor(total_size);
+
+    return ctx; 
 }
 void pre_append_file(PreContext *ctx, const char *path) {
      FILE *fd = fopen(path, "rb");
@@ -52,15 +84,9 @@ void pre_append_file(PreContext *ctx, const char *path) {
     } else {
         ctx->last_pre_item->next = item;
     }
-    ctx->last_pre_item->next = item;
     ctx->last_pre_item = item;
 }
 void pre_close(PreContext *ctx) {
-    uint32_t total_files = 0;
-    ctx->pre_fd->WriteUInt32(0); //total size
-    ctx->pre_fd->WriteUInt32(0); //version PRE_VERSION
-    ctx->pre_fd->WriteUInt32(0); //total files
-
     PreItem *current_item = ctx->first_pre_item;
     while(current_item != nullptr) {
         FILE *fd = fopen(current_item->file_path, "rb");
@@ -90,30 +116,34 @@ void pre_close(PreContext *ctx) {
         ctx->pre_fd->WriteUInt32(namelen);
         
 
-        uint32_t checksum = 0;
-        if(comp_len > 0) {
-            checksum = crc32(0, compress_buffer, comp_len);
-        } else {
-            checksum = crc32(0, input_buffer, current_item->original_size);
-        }
+        uint32_t checksum = crc32(0, input_buffer, current_item->original_size);
         ctx->pre_fd->WriteUInt32(checksum); //checksum
 
         ctx->pre_fd->WriteBuffer((uint8_t *)current_item->file_path, namelen);
 
+        uint32_t pad_len;
+
         if(comp_len > 0) {
             ctx->pre_fd->WriteBuffer(compress_buffer, comp_len);
+            pad_len = (comp_len + 3) & (~3);
+            pad_len -= comp_len;
         } else {
             ctx->pre_fd->WriteBuffer(input_buffer, current_item->original_size);
+            pad_len = (current_item->original_size + 3) & (~3);
+            pad_len -= current_item->original_size;
         }
 
-        ctx->pre_fd->WriteAlign();
+        while (pad_len-- > 0) {
+            ctx->pre_fd->WriteByte(0);
+        }
+        
 
         free(input_buffer);
         free(compress_buffer);
         fclose(fd);
 
         current_item = current_item->next;
-        total_files++;
+        ctx->total_files++;
     }
 
     uint32_t total_size = ctx->pre_fd->GetOffset();
@@ -121,5 +151,5 @@ void pre_close(PreContext *ctx) {
 
     ctx->pre_fd->WriteUInt32(total_size); //total size
     ctx->pre_fd->WriteUInt32(PRE_VERSION);
-    ctx->pre_fd->WriteUInt32(total_files); //total files
+    ctx->pre_fd->WriteUInt32(ctx->total_files); //total files
 }

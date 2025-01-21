@@ -5,7 +5,7 @@
 
 class FileStream : public IStream {
     public:
-        FileStream(const char *path, bool is_write = false);
+        FileStream(const char *path, bool create_new = false);
         ~FileStream();
         uint16_t ReadUInt16();
         int16_t ReadInt16();
