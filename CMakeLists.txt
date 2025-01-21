@@ -187,6 +187,12 @@ if(QBTOOLS_BUILD_PRETOOLS)
     add_executable (unpre ${UNPRE_SRCS})
     target_link_libraries(unpre pre)
     INSTALL(TARGETS unpre)
+
+    file (GLOB DBGINFO_PREIMPORT_SRCS "src/tools/dbginfo_preimport/*.cpp")
+    source_group("Sources" FILES ${DBGINFO_PREIMPORT_SRCS})
+    add_executable (dbginfo_preimport ${DBGINFO_PREIMPORT_SRCS})
+    target_link_libraries(dbginfo_preimport pre qtoken dbginfo crc)
+    INSTALL(TARGETS dbginfo_preimport)
 endif()
 
 

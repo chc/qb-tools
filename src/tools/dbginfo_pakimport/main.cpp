@@ -7,6 +7,8 @@
 #include <pak.h>
 #include <cassert>
 
+const char* dbginfo_path = NULL;
+
 void handle_line(const char *line) {
     DbgChecksumInfo line_info;
 
@@ -16,13 +18,7 @@ void handle_line(const char *line) {
 
     line_info.name = line;
 
-    const char* dbginfo_path = getenv("QBTOOLS_DBGINFO_PATH");
-    if (dbginfo_path != NULL) {
-            dbginfo_append_cache(dbginfo_path, &line_info);
-    }
-    else {
-        printf("** no dbg data specified\n");
-    }
+    dbginfo_append_cache(dbginfo_path, &line_info);
 }
 
 void handle_dbgfile(uint8_t *data, uint32_t len) {
@@ -63,6 +59,15 @@ bool unpak_file_info_callback(PakItem item) {
 int main(int argc, const char* argv[]) {
     if (argc < 2) {
         fprintf(stderr, "usage: [pak_path]\n", argv[0]);
+        return -1;
+    }
+
+    dbginfo_path = getenv("QBTOOLS_DBGINFO_PATH");
+    if (dbginfo_path != NULL) {
+        dbginfo_load_cache(dbginfo_path);
+    }
+    else {
+        printf("** no dbg data specified\n");
         return -1;
     }
 
