@@ -136,9 +136,9 @@ endif()
 file (GLOB QDUMP_SRCS "src/tools/qdump/*.cpp")
 add_executable (qdump ${QDUMP_SRCS})
 if(QBTOOLS_BUILD_SYMBOLTOOLS)
-    target_link_libraries(qdump qtoken qsymbol crc)
+    target_link_libraries(qdump qtoken qsymbol crc dbginfo)
 else()
-    target_link_libraries(qdump qtoken crc)
+    target_link_libraries(qdump qtoken crc dbginfo)
 endif()
 INSTALL(TARGETS qdump)
 
@@ -196,17 +196,17 @@ if(QBTOOLS_BUILD_PRETOOLS)
 endif()
 
 
-file (GLOB LIBPAK_SRCS "src/libs/pak/*.cpp")
-include_directories("src/libs/pak")
-add_library(pak ${LIBPAK_SRCS})
-target_link_libraries(pak qtoken)
-INSTALL(TARGETS pak)
-
 file (GLOB LIBDBGINFO_SRCS "src/libs/dbginfo/*.cpp")
 add_library(dbginfo ${LIBDBGINFO_SRCS})
-target_link_libraries(dbginfo pak)
+target_link_libraries(dbginfo)
 
 if(QBTOOLS_BUILD_PAKTOOLS)
+    file (GLOB LIBPAK_SRCS "src/libs/pak/*.cpp")
+    include_directories("src/libs/pak")
+    add_library(pak ${LIBPAK_SRCS})
+    target_link_libraries(pak qtoken)
+    INSTALL(TARGETS pak)
+
     file (GLOB UNPAK_SRCS "src/tools/unpak/*.cpp")
     source_group("Sources" FILES ${UNPAK_SRCS})
     add_executable (unpak ${UNPAK_SRCS})
@@ -231,7 +231,7 @@ endif()
 file (GLOB QRESOLVE_SRCS "src/tools/qresolve/*.cpp")
 source_group("Sources" FILES ${QRESOLVE_SRCS})
 add_executable (qresolve ${QRESOLVE_SRCS})
-target_link_libraries(qresolve qtoken pak dbginfo)
+target_link_libraries(qresolve qtoken dbginfo)
 INSTALL(TARGETS qresolve)
 
 
@@ -263,12 +263,10 @@ if(QBTOOLS_BUILD_CHUNKER)
     file (GLOB UNCHUNK_SRCS "src/tools/unchunk/*.cpp")
     add_executable (unchunk ${UNCHUNK_SRCS})
     target_link_libraries(unchunk PRIVATE qtoken ZLIB::ZLIB)
+    INSTALL(TARGETS unchunk)
 
     file (GLOB CHUNK_SRCS "src/tools/chunk/*.cpp")
     add_executable (chunk ${CHUNK_SRCS})
     target_link_libraries(chunk PRIVATE qtoken ZLIB::ZLIB)
+    INSTALL(TARGETS chunk)
 endif()
-
-
-
-#INSTALL(TARGETS qcomp qdump qopt qdeopt qgenname qresolve pakdir unpak unchunk chunk)

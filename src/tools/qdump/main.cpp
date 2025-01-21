@@ -13,6 +13,7 @@
 #include <vector>
 #include <map>
 #include <crc32.h>
+#include <dbginfo.h>
 std::vector<QScriptToken *> token_list;
 void dump_token_list(std::vector<QScriptToken *> token_list, FILE *out);
 
@@ -52,6 +53,29 @@ void map_checksum_names() {
             }
         }
         it++;
+    }
+
+    const char* dbgcache_path = getenv("QBTOOLS_DBGINFO_PATH");
+    if (dbgcache_path != NULL) {
+        printf("** loading dbginfo: %s\n", dbgcache_path);
+        dbginfo_load_cache(dbgcache_path);
+
+        it = token_list.begin();
+        while (it != token_list.end()) {
+            QScriptToken* token = *it;
+            if (token->GetType() == ESCRIPTTOKEN_NAME) {
+                NameToken* name = reinterpret_cast<NameToken*>(token);
+                if (name->GetName() == nullptr) {
+                    const char* resolved_name = dbginfo_resolve(name->GetChecksum());
+                    if (resolved_name != nullptr) {
+                        ChecksumNameToken* c = new ChecksumNameToken(name->GetChecksum(), resolved_name);
+						name->SetChecksumName(c);
+						checksum_map[name->GetChecksum()] = c;
+                    }
+                }
+            }
+            it++;
+        }
     }
 }
 
