@@ -87,7 +87,17 @@ void pre_append_file(PreContext *ctx, const char *path) {
     }
     ctx->last_pre_item = item;
 }
-
+uint32_t gen_checksum(const char* name) {
+	int len = strlen(name);
+    uint32_t checksum = -1;
+    while (len--) {
+        char c = *name;
+        c = tolower(c);
+        checksum = crc32(checksum, &c, 1);
+        name++;
+    }
+	return checksum;
+}
 void pre_close(PreContext *ctx) {
     PreItem *current_item = ctx->first_pre_item;
     while(current_item != nullptr) {
