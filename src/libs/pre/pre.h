@@ -23,7 +23,7 @@ typedef struct _PreItem {
 
 typedef bool (*FileInfoCallback)(PreItem item);
 
-void unpre_iterate_files(const char *path, FileInfoCallback callback, bool alignment_hack = false);
+void unpre_iterate_files(const char *path, FileInfoCallback callback);
 void unpre_read_file(PreItem *item, uint8_t *output_buffer);
 
 typedef struct {
@@ -31,9 +31,11 @@ typedef struct {
     
     PreItem *first_pre_item;
     PreItem *last_pre_item;
+    uint32_t total_files;
 } PreContext;
 
 PreContext *pre_create(const char *pre_path);
+PreContext *pre_open(const char *pre_path);
 void pre_append_file(PreContext *ctx, const char *path);
 void pre_close(PreContext *ctx);
 #endif //_LIBPRE_H

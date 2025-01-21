@@ -40,14 +40,10 @@ void create_dir(char *path) {
         *x = '/';       
     }
 }
-
-static int idx = 0;
 void print_pre_item(PreItem* item) {
 
-
     const char* c = NULL;
-    printf("**** BEGIN ITEM (%d) ****\n", idx++);
-    printf("name: %s\n", item->filename);
+    printf("extracting: %s\n", item->filename);
 
     uint8_t *buff = (uint8_t*)malloc(item->original_size);
     unpre_read_file(item, buff);
@@ -74,29 +70,13 @@ bool unpre_file_info_callback(PreItem item) {
 
 int main(int argc, const char* argv[]) {
     if (argc < 2) {
-        fprintf(stderr, "usage: %s (options) [pre_path]\n", argv[0]);
-        fprintf(stderr, "options: \n");
-        fprintf(stderr, "\t-alignhack - Enable alignment logic required to extract PREs built with old modding tools\n");
+        fprintf(stderr, "usage: %s [pre_path]\n", argv[0]);
         return -1;
     }
 
-    bool alignment_hack = false;
-    int arg_index = 1;
-    for (int i = 1; i < argc; i++) {
-        if (strstr(argv[i], "-alignhack")) {
-            alignment_hack = true;
-            arg_index = i+1;
-        }
-    }
-    
 
-    if (arg_index >= argc) {
-        fprintf(stderr, "missing expected file params, run without params to see usage!\n");
-        return -1;
-    }
+    printf("Extracting pre at: %s\n", argv[1]);
 
-    printf("Extracting pre at: %s\n", argv[arg_index]);
-
-    unpre_iterate_files(argv[arg_index], unpre_file_info_callback, alignment_hack);
+    unpre_iterate_files(argv[1], unpre_file_info_callback);
     return 0;
 }
