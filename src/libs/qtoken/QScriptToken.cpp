@@ -188,8 +188,10 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
             return new FastElseToken();
         case ESCRIPTTOKEN_ARGUMENTPACK:
             return new ArgumentPackToken();
+#ifdef WITH_SYMBOL_SUPPORT
         case ESCRIPTTOKEN_INLINEPACKSTRUCT:
             return new InlinePackStructToken();
+#endif
         case ESCRIPTTOKEN_WIDESTRING:
             return new WideStringToken();
         case ESCRIPTTOKEN_SHORTJUMP:
