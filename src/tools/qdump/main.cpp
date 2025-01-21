@@ -57,7 +57,6 @@ void map_checksum_names() {
 
     const char* dbgcache_path = getenv("QBTOOLS_DBGINFO_PATH");
     if (dbgcache_path != NULL) {
-        printf("** loading dbginfo: %s\n", dbgcache_path);
         dbginfo_load_cache(dbgcache_path);
 
         it = token_list.begin();

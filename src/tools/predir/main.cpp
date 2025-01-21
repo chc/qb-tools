@@ -37,7 +37,7 @@ void handle_directory(PreContext *ctx, const char *dir_name, int initial_len) {
             }                
         } else if (entry->d_type & DT_REG){
             if(entry->d_name[0] != '.') {
-                printf("Adding file to pak: %s\n", temp_str + initial_len);
+                printf("Adding file to pre: %s\n", temp_str + initial_len);
                 pre_append_file(ctx, temp_str + initial_len);  
             }           
         }

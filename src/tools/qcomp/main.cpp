@@ -584,17 +584,17 @@ void emit_token(int type, FileStream &fs_out) {
    }
 
    if(type == ESCRIPTTOKEN_ARG) {
-    #ifdef WITH_SYMBOL_SUPPORT
         if(g_QCompState.do_arg_pack) {
+#ifdef WITH_SYMBOL_SUPPORT
             g_QCompState.do_arg_pack = false;
             ArgumentPackToken apt;
             apt.SetRefType(g_QCompState.argpack_type);            
             apt.SetIsRequiredParams(g_QCompState.argpack_isreqparam);
             apt.WriteExtendedParams(&fs_out);
+#else
+            assert(false);
+#endif
         }
-    #else
-    assert(false);
-    #endif
    }
 
    if(g_QCompState.do_inlinestruct_token) {

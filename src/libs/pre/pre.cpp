@@ -72,7 +72,7 @@ void pre_close(PreContext *ctx) {
         
 
         uint8_t *input_buffer = (uint8_t *)malloc(current_item->original_size);
-        uint8_t *compress_buffer = (uint8_t *)malloc(current_item->original_size);
+        uint8_t *compress_buffer = (uint8_t *)malloc(current_item->original_size * 2);
 
         int len = fread(input_buffer, 1, current_item->original_size, fd);
         assert(len == current_item->original_size);
@@ -117,10 +117,9 @@ void pre_close(PreContext *ctx) {
     }
 
     uint32_t total_size = ctx->pre_fd->GetOffset();
-
     ctx->pre_fd->SetCursor(0);
+
     ctx->pre_fd->WriteUInt32(total_size); //total size
     ctx->pre_fd->WriteUInt32(PRE_VERSION);
     ctx->pre_fd->WriteUInt32(total_files); //total files
-    ctx->pre_fd->SetCursor(total_size);
 }
