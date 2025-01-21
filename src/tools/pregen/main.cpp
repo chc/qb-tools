@@ -91,11 +91,9 @@ int main(int argc, const char* argv[]) {
         pre_append_file(ctx, argv[3]);
     }
     
-
     if(ctx != nullptr) {
         pre_close(ctx);
     }
-    
-    
+
     return 0;
 }
