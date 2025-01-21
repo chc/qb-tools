@@ -21,7 +21,7 @@ Creates PAK/PAB files
 ### Unpak
 Unpaks PAK/PAB files
 
-### Predir
+### Pregen
 Creates THUG-style PRE files
 
 ## Unpre
