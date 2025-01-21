@@ -28,7 +28,7 @@ Creates THUG-style PRE files
 Extract THUG-style pre files
 
 ## Misc
-Set the `QBTOOLS_DBG_PAK` to point to a DBG.PAK if you want to have checksum names injected into the token dump from qdeopt, or file names from unpak.
+Set the `QBTOOLS_DBGINFO_PATH` to point to the path to store the dbginfo checksum db. Import data using `dbginfo_pakimport` and `dbginfo_preimport` to import names from a DBG.PAK or QB.PRE file
 
 
 ## TODO
