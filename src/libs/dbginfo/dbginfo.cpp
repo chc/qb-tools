@@ -9,7 +9,7 @@
 
 
 extern "C" {
-    std::map<uint32_t, std::string> loaded_checksums;
+    std::map<uint32_t, const char *> loaded_checksums;
 }
 
 bool dbginfo_load_cache(const char* path) {
@@ -33,7 +33,7 @@ bool dbginfo_load_cache(const char* path) {
         len = fread(&input, string_len, 1, fd);
         input[string_len] = 0;
 
-        loaded_checksums[checksum] = input;
+        loaded_checksums[checksum] = strdup(input);
     }
     fclose(fd);
     return true;
@@ -43,7 +43,7 @@ bool dbginfo_append_cache(const char* path, DbgChecksumInfo *info) {
     if(loaded_checksums.find(info->checksum) != loaded_checksums.end()) {
         return false;
     }
-    loaded_checksums[info->checksum] = info->name;
+    loaded_checksums[info->checksum] = strdup(info->name);
 
     FILE *fd = fopen(path, "ab");
     if(!fd) return false;
@@ -62,7 +62,7 @@ bool dbginfo_append_cache(const char* path, DbgChecksumInfo *info) {
 
 const char *dbginfo_resolve(uint32_t checksum) {
     if(loaded_checksums.find(checksum) != loaded_checksums.end()) {
-        return loaded_checksums[checksum].c_str();
+        return loaded_checksums[checksum];
     }
     return nullptr;
 }
