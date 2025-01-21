@@ -116,23 +116,27 @@ void pre_close(PreContext *ctx) {
         ctx->pre_fd->WriteUInt32(namelen);
         
 
-        uint32_t checksum = 0;
-        if(comp_len > 0) {
-            checksum = crc32(0, compress_buffer, comp_len);
-        } else {
-            checksum = crc32(0, input_buffer, current_item->original_size);
-        }
+        uint32_t checksum = crc32(0, input_buffer, current_item->original_size);
         ctx->pre_fd->WriteUInt32(checksum); //checksum
 
         ctx->pre_fd->WriteBuffer((uint8_t *)current_item->file_path, namelen);
 
+        uint32_t pad_len;
+
         if(comp_len > 0) {
             ctx->pre_fd->WriteBuffer(compress_buffer, comp_len);
+            pad_len = (comp_len + 3) & (~3);
+            pad_len -= comp_len;
         } else {
             ctx->pre_fd->WriteBuffer(input_buffer, current_item->original_size);
+            pad_len = (current_item->original_size + 3) & (~3);
+            pad_len -= current_item->original_size;
         }
 
-        ctx->pre_fd->WriteAlign();
+        while (pad_len-- > 0) {
+            ctx->pre_fd->WriteByte(0);
+        }
+        
 
         free(input_buffer);
         free(compress_buffer);
