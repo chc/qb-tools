@@ -40,14 +40,10 @@ void create_dir(char *path) {
         *x = '/';       
     }
 }
-
-static int idx = 0;
 void print_pre_item(PreItem* item) {
 
-
     const char* c = NULL;
-    printf("**** BEGIN ITEM (%d) ****\n", idx++);
-    printf("name: %s\n", item->filename);
+    printf("extracting: %s\n", item->filename);
 
     uint8_t *buff = (uint8_t*)malloc(item->original_size);
     unpre_read_file(item, buff);

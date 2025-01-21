@@ -31,9 +31,11 @@ typedef struct {
     
     PreItem *first_pre_item;
     PreItem *last_pre_item;
+    uint32_t total_files;
 } PreContext;
 
 PreContext *pre_create(const char *pre_path);
+PreContext *pre_open(const char *pre_path);
 void pre_append_file(PreContext *ctx, const char *path);
 void pre_close(PreContext *ctx);
 #endif //_LIBPRE_H

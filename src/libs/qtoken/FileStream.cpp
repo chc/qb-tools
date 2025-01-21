@@ -15,13 +15,13 @@
         v = *vr; \
     }
     
-FileStream::FileStream(const char *path, bool is_write) {
+FileStream::FileStream(const char *path, bool create_new) {
     m_read_endian_mode = ISTREAM_LITTLE_ENDIAN;
     m_write_endian_mode = ISTREAM_LITTLE_ENDIAN;
-    if(is_write) {
+    if(create_new) {
         mp_fd = fopen(path,"wb"); 
     } else {
-        mp_fd = fopen(path,"rb");
+        mp_fd = fopen(path,"rb+");
     }
     assert(mp_fd);
     
