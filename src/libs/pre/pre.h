@@ -23,7 +23,7 @@ typedef struct _PreItem {
 
 typedef bool (*FileInfoCallback)(PreItem item);
 
-void unpre_iterate_files(const char *path, FileInfoCallback callback, bool alignment_hack = false);
+void unpre_iterate_files(const char *path, FileInfoCallback callback);
 void unpre_read_file(PreItem *item, uint8_t *output_buffer);
 
 typedef struct {
