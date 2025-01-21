@@ -8,6 +8,12 @@
 #include <string.h>
 #include <pre.h>
 
+#ifdef _WINDOWS
+#include <win_dirent.h>
+#else
+#include <dirent.h>
+#endif
+
 void import_file_list(PreContext *ctx, const char *file_list) {
     char line[256];
     int line_index = 0;

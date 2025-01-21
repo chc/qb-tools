@@ -110,9 +110,9 @@ endif()
 
 if(QBTOOLS_BUILD_SYMBOLTOOLS)
     add_definitions(-DWITH_SYMBOL_SUPPORT)
-    include_directories("src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak" "src/libs/dbginfo" "src/libs/crc" "src/libs/lzss")
+    include_directories("src/include" "src/libs/qtoken" "src/libs/qsymbol" "src/libs/pak" "src/libs/dbginfo" "src/libs/crc" "src/libs/lzss")
 else()
-    include_directories("src/libs/qtoken" "src/libs/pak" "src/libs/dbginfo" "src/libs/crc" "src/libs/lzss")
+    include_directories("src/include" "src/libs/qtoken" "src/libs/pak" "src/libs/dbginfo" "src/libs/crc" "src/libs/lzss")
 endif()
 
 file (GLOB CRC_SRCS "src/libs/crc/*.cpp")
