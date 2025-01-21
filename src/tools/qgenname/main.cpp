@@ -22,7 +22,7 @@ int main(int argc, const char* argv[]) {
     char *name = strdup(argv[1]);
     int len = strlen(name);
 
-    uint32_t checksum = crc32(0, name, len);
+    uint32_t checksum = crc32(-1, name, len);
     printf("Checksum (case sensitive): 0x%08x - %d\n", checksum, checksum);
 
     const char* dbginfo_path = getenv("QBTOOLS_DBGINFO_PATH");
@@ -42,7 +42,7 @@ int main(int argc, const char* argv[]) {
         name[i] = tolower(name[i]);
     }
 
-    checksum = crc32(0, name, len);
+    checksum = crc32(-1, name, len);
     printf("Checksum (Lower): 0x%08x - %d\n", checksum, checksum);
 
     if(dbginfo_append && dbginfo_path) {

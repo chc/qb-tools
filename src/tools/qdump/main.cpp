@@ -23,7 +23,7 @@ uint32_t gen_checksum(const char *name) {
         cpy[i] = tolower(cpy[i]);
     }
 
-    uint32_t checksum = crc32(0, cpy, strlen(cpy));
+    uint32_t checksum = crc32(-1, cpy, strlen(cpy));
     free((void *)cpy);
     return checksum;
 }

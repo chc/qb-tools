@@ -74,7 +74,6 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
 
-
     printf("Extracting pre at: %s\n", argv[1]);
 
     unpre_iterate_files(argv[1], unpre_file_info_callback);

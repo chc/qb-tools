@@ -49,10 +49,10 @@ void calculate_pak_name_checksums(PakItem *item, const char *name) {
 
     char *ext = strrchr(tmpstr, '.');
     if(ext) {
-        item->type = crc32(0, ext, strlen(ext));
+        item->type = crc32(-1, ext, strlen(ext));
     }
     
-    item->fullname = crc32(0, tmpstr, strlen(tmpstr));
+    item->fullname = crc32(-1, tmpstr, strlen(tmpstr));
     
     const char *end = strrchr(tmpstr, '\\');
     if(end) {
@@ -64,7 +64,7 @@ void calculate_pak_name_checksums(PakItem *item, const char *name) {
        *ext = 0; 
     }
     
-    item->short_name = crc32(0, end, strlen(end));
+    item->short_name = crc32(-1, end, strlen(end));
 
     free(tmpstr);
     
@@ -73,7 +73,7 @@ void pak_append_end_file(PakContext *ctx) {
     PakItem *item = new PakItem;
     memset(item, 0, sizeof(PakItem));
 
-    item->type = crc32(0, PAK_LAST_ITEM, strlen(PAK_LAST_ITEM));
+    item->type = crc32(-1, PAK_LAST_ITEM, strlen(PAK_LAST_ITEM));
     item->size = 4;
 
     if(ctx->first_pak_item == nullptr) {

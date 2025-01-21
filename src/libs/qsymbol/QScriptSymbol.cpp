@@ -56,7 +56,7 @@ void QScriptSymbol::LoadParams(IStream *stream) {
         m_decomp_len = decompress_lzss((unsigned char *)comp_buff, compressed_size, (unsigned char *)m_decomp_buff);
 
 
-        uint32_t checksum = crc32(0, (void *)m_decomp_buff, uncompressed_size);
+        uint32_t checksum = crc32(-1, (void *)m_decomp_buff, uncompressed_size);
         delete[] comp_buff;
     }
 
@@ -67,7 +67,7 @@ void QScriptSymbol::Write(IStream *stream) {
     stream->WriteUInt32( stream->GetOffset() + sizeof(uint32_t) + sizeof(uint32_t));
     stream->WriteUInt32(0);
 
-    uint32_t checksum = crc32(0, m_decomp_buff, m_decomp_len);
+    uint32_t checksum = crc32(-1, m_decomp_buff, m_decomp_len);
     stream->WriteUInt32(checksum);
 
     stream->WriteUInt32(m_decomp_len);

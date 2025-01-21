@@ -173,7 +173,7 @@ uint32_t gen_checksum(std::string str, bool with_conversion) {
         name[i] = tolower(name[i]);
     }
 
-    uint32_t checksum = crc32(0, name, len);
+    uint32_t checksum = crc32(-1, name, len);
 
     g_QCompState.checksum_names[checksum] = str;
     free(name);

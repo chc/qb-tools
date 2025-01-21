@@ -175,7 +175,7 @@ int main(int argc, const char *argv[]) {
 
     out_fs.SetWriteEndian(ISTREAM_SYMBOL_ENDIAN);
     SymbolFileStream sym_fs(&out_fs);
-    uint32_t src_checksum_name = crc32(0, argv[1], strlen(argv[1]));
+    uint32_t src_checksum_name = crc32(-1, argv[1], strlen(argv[1]));
     sym_fs.SetSourceChecksum(src_checksum_name);
 
     sym_fs.WriteHeader();

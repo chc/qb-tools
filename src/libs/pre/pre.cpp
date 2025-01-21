@@ -6,6 +6,7 @@
 #include <lzss.h>
 #include <string.h>
 #include <crc32.h>
+#include <ctype.h>
 
 PreContext *pre_create(const char *pre_path) {
     if(!pre_path) {
@@ -86,6 +87,7 @@ void pre_append_file(PreContext *ctx, const char *path) {
     }
     ctx->last_pre_item = item;
 }
+
 void pre_close(PreContext *ctx) {
     PreItem *current_item = ctx->first_pre_item;
     while(current_item != nullptr) {
@@ -112,16 +114,22 @@ void pre_close(PreContext *ctx) {
         ctx->pre_fd->WriteUInt32(comp_len); //compressed size;
 
 
-        uint32_t namelen = strlen(current_item->file_path) + 1;
-        ctx->pre_fd->WriteUInt32(namelen);
+        uint32_t pad_len;
+        uint32_t namelen = strlen(current_item->file_path);
+
+        pad_len = (namelen + 4) & ~3;
+        ctx->pre_fd->WriteUInt32(pad_len);
+        pad_len -= namelen;
         
 
-        uint32_t checksum = crc32(0, input_buffer, current_item->original_size);
+        uint32_t checksum = gen_checksum(current_item->file_path);
         ctx->pre_fd->WriteUInt32(checksum); //checksum
 
         ctx->pre_fd->WriteBuffer((uint8_t *)current_item->file_path, namelen);
 
-        uint32_t pad_len;
+        while (pad_len--) {
+			ctx->pre_fd->WriteByte(0);
+        }
 
         if(comp_len > 0) {
             ctx->pre_fd->WriteBuffer(compress_buffer, comp_len);
@@ -133,7 +141,7 @@ void pre_close(PreContext *ctx) {
             pad_len -= current_item->original_size;
         }
 
-        while (pad_len-- > 0) {
+        while (pad_len--) {
             ctx->pre_fd->WriteByte(0);
         }
         
