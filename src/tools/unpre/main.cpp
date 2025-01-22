@@ -45,7 +45,7 @@ void print_pre_item(PreItem* item) {
     const char* c = NULL;
     printf("extracting: %s\n", item->filename);
 
-    uint8_t *buff = (uint8_t*)malloc(item->original_size);
+    uint8_t *buff = (uint8_t*)malloc(item->original_size * 2);
     unpre_read_file(item, buff);
 
     create_dir(item->filename);
