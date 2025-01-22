@@ -17,7 +17,9 @@ void import_file_list(PreContext *ctx, const char *file_list) {
         fprintf(stderr, "Failed to open file list: %s\n", file_list);
         return;
     }
-    while(true) {
+
+    bool active = true;
+    while(active) {
         int c = fgetc(fd);
         if(c == EOF) {
             break;
@@ -34,7 +36,8 @@ void import_file_list(PreContext *ctx, const char *file_list) {
             default:
                 if(line_index >= sizeof(line)) {
                     line_index = 0;
-                    fprintf(stderr, "line max length overflow!");
+                    fprintf(stderr, "line max length overflow!\n");
+                    active = false;
                     break;
                 }
                 line[line_index++] = c;
