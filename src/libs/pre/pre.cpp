@@ -93,6 +93,9 @@ uint32_t gen_checksum(const char* name) {
     while (len--) {
         char c = *name;
         c = tolower(c);
+        if(c == '/') { //path checksums must have backslash
+            c = '\\';
+        }
         checksum = crc32(checksum, &c, 1);
         name++;
     }
