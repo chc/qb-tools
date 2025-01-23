@@ -47,7 +47,7 @@ std::vector<QScriptToken *>::iterator read_array_struct_item(std::vector<QScript
     int depth = 1;
     bool in_name_mode = true;
     bool in_argument_pack = false;
-    ArgumentPackToken *last_argpack;
+    ArgumentPackToken *last_argpack = nullptr;
     uint32_t struct_item_name = 0;
     while(it != end && depth > 0) {
         QScriptToken *t = *it;

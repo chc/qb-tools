@@ -825,9 +825,11 @@ void handle_read_name(char ch, FileStream &fs_out) {
         case ':':
             g_QCompState.emit_type = ESCRIPTTOKEN_COLON;
         break;
-        // case '.':
-        //     g_QCompState.emit_type = ESCRIPTTOKEN_DOT;
-        // break;
+         case '.':
+             if (g_QCompState.current_token.empty()) {
+                 g_QCompState.emit_type = ESCRIPTTOKEN_DOT;
+             }                
+         break;
         case '{':
             g_QCompState.emit_type = ESCRIPTTOKEN_STARTSTRUCT;
         break;
