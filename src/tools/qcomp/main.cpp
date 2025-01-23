@@ -235,8 +235,24 @@ void emit_name(std::string name, FileStream &fs_out) {
     }
 
 
-    NameToken nt(checksum);
-    nt.Write(&fs_out);
+    NameToken *nt = new NameToken(checksum);
+    nt->Write(&fs_out);
+
+    if (g_QCompState.next_is_random_start_token) {
+        g_QCompState.next_is_random_start_token = false;
+        g_QCompState.current_random->values.push(nt);
+        g_QCompState.current_random->root->SetWeight(g_QCompState.current_random->values.size() - 1, g_QCompState.random_next_weight);
+        g_QCompState.random_next_weight = 1;
+
+    }
+    else if (g_QCompState.mark_end_of_random) {
+        g_QCompState.current_random->end_token = nt;
+        g_QCompState.current_random = g_QCompState.current_random->prev;
+        g_QCompState.mark_end_of_random--;
+    }
+    else {
+        delete nt;
+    }
 }
 void emit_token(std::string &current_token, FileStream &fs_out) {
     if(handle_keyword_check(current_token, fs_out)) {
@@ -936,6 +952,7 @@ void emit_sqs_token(std::string token, FileStream &fs_out) {
     
 }
 void emit_pair_or_vec(std::string token, FileStream &fs_out) {
+    QScriptToken* script_token;
     if(token.compare(0, 5, "Pair(") == 0) {
         float v[2];
         std::string t = token.substr(5);
@@ -950,8 +967,8 @@ void emit_pair_or_vec(std::string token, FileStream &fs_out) {
         std::string second = t.substr(comma+1, end-2);
         v[1] = atof(second.c_str());
         
-        PairToken pt(v[0], v[1]);
-        pt.Write(&fs_out);
+        script_token = new PairToken(v[0], v[1]);
+        script_token->Write(&fs_out);
 
 
     } else if (token.compare(0, 4, "Vec(") == 0) {
@@ -977,9 +994,26 @@ void emit_pair_or_vec(std::string token, FileStream &fs_out) {
         t = t.substr(0,comma);
         v[2] = atof(t.c_str());
 
-        VectorToken vt(v[0], v[1], v[2]);
-        vt.Write(&fs_out);
+        script_token = new VectorToken(v[0], v[1], v[2]);
+        script_token->Write(&fs_out);
 
+    }
+
+    if (g_QCompState.next_is_random_start_token) {
+        g_QCompState.next_is_random_start_token = false;
+        g_QCompState.current_random->values.push(script_token);
+        g_QCompState.current_random->root->SetWeight(g_QCompState.current_random->values.size() - 1, g_QCompState.random_next_weight);
+        g_QCompState.random_next_weight = 1;
+    }
+    else if (g_QCompState.mark_end_of_random) {
+        while (g_QCompState.mark_end_of_random > 0) {
+            g_QCompState.current_random->end_token = script_token;
+            g_QCompState.current_random = g_QCompState.current_random->prev;
+            g_QCompState.mark_end_of_random--;
+        }
+    }
+    else {
+        delete script_token;
     }
 }
 
@@ -1053,8 +1087,24 @@ void handle_read_string(char ch, FileStream &fs_out) {
                 assert(false);
             #endif
             }
-            NameToken nt(checksum);
-            nt.Write(&fs_out);
+            NameToken *nt = new NameToken(checksum);
+            nt->Write(&fs_out);
+
+            if (g_QCompState.next_is_random_start_token) {
+                g_QCompState.next_is_random_start_token = false;
+                g_QCompState.current_random->values.push(nt);
+                g_QCompState.current_random->root->SetWeight(g_QCompState.current_random->values.size() - 1, g_QCompState.random_next_weight);
+                g_QCompState.random_next_weight = 1;
+
+            }
+            else if (g_QCompState.mark_end_of_random) {
+                g_QCompState.current_random->end_token = nt;
+                g_QCompState.current_random = g_QCompState.current_random->prev;
+                g_QCompState.mark_end_of_random--;
+            }
+            else {
+                delete nt;
+            }
         } else {
             assert(false);
         }
