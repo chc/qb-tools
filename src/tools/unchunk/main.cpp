@@ -8,9 +8,9 @@
 #include <FileStream.h>
 #define CHUNK_SIZE (0x80000)
 
-// extern "C" {
-//     extern int z_verbose;
-// }
+ //extern "C" {
+ //    extern int z_verbose;
+ //}
 
 
 int main(int argc, const char *argv[]) {
@@ -57,7 +57,7 @@ int main(int argc, const char *argv[]) {
         uint32_t decomp_size = read_fd.ReadUInt32();
         uint32_t total_decomp = read_fd.ReadUInt32(); //this is basically where to write it to in memory for the game
         printf("Chunk at: %08x\nHeader Size: %d, compressed chunk size: %08x, next at: %08x\n", file_offset, header_size, chunk_size, file_offset+next_offset);
-        printf("Decompress size: %d, write mem address: %p, next total size: %d\n\n", decomp_size ,total_decomp, next_size);
+        printf("Decompress size: %d, write mem address: %p, next total size: %d\n", decomp_size ,total_decomp, next_size);
         read_fd.SetCursor(file_offset + header_size);
 
         //uint8_t *comp_buff = new uint8_t[decomp_size];
@@ -69,6 +69,8 @@ int main(int argc, const char *argv[]) {
             return -1;
         }
 
+
+        int decomp_written = 0;
 
         int ret;
         do {
@@ -87,7 +89,7 @@ int main(int argc, const char *argv[]) {
                 strm.avail_out = CHUNK_SIZE;
                 strm.next_out = out_buff;
                 inflateReset(&strm);
-                ret = inflate(&strm, Z_SYNC_FLUSH);
+                 ret = inflate(&strm, Z_SYNC_FLUSH);
                 assert(ret != Z_STREAM_ERROR);
                 int have = CHUNK_SIZE - strm.avail_out;
                 switch(ret) {
@@ -104,12 +106,14 @@ int main(int argc, const char *argv[]) {
                 int len = fwrite((void *)out_buff, have, 1, out_fd);
                 assert(len == 1);
 
+                decomp_written += have;
                 decomp_size -= read_len;
                     
                 if(ret == Z_STREAM_END) {
                     break;   
                 }
                 else {
+                    fprintf(stderr, "Unfinished stream found in CHNK buffer!\n");
                     assert(false);
                 }
 
@@ -117,6 +121,8 @@ int main(int argc, const char *argv[]) {
             } while(strm.avail_out == 0);        
             break;
         } while(decomp_size > 0);
+
+        printf("decomp written: %d / %08x\n\n", decomp_written, decomp_written);
     
         inflateReset2(&strm, -MAX_WBITS);
 
