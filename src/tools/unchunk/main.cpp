@@ -50,15 +50,15 @@ int main(int argc, const char *argv[]) {
     while(read_fd.ReadUInt32() == 1128812107) {
         uint32_t file_offset = read_fd.GetOffset() - sizeof(uint32_t);
         
-        uint32_t offset = read_fd.ReadUInt32();
+        uint32_t header_size = read_fd.ReadUInt32();
+        uint32_t chunk_size = read_fd.ReadUInt32();
+        uint32_t next_offset = read_fd.ReadUInt32();
+        uint32_t next_size = read_fd.ReadUInt32();
         uint32_t decomp_size = read_fd.ReadUInt32();
-        uint32_t next = read_fd.ReadUInt32();
-        uint32_t unk1 = read_fd.ReadUInt32();
-        uint32_t size2 = read_fd.ReadUInt32();
-        uint32_t out_offset = read_fd.ReadUInt32();
-        printf("*** (%08x)\nitem: offset:%08x decomp_size: %08x next: %08x\n", file_offset, offset, decomp_size, next);
-        printf("item extra: next-next: %08x/%d size2: %08x out_offset: %08x\n\n", unk1, unk1, size2, out_offset);
-        read_fd.SetCursor(file_offset + offset);
+        uint32_t total_decomp = read_fd.ReadUInt32(); //this is basically where to write it to in memory for the game
+        printf("Chunk at: %08x\nHeader Size: %d, compressed chunk size: %08x, next at: %08x\n", file_offset, header_size, chunk_size, file_offset+next_offset);
+        printf("Decompress size: %d, write mem address: %p, next total size: %d\n\n", decomp_size ,total_decomp, next_size);
+        read_fd.SetCursor(file_offset + header_size);
 
         //uint8_t *comp_buff = new uint8_t[decomp_size];
         //uint8_t *decomp_buff = new uint8_t[decomp_size];
@@ -68,6 +68,7 @@ int main(int argc, const char *argv[]) {
             fprintf(stderr, "chunk read error\n");
             return -1;
         }
+
 
         int ret;
         do {
@@ -102,23 +103,28 @@ int main(int argc, const char *argv[]) {
 
                 int len = fwrite((void *)out_buff, have, 1, out_fd);
                 assert(len == 1);
+
+                decomp_size -= read_len;
                     
                 if(ret == Z_STREAM_END) {
                     break;   
                 }
+                else {
+                    assert(false);
+                }
 
-                decomp_size -= read_len;
+
             } while(strm.avail_out == 0);        
             break;
         } while(decomp_size > 0);
     
         inflateReset2(&strm, -MAX_WBITS);
 
-        if(next == 0xffffffff) {
+        if (next_offset == 0xffffffff) {
             break;
         }
 
-        read_fd.SetCursor(file_offset + next);
+        read_fd.SetCursor(file_offset + next_offset);
 
     }
     inflateEnd(&strm);
