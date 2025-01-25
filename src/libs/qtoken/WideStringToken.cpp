@@ -26,9 +26,10 @@ void WideStringToken::LoadParams(IStream *stream) {
     m_file_offset = stream->GetOffset() - sizeof(uint8_t);
     uint32_t len = stream->ReadUInt32();
 
+    #ifdef ISTREAM_SYMBOL_ENDIAN
     uint8_t mode = stream->GetReadEndianMode();
-
     stream->SetReadEndian(ISTREAM_SYMBOL_ENDIAN);
+    #endif
 
 
     while(len) {
@@ -40,7 +41,9 @@ void WideStringToken::LoadParams(IStream *stream) {
         len -= 2;
     }
 
+#ifdef ISTREAM_SYMBOL_ENDIAN
     stream->SetReadEndian(mode);
+#endif
 }
 void WideStringToken::Write(IStream *stream) {
     m_file_offset = stream->GetOffset();
@@ -50,14 +53,17 @@ void WideStringToken::Write(IStream *stream) {
     len++; //include null byte
     stream->WriteUInt32(len * 2);
 
+#ifdef ISTREAM_SYMBOL_ENDIAN
     uint8_t mode = stream->GetWriteEndianMode();
-
     stream->SetWriteEndian(ISTREAM_SYMBOL_ENDIAN);
+#endif
 
     for(int i=0;i<len;i++) {
         stream->WriteUInt16(m_value[i]);
     }
+#ifdef ISTREAM_SYMBOL_ENDIAN
     stream->SetWriteEndian(mode);
+#endif
 }
 std::string WideStringToken::ToString() {
     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> converter;

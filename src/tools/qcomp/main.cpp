@@ -1064,7 +1064,7 @@ void handle_characters(std::string input, FileStream &fsout) {
 }
 
 int main(int argc, const char* argv[]) {
-    if (argc < 2) {
+    if (argc < 3) {
         fprintf(stderr, "usage: %s (options) [in] [out]\n", argv[0]);
         fprintf(stderr, "options: \n");
         fprintf(stderr, "\t-linenumber - Enable line numbers\n");
@@ -1074,6 +1074,10 @@ int main(int argc, const char* argv[]) {
 
     g_QCompState.use_eol_line_numbers = false;
     g_QCompState.use_new_ifs = true;
+
+    #ifdef QCOMP_USE_OLDIFS
+    g_QCompState.use_new_ifs = false;
+    #endif
 
     int arg_index = 1;
     for (int i = 1; i < argc - 1; i++) {

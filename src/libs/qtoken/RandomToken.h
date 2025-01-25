@@ -2,7 +2,6 @@
 #define _RANDOMTOKEN_H
 #include "QScriptToken.h"
 
-
 class RandomToken : public QScriptToken {
     public:
         RandomToken();
@@ -22,7 +21,11 @@ class RandomToken : public QScriptToken {
         void Rewrite(IStream *stream);
         uint32_t GetEndOffset() { return m_end_offset; }
         uint32_t CalculateTokenOffset(uint32_t index) {
-            uint32_t offset = sizeof(uint8_t) + sizeof(uint32_t) + (sizeof(uint16_t) * m_num_items) + (sizeof(uint32_t) + (sizeof(uint32_t) * index));
+            uint32_t offset = sizeof(uint8_t) + sizeof(uint32_t)
+#ifndef NO_RANDOM_WEIGHTS
+                + (sizeof(uint16_t) * m_num_items) 
+#endif
+                + (sizeof(uint32_t) + (sizeof(uint32_t) * index));
             return offset;
         } 
         static bool is_random_token(EScriptToken type) {

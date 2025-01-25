@@ -35,8 +35,12 @@ void RandomToken::LoadParams(IStream *stream) {
     m_offsets = new RandomOffset[m_num_items];
     
     for(int i=0;i<m_num_items;i++) {
+#ifndef NO_RANDOM_WEIGHTS
         uint16_t weight = stream->ReadUInt16();
         m_offsets[i].weight = weight;
+#else
+        m_offsets[i].weight = 1;
+#endif
     }
     
     std::ostringstream ss;
@@ -52,9 +56,11 @@ void RandomToken::Write(IStream *stream) {
     m_file_offset = stream->GetOffset();
     stream->WriteByte(GetType());
     stream->WriteUInt32(m_num_items);
+#ifndef NO_RANDOM_WEIGHTS
     for(int i=0;i<m_num_items;i++) {
         stream->WriteUInt16(m_offsets[i].weight);
     }
+#endif
 
     for(int i=0;i<m_num_items;i++) {
         stream->WriteUInt32(m_offsets[i].offset);

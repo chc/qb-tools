@@ -17,6 +17,8 @@
 std::vector<QScriptToken *> token_list;
 void dump_token_list(std::vector<QScriptToken *> token_list, FILE *out);
 
+extern bool dump_endofline_numbers;
+
 uint32_t gen_checksum(const char *name) {
     char *cpy = strdup(name);
     for(int i=0;i<strlen(cpy);i++) {
@@ -127,16 +129,31 @@ void perform_injections(IStream &fs) {
 
 int main(int argc, const char *argv[]) {
     if(argc  < 2) {
-        fprintf(stderr, "usage: %s [filepath]\n",argv[0]);
+        fprintf(stderr, "usage: %s (options) [filepath]\n",argv[0]);
+        fprintf(stderr, "options: \n");
+        fprintf(stderr, "\t-dumpeol - Preserve line numbers\n");
         return -1;
     }
 
-    FileStream fs(argv[1]);
+    int arg_index = 1;
+    for (int i = 1; i < argc - 1; i++) {
+        if (strstr(argv[i], "-dumpeol")) {
+            dump_endofline_numbers = true;
+            arg_index = i + 1;
+        }
+    }
+
+    if (arg_index >= argc) {
+        fprintf(stderr, "missing expected file params, run without params to see usage!\n");
+        return -1;
+    }
+
+    FileStream fs(argv[arg_index]);
 
     QStream qs = QStream(&fs);
 
     if(!fs.IsFileOpened()) {
-        fprintf(stderr, "Failed to open file: %s\n", argv[1]);
+        fprintf(stderr, "Failed to open file: %s\n", argv[arg_index]);
         return -1;
     }
 

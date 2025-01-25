@@ -14,6 +14,7 @@ int current_line_number = 0;
 int current_tab_index = 0;
 bool removelaststructtab = true;
 bool removelastarraytab = true;
+bool dump_endofline_numbers = false;
 
 int get_line_number(std::vector<QScriptToken *> lines) {
     std::vector<QScriptToken *>::iterator it = lines.begin();
@@ -73,10 +74,13 @@ int get_posttab_offset(std::vector<QScriptToken *> lines) {
 
 void emit_line(std::vector<QScriptToken *> lines, FILE *out) {
     int line_number = get_line_number(lines);
-    int diff = line_number - current_line_number - 1;
-    while(diff > 0 && diff--) {
-        fprintf(out, "\n");
+    if (dump_endofline_numbers) { //one of the EOL chars is always emitted by the token ToString
+        int diff = line_number - current_line_number - 1;
+        while (diff > 0 && diff--) {
+            fprintf(out, "\n");
+        }
     }
+
 
     int pretab = get_pretab_offset(lines) + current_tab_index;
     if (pretab < 0) {
