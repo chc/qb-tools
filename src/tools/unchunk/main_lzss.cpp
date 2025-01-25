@@ -28,7 +28,7 @@ int main(int argc, const char* argv[]) {
 	fseek(fd, 0, SEEK_SET);
 
 	char* in_buffer = new char[size];
-	int len = fread(in_buffer, 1, size, fd);
+	int len = fread(in_buffer, size, 1, fd);
 	if (len != 1) {
 		fprintf(stderr, "Failed to read input buffer");
 		return -1;
@@ -38,7 +38,7 @@ int main(int argc, const char* argv[]) {
 	char* out = new char[size * 10];
 	len = decompress_lzss((unsigned char *)in_buffer, size, (unsigned char*)out);
 	
-	len = fwrite(out, 1, len, out_fd);
+	len = fwrite(out, len, 1 , out_fd);
 	if (len != 1) {
 		fprintf(stderr, "Failed to write output buffer");
 		return -1;
