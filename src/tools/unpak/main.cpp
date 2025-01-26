@@ -89,7 +89,7 @@ bool unpak_file_info_callback(PakItem item) {
     uint8_t* buf = new uint8_t[item.size];
     unpak_read_file(item, buf);
 
-    const char* path = get_checksum(item.pakname);
+    const char* path = get_checksum(item.fullname);
 
     const char* open_path = path;
 

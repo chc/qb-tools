@@ -37,8 +37,14 @@ void unpak_iterate_files(const char *pak_path, const char *pab_path, FileInfoCal
         item.type = pak_fd.ReadUInt32();
         item.offset = pak_fd.ReadUInt32();
         item.size = pak_fd.ReadUInt32();
+#ifdef PAK_SWAP_FULLNAME
         item.fullname = pak_fd.ReadUInt32();
+        item.pakname = pak_fd.ReadUInt32();        
+#else
         item.pakname = pak_fd.ReadUInt32();
+        item.fullname = pak_fd.ReadUInt32();
+#endif
+
         item.short_name = pak_fd.ReadUInt32();
         item.fileNameKey = pak_fd.ReadUInt32();
         item.flags = pak_fd.ReadUInt32();

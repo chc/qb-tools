@@ -126,8 +126,14 @@ void pak_close(PakContext *ctx) {
         ctx->pak_fd->WriteUInt32(current_item->type);
         ctx->pak_fd->WriteUInt32(current_item->offset);
         ctx->pak_fd->WriteUInt32(current_item->size);
+#ifdef PAK_SWAP_FULLNAME
         ctx->pak_fd->WriteUInt32(current_item->fullname);
         ctx->pak_fd->WriteUInt32(current_item->pakname);
+#else
+        ctx->pak_fd->WriteUInt32(current_item->pakname);
+        ctx->pak_fd->WriteUInt32(current_item->fullname);
+#endif
+
         ctx->pak_fd->WriteUInt32(current_item->short_name);
         ctx->pak_fd->WriteUInt32(current_item->fileNameKey);
         #ifdef PAK_INCLUDE_FILENAME
