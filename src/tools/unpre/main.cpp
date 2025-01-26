@@ -58,7 +58,7 @@ void print_pre_item(PreItem* item) {
         fprintf(stderr, "Failed to open for writing: %s\n", item->filename);
     }
 
-    delete(buff);
+    free((void*)buff);
 
 }
 

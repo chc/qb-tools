@@ -158,7 +158,7 @@ void handle_read_dollar_token(char ch, FileStream &fs_out);
 void handle_dollar_char_str(std::string &accum);
 bool handle_dollar_char_accum(char ch, std::string &accum);
 void append_to_random_or_delete(QScriptToken* token);
-int calculate_token_num_items();
+int calculate_random_token_num_items();
 
 uint32_t gen_checksum(std::string str, bool with_conversion) {
     if(with_conversion && str.length() > 2 && str.length() <= 10 && str.compare(0,2,"0x") == 0) {
@@ -445,13 +445,13 @@ void emit_token(int type, FileStream &fs_out) {
         break;
         case ESCRIPTTOKEN_KEYWORD_RANDOM_PERMUTE:
             if (token == nullptr)
-                token = new RandomPermuteToken(calculate_token_num_items());
+                token = new RandomPermuteToken(calculate_random_token_num_items());
         case ESCRIPTTOKEN_KEYWORD_RANDOM_NO_REPEAT:
             if (token == nullptr)
-                token = new RandomNoRepeatToken(calculate_token_num_items());
+                token = new RandomNoRepeatToken(calculate_random_token_num_items());
         case ESCRIPTTOKEN_KEYWORD_RANDOM:
             if(token == nullptr)
-                token = new RandomToken(calculate_token_num_items());
+                token = new RandomToken(calculate_random_token_num_items());
             
             
             g_QCompState.current_random = new RandomData(g_QCompState.current_random, reinterpret_cast<RandomToken*>(token));
@@ -1340,11 +1340,11 @@ bool handle_dollar_char_accum(char ch, std::string &accum) {
 }
 
 void handle_dollar_char_str(std::string &accum) {
-    if(accum.substr(0, 4).compare("req_") == 0) {
+#ifdef WITH_SYMBOL_SUPPORT
+    if (accum.substr(0, 4).compare("req_") == 0) {
         g_QCompState.argpack_isreqparam = true;
         accum = accum.substr(4);
     }
-#ifdef WITH_SYMBOL_SUPPORT
     if(accum.compare("int") == 0) {
         g_QCompState.argpack_type = ESYMBOLTYPE_INTEGER;
     } else if(accum.compare("float") == 0) {
@@ -1408,7 +1408,7 @@ void handle_read_dollar_token(char ch, FileStream &fs_out) {
         }
     }
 }
-int calculate_token_num_items() {
+int calculate_random_token_num_items() {
     long pos = ftell(mp_input_fd);
 
     int num_items = 0;
