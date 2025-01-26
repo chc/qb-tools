@@ -58,19 +58,22 @@ function crc32(crc, buf) {
 }
 
 function write_checksum(fd, input_str) {
-  var str_lower = input_str.toLowerCase();
-  const str_buff = Buffer.from(str_lower, 'ascii');
-  var checksum = crc32(-1, str_buff);
+    var str_lower = input_str.toLowerCase();
+    const lower_str_buff = Buffer.from(str_lower, 'ascii');
+    var checksum = crc32(-1, lower_str_buff); //checksum must be of lower case string
 
-  var strlen = input_str.length;
 
-  var buff = Buffer.alloc(8);  
-  buff.writeInt32LE(checksum, 0); //checksum  
-  buff.writeUint32LE(strlen, 4);
+    //store uppercase version
+    const str_buff = Buffer.from(input_str, 'ascii');
+    var strlen = input_str.length;
 
-  var writeBuff = Buffer.concat([buff, str_buff]);
+    var buff = Buffer.alloc(8);  
+    buff.writeInt32LE(checksum, 0); //checksum  
+    buff.writeUint32LE(strlen, 4);
 
-  fd.write(writeBuff, 0, 8+strlen);  
+    var writeBuff = Buffer.concat([buff, str_buff]);
+
+    fd.write(writeBuff, 0, 8+strlen);  
 }
 
 var fd = await open("D:\\qbtests\\dbginfo.bin", "w");
