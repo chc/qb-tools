@@ -145,7 +145,12 @@ void pak_close(PakContext *ctx) {
 
         current_item = current_item->next;
     }
-    ctx->pak_fd->WriteAlign(128);
+
+    size_t new_diff = (ctx->pak_fd->GetOffset() + 0x7FF) & ~0x7FF;
+    new_diff -= ctx->pak_fd->GetOffset();
+    while (new_diff--) {
+		ctx->pak_fd->WriteByte(0xCD);
+    }
     
     //write pak data & store offset
     current_item = ctx->first_pak_item;
@@ -169,13 +174,11 @@ void pak_close(PakContext *ctx) {
             }
         }
 
-        size_t new_offset = ctx->pab_fd->GetOffset();
-        new_offset += 0x32;
-        while(new_offset % 0x10) {
-            new_offset++;
+        new_diff = (ctx->pab_fd->GetOffset() + 31) & ~31;
+        new_diff -= ctx->pab_fd->GetOffset();
+        while (new_diff--) {
+            ctx->pab_fd->WriteByte(0xCD);
         }
-        ctx->pab_fd->SetCursor(new_offset-sizeof(uint8_t));
-        ctx->pab_fd->WriteByte(0);
         
         current_item = current_item->next;
     }
@@ -201,13 +204,10 @@ void pak_close(PakContext *ctx) {
         current_item = current_item->next;
     }
 
-    ctx->pak_fd->SetCursor(pak_cursor);
-    size_t new_offset = ctx->pab_fd->GetOffset();
-    new_offset += 128;
-    while(new_offset % 0x10) {
-        new_offset++;
+    new_diff = (ctx->pab_fd->GetOffset() + 0xFFF) & ~0xFFF;
+    new_diff -= ctx->pab_fd->GetOffset();
+    while (new_diff--) {
+        ctx->pab_fd->WriteByte(0xAB);
     }
-    ctx->pab_fd->SetCursor(new_offset-sizeof(uint8_t));
-    ctx->pab_fd->WriteByte(0);
 
 }
