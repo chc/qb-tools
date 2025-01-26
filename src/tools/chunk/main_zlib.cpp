@@ -64,7 +64,7 @@ int main(int argc, const char* argv[]) {
     strm.avail_in = 0;
     strm.next_in = Z_NULL;
 
-    int ret = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+    int ret = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, MAX_MEM_LEVEL, Z_HUFFMAN_ONLY);
     if (ret != Z_OK) {
         fprintf(stderr, "Failed to init zlib: %d\n", ret);
         return ret;
@@ -83,13 +83,12 @@ int main(int argc, const char* argv[]) {
     //pad end of file
     size_t end_address = out_fd.GetOffset();
 
-    end_address = end_address & ~(0xFFF);
-    end_address |= 0x800;
-    if (out_fd.GetOffset() > end_address) {
-        end_address += 0x1000;
+    size_t new_diff = (end_address + 0xFFF) & ~0xFFF;
+    new_diff -= end_address;
+    while (new_diff--) {
+        out_fd.WriteByte(0x00);
     }
-    out_fd.SetCursor(end_address-1);
-    out_fd.WriteByte(0);
+
 
 
     //update header entries
@@ -124,6 +123,7 @@ int main(int argc, const char* argv[]) {
         last_address = chunk.header_address;
 
     }
+
 
     delete[] in_buff;
     delete[] out_buff;
@@ -168,13 +168,14 @@ void append_chunk(z_stream *strm, FileStream& out_fd) {
 
     size_t end_address = out_fd.GetOffset();
 
-    end_address = end_address & ~(0xFFF);
-    end_address |= 0x800;
-    if (out_fd.GetOffset() > end_address) {
-        end_address += 0x1000;
+
+    size_t new_diff = (end_address + 0x7FF) & ~0x7FF;
+    new_diff -= end_address;
+    while (new_diff--) {
+        out_fd.WriteByte(0x00);
     }
 
-    out_fd.SetCursor(end_address);
+
 
     chunk.buffer_size = buffer_size;
 	chunk.absolute_end = end_address;

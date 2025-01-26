@@ -60,6 +60,8 @@ int main(int argc, const char *argv[]) {
         printf("Decompress size: %d, write mem address: %p, next total size: %d\n", decomp_size ,total_decomp, next_size);
         read_fd.SetCursor(file_offset + header_size);
 
+        assert(((file_offset + 0x7FF) & ~0x7FF) == file_offset);
+
         //uint8_t *comp_buff = new uint8_t[decomp_size];
         //uint8_t *decomp_buff = new uint8_t[decomp_size];
         //printf("avail in:%d\n", strm.avail_in);
@@ -138,5 +140,12 @@ int main(int argc, const char *argv[]) {
     delete[] out_buff;
 
     fclose(out_fd);
+
+
+    //verify ending alignment
+    FILE* fd = read_fd.GetHandle();
+    fseek(fd, 0, SEEK_END);
+	size_t size = ftell(fd);
+    assert(((size + 0xFFF) & ~0xFFF) == size);
 
 }
