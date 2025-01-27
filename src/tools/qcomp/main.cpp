@@ -135,6 +135,7 @@ typedef struct {
     RandomData* current_random;
     bool next_is_random_start_token;
     bool skip_next_random_jump;
+    bool got_empty_random;
     int random_depth;
     int mark_end_of_random;
     bool random_read_weight;
@@ -555,6 +556,14 @@ void emit_token(int type, FileStream &fs_out) {
             else {
                 g_QCompState.current_random->jumps.push(reinterpret_cast<JumpToken*>(token));
             }
+
+            if (g_QCompState.got_empty_random) {
+                g_QCompState.got_empty_random = false;
+                assert(g_QCompState.next_is_random_start_token);
+                assert(!g_QCompState.mark_end_of_random);
+                append_to_random_or_delete(token);
+                g_QCompState.next_is_random_start_token = true; //set this back, because it was an empty token ie: Random(@ @ @"hello") (2 emptys and a string)
+            }
             
             no_free = true;
         break;
@@ -847,8 +856,12 @@ void handle_read_name(char ch, FileStream &fs_out) {
             return;
         break;
         case '@':
-            assert(g_QCompState.next_is_random_start_token == false);
-            g_QCompState.next_is_random_start_token = true;
+            if (g_QCompState.next_is_random_start_token) {
+                g_QCompState.got_empty_random = true;
+            } else {
+                g_QCompState.next_is_random_start_token = true;
+            }
+            
             skip_token = true;
             if (!g_QCompState.skip_next_random_jump) {
                 g_QCompState.emit_type = ESCRIPTTOKEN_JUMP;
@@ -1127,6 +1140,7 @@ int main(int argc, const char* argv[]) {
     g_QCompState.random_depth = 0;
     g_QCompState.random_read_weight = false;
     g_QCompState.random_next_weight = 1;
+    g_QCompState.got_empty_random = false;
 
     while(true) {
         int ch = fgetc(mp_input_fd);
