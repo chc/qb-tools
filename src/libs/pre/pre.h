@@ -5,12 +5,16 @@
 
 class FileStream;
 
+#if PRE_VERSION == 2
+#define PRE_VERSION 0xABCD0002
+#elif PRE_VERSION == 3
 #define PRE_VERSION 0xABCD0003 //version 3 is used in THUG/THUG2
+#endif
 
 typedef struct _PreItem {
     uint32_t original_size;
     uint32_t compressed_size;
-    uint32_t data_checksum;
+    uint32_t filename_checksum;
     char filename[0xA0];
 
     uint32_t data_offset;

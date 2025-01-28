@@ -135,8 +135,10 @@ void pre_close(PreContext *ctx) {
         pad_len -= namelen;
         
 
+        #if PRE_VERSION == 3
         uint32_t checksum = gen_checksum(current_item->file_path);
-        ctx->pre_fd->WriteUInt32(checksum); //checksum
+        ctx->pre_fd->WriteUInt32(checksum); //checksum            
+        #endif
 
         ctx->pre_fd->WriteBuffer((uint8_t *)current_item->file_path, namelen);
 

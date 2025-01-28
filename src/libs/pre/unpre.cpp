@@ -26,7 +26,9 @@ void unpre_iterate_files(const char *path, FileInfoCallback callback) {
         item.original_size = pre_fd.ReadUInt32();
         item.compressed_size = pre_fd.ReadUInt32();
         uint32_t filename_len = pre_fd.ReadUInt32();
-        item.data_checksum = pre_fd.ReadUInt32();
+        #if PRE_VERSION == 3
+            item.filename_checksum = pre_fd.ReadUInt32();
+        #endif
         
         //read file name
         assert(filename_len < sizeof(item.filename));
