@@ -66,7 +66,7 @@ void unpak_iterate_files(const char *pak_path, const char *pab_path, FileInfoCal
         if (item.type == 749989691 || item.type == -1255909793 || item.type == 0) {
             break;
         }
-        if(!callback(item)) {
+        if(!callback(&item)) {
             break;
         }
         pak_fd.SetCursor(last_offset);
@@ -75,20 +75,18 @@ void unpak_iterate_files(const char *pak_path, const char *pab_path, FileInfoCal
     if(created) {
         fclose(pab_fd);
     }
-
-
 }
-void unpak_read_file(PakItem item, uint8_t *output_buffer) {
-    size_t offset = item.offset + item.file_offset - item.pak_file_len;
+void unpak_read_file(PakItem *item, uint8_t *output_buffer) {
+    size_t offset = item->offset + item->file_offset - item->pak_file_len;
     #ifdef PAB_ABSOLUTE_OFFSET
-    if(item.using_pab_file) {
-        offset = item.offset;
+    if(item->using_pab_file) {
+        offset = item->offset;
     }
     #endif
     
-    int res = fseek((FILE *)item.pab_fd, offset, SEEK_SET);
+    int res = fseek((FILE *)item->pab_fd, offset, SEEK_SET);
     assert(res == 0);
 
-    int len = fread(output_buffer, item.size, 1, (FILE *)item.pab_fd);
+    int len = fread(output_buffer, item->size, 1, (FILE *)item->pab_fd);
     assert(len == 1);
 }

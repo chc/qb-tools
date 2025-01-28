@@ -46,11 +46,11 @@ void handle_dbgfile(uint8_t *data, uint32_t len) {
     }
 }
 
-bool unpak_file_info_callback(PakItem item) {
-    uint8_t* buf = new uint8_t[item.size];
+bool unpak_file_info_callback(PakItem *item) {
+    uint8_t* buf = new uint8_t[item->size];
     unpak_read_file(item, buf);
 
-    handle_dbgfile(buf, item.size);
+    handle_dbgfile(buf, item->size);
 
     delete[] buf;
     return true;

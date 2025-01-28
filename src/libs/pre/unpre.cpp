@@ -38,7 +38,7 @@ void unpre_iterate_files(const char *path, FileInfoCallback callback) {
 
         item.data_offset = pre_fd.GetOffset();
 
-        callback(item);
+        callback(&item);
 
         int skip_size;
 

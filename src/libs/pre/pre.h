@@ -25,7 +25,7 @@ typedef struct _PreItem {
     _PreItem *next;
 } PreItem;
 
-typedef bool (*FileInfoCallback)(PreItem item);
+typedef bool (*FileInfoCallback)(PreItem *item);
 
 void unpre_iterate_files(const char *path, FileInfoCallback callback);
 void unpre_read_file(PreItem *item, uint8_t *output_buffer);

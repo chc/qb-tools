@@ -15,14 +15,14 @@
 const char* dbginfo_path = NULL;
 
 
-bool unpre_file_info_callback(PreItem item) {
-    if(strstr(item.filename,".qb") == NULL) {
+bool unpre_file_info_callback(PreItem *item) {
+    if(strstr(item->filename,".qb") == NULL) {
         return true;
     }
-    uint8_t *buff = (uint8_t*)malloc(item.original_size);
-    unpre_read_file(&item, buff);
+    uint8_t *buff = (uint8_t*)malloc(item->original_size);
+    unpre_read_file(item, buff);
 
-    MemoryStream ms(buff, item.original_size);
+    MemoryStream ms(buff, item->original_size);
 
     QStream qs = QStream(&ms);
 

@@ -30,7 +30,7 @@ else {\
 } 
 
 
-void print_pak_item(PakItem* item) {
+void print_pak_item(PakItem *item) {
 
 
     const char* c = NULL;
@@ -83,13 +83,13 @@ void create_dir(char *path) {
 }
 
 
-bool unpak_file_info_callback(PakItem item) {
-    print_pak_item(&item);
+bool unpak_file_info_callback(PakItem *item) {
+    print_pak_item(item);
 
-    uint8_t* buf = new uint8_t[item.size];
+    uint8_t* buf = new uint8_t[item->size];
     unpak_read_file(item, buf);
 
-    const char* path = get_checksum(item.fullname);
+    const char* path = get_checksum(item->fullname);
 
     const char* open_path = path;
 
@@ -100,8 +100,8 @@ bool unpak_file_info_callback(PakItem item) {
     }
 
     char *name;
-    if (item.flags & PAK_FLAGS_HAS_FILENAME) {
-        open_path = item.filename;
+    if (item->flags & PAK_FLAGS_HAS_FILENAME) {
+        open_path = item->filename;
         name = strdup(open_path);
         create_dir(name);
     }
@@ -113,12 +113,12 @@ bool unpak_file_info_callback(PakItem item) {
         }
         else {
             char tmp[32];
-            const char* ext = get_checksum(item.type);
+            const char* ext = get_checksum(item->type);
             if (ext == NULL) {
-                snprintf(tmp, sizeof(tmp), "%08x.bin", item.pakname);
+                snprintf(tmp, sizeof(tmp), "%08x.bin", item->pakname);
             }
             else {
-                snprintf(tmp, sizeof(tmp), "%08x%s",item.pakname, ext);
+                snprintf(tmp, sizeof(tmp), "%08x%s",item->pakname, ext);
             }            
             name = strdup(tmp);
         }
@@ -126,7 +126,7 @@ bool unpak_file_info_callback(PakItem item) {
 
     FILE* out = fopen(name, "wb");
     if (out) {
-        fwrite(buf, item.size, 1, out);
+        fwrite(buf, item->size, 1, out);
         fclose(out);
     } else {
         fprintf(stderr, "Failed to open for writing: %s\n", name);

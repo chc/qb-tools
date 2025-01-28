@@ -63,8 +63,8 @@ void print_pre_item(PreItem* item) {
 }
 
 
-bool unpre_file_info_callback(PreItem item) {
-    print_pre_item(&item);
+bool unpre_file_info_callback(PreItem *item) {
+    print_pre_item(item);
     return true;
 }
 

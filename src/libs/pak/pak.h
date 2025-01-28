@@ -26,13 +26,13 @@ typedef struct _PakItem {
 } PakItem;
 
 
-typedef bool (*FileInfoCallback)(PakItem item);
+typedef bool (*FileInfoCallback)(PakItem *item);
 
 /*
     This function will iterate all items in a pak, calling the callback. Pass null pab_path if there is no pab.
 */
 void unpak_iterate_files(const char *pak_path, const char *pab_path, FileInfoCallback callback);
-void unpak_read_file(PakItem item, uint8_t *output_buffer);
+void unpak_read_file(PakItem *item, uint8_t *output_buffer);
 
 
 typedef struct {
