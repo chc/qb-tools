@@ -4,11 +4,21 @@
 
 class ColonToken : public QScriptToken {
     public:
-        ColonToken();
-        ~ColonToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        ColonToken() {
+
+        }
+        ~ColonToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_COLON;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return ":";
+        }
     private:
 };
 #endif //_COLONTOKEN_H

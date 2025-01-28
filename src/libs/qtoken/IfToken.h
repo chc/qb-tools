@@ -4,11 +4,21 @@
 
 class IfToken : public QScriptToken {
     public:
-        IfToken();
-        ~IfToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        IfToken() {
+
+        }
+        ~IfToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_KEYWORD_IF;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return "if ";
+        }
         int GetPostTabOffset() { return 1; }
     private:
 };

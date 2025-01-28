@@ -4,12 +4,25 @@
 
 class RandomFloatToken : public QScriptToken {
     public:
-        RandomFloatToken();
-        ~RandomFloatToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        void Write(IStream *stream);
-        std::string ToString();
+        RandomFloatToken() {
+
+        }
+        ~RandomFloatToken() {
+            
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        void Write(IStream *stream) {
+            m_file_offset = stream->GetOffset();
+            stream->WriteByte(ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT);
+        }
+        std::string ToString() {
+            return "RandomFloat ";
+        }
     private:
 };
 #endif //_RANDOMFLOATTOKEN_H

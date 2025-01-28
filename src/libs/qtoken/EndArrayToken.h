@@ -4,11 +4,21 @@
 
 class EndArrayToken : public QScriptToken {
     public:
-        EndArrayToken();
-        ~EndArrayToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        EndArrayToken() {
+
+        }
+        ~EndArrayToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_ENDARRAY;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return AppendSpaceToString ? "] " : "]";
+        }
     private:
 };
 #endif //_ENDARRAYTOKEN_H

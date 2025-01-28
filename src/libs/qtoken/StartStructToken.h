@@ -4,11 +4,21 @@
 
 class StartStructToken : public QScriptToken {
     public:
-        StartStructToken();
-        ~StartStructToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        StartStructToken() {
+
+        }
+        ~StartStructToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_STARTSTRUCT;
+        }
+        void LoadParams(IStream *stream) {
+            m_file_offset = stream->GetOffset() - sizeof(uint8_t);
+        }
+        std::string ToString() {
+            return "{";
+        }
     private:
 };
 #endif //_STARTSTRUCTTOKEN_H

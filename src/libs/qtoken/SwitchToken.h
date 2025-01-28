@@ -4,11 +4,21 @@
 
 class SwitchToken : public QScriptToken {
     public:
-        SwitchToken();
-        ~SwitchToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        SwitchToken() {
+
+        }
+        ~SwitchToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_KEYWORD_SWITCH;
+        }
+        void LoadParams(IStream *stream) {
+            m_file_offset = stream->GetOffset() - sizeof(uint8_t);
+        }
+        std::string ToString() {
+            return AppendSpaceToString ? "switch " : "switch";
+        }
         int GetPostTabOffset() { return 2; }
     private:
 };

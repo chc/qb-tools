@@ -4,11 +4,21 @@
 
 class OrToken : public QScriptToken {
     public:
-        OrToken();
-        ~OrToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        OrToken() {
+
+        }
+        ~OrToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_OR;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return AppendSpaceToString ? "OR " : "OR";
+        }
     private:
 };
 #endif //_ORTOKEN_H

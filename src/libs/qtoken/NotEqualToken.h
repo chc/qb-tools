@@ -4,11 +4,21 @@
 
 class NotEqualToken : public QScriptToken {
     public:
-        NotEqualToken();
-        ~NotEqualToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        NotEqualToken() {
+
+        }
+        ~NotEqualToken() {
+            
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_NOTEQUAL;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return AppendSpaceToString ? "!= " : "!=";
+        }
     private:
 };
 #endif //_NOTTOKEN_H

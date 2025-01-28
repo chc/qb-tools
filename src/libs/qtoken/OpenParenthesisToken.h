@@ -4,11 +4,21 @@
 
 class OpenParenthesisToken : public QScriptToken {
     public:
-        OpenParenthesisToken();
-        ~OpenParenthesisToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        OpenParenthesisToken() {
+
+        }
+        ~OpenParenthesisToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_OPENPARENTH;
+        }
+        void LoadParams(IStream *stream) {
+            
+        }
+        std::string ToString() {
+            return "(";
+        }
     private:
 };
 #endif //_OPENPARENTHESISTOKEN_H

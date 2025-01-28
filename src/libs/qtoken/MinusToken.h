@@ -4,11 +4,21 @@
 
 class MinusToken : public QScriptToken {
     public:
-        MinusToken();
-        ~MinusToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        MinusToken() {
+
+        }
+        ~MinusToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_MINUS;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return AppendSpaceToString ? "- " : "-";
+        }
     private:
 };
 #endif //_MINUSTOKEN_H

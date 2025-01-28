@@ -4,11 +4,21 @@
 
 class MultiplyToken : public QScriptToken {
     public:
-        MultiplyToken();
-        ~MultiplyToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        MultiplyToken() {
+
+        }
+        ~MultiplyToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_MULTIPLY;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return AppendSpaceToString ? "* " : "*";
+        }
     private:
 };
 #endif //_MULTIPLYTOKEN_H

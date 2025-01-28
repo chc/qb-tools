@@ -4,11 +4,21 @@
 
 class CloseParenthesisToken : public QScriptToken {
     public:
-        CloseParenthesisToken();
-        ~CloseParenthesisToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        CloseParenthesisToken() {
+
+        }
+        ~CloseParenthesisToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_CLOSEPARENTH;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return AppendSpaceToString ? ") " : ")";
+        }
     private:
 };
 #endif //_CLOSEPARENTHESISTOKEN_H

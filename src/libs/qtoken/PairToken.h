@@ -4,13 +4,35 @@
 
 class PairToken : public QScriptToken {
     public:
-        PairToken();
-        PairToken(float x, float y);
-        ~PairToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        void Write(IStream *stream);
-        std::string ToString();
+        PairToken() : PairToken(0, 0) {
+
+        }
+
+        PairToken(float x, float y) : m_x(x), m_y(y) {
+
+        }
+
+        ~PairToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_PAIR;
+        }
+        void LoadParams(IStream *stream) {
+            m_x = stream->ReadFloat();
+            m_y = stream->ReadFloat();
+        }
+        void Write(IStream *stream)  {
+            m_file_offset = stream->GetOffset();
+            stream->WriteByte(ESCRIPTTOKEN_PAIR);
+            stream->WriteFloat(m_x);
+            stream->WriteFloat(m_y);
+        }
+        std::string ToString()  {
+            std::ostringstream ss;
+            ss << "Pair(" << m_x << "," << m_y << ")" << (AppendSpaceToString ? " " : "");
+            return ss.str();
+        }
         float GetX() { return m_x; }
         float GetY() { return m_y; }
     private:

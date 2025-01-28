@@ -4,11 +4,21 @@
 
 class GreaterThanToken : public QScriptToken {
     public:
-        GreaterThanToken();
-        ~GreaterThanToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        GreaterThanToken() {
+
+        }
+        ~GreaterThanToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_GREATERTHAN;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return AppendSpaceToString ? "> " : ">";   
+        }
     private:
 };
 #endif //_GREATEARTHANTOKEN_H

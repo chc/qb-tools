@@ -4,11 +4,21 @@
 
 class EndStructToken : public QScriptToken {
     public:
-        EndStructToken();
-        ~EndStructToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        EndStructToken() {
+
+        }
+        ~EndStructToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_ENDSTRUCT;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return AppendSpaceToString ? "} " : "}";
+        }
     private:
 };
 #endif //_ENDSTRUCTTOKEN_H

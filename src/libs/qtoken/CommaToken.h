@@ -4,11 +4,21 @@
 
 class CommaToken : public QScriptToken {
     public:
-        CommaToken();
-        ~CommaToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        CommaToken() {
+
+        }
+        ~CommaToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_COMMA;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return AppendSpaceToString ? ", " : ",";
+        }
     private:
 };
 #endif //_COMMATOKEN_H

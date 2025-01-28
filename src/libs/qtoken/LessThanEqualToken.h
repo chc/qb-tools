@@ -4,11 +4,21 @@
 
 class LessThanEqualToken : public QScriptToken {
     public:
-        LessThanEqualToken();
-        ~LessThanEqualToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        LessThanEqualToken() {
+
+        }
+        ~LessThanEqualToken() {
+            
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_LESSTHANEQUAL;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return AppendSpaceToString ? "<= " : "<=";
+        }
     private:
 };
 #endif //_LESSTHANEQUALTOKEN_H

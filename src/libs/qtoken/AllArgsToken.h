@@ -4,11 +4,21 @@
 
 class AllArgsToken : public QScriptToken {
     public:
-        AllArgsToken();
-        ~AllArgsToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        AllArgsToken() {
+
+        }
+        ~AllArgsToken() {
+            
+        }
+        EScriptToken GetType(){
+            return ESCRIPTTOKEN_KEYWORD_ALLARGS;
+        }
+        void LoadParams(IStream *stream) {
+                m_file_offset = stream->GetOffset() - sizeof(uint8_t);
+        }
+        std::string ToString() {
+                return AppendSpaceToString ? "<...> " : "<...>";
+        }
     private:
 };
 #endif //_ALLARGSTOKEN_H

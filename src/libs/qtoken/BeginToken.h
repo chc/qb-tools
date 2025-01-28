@@ -4,11 +4,21 @@
 
 class BeginToken : public QScriptToken {
     public:
-        BeginToken();
-        ~BeginToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        BeginToken() {
+
+        }
+        ~BeginToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_KEYWORD_BEGIN;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return "begin";
+        }
         int GetPostTabOffset() { return 1; }
     private:
 };

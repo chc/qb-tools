@@ -4,11 +4,21 @@
 
 class DivideToken : public QScriptToken {
     public:
-        DivideToken();
-        ~DivideToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        DivideToken() {
+
+        }
+        ~DivideToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_DIVIDE;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return AppendSpaceToString ? "/ " : "/";
+        }
     private:
 };
 #endif //_DIVIDETOKEN_H

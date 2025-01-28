@@ -4,11 +4,21 @@
 
 class ScriptToken : public QScriptToken {
     public:
-        ScriptToken();
-        ~ScriptToken();
-        EScriptToken GetType();
-        void LoadParams(IStream *stream);
-        std::string ToString();
+        ScriptToken() {
+
+        }
+        ~ScriptToken() {
+
+        }
+        EScriptToken GetType() {
+            return ESCRIPTTOKEN_KEYWORD_SCRIPT;
+        }
+        void LoadParams(IStream *stream) {
+
+        }
+        std::string ToString() {
+            return "script ";
+        }
         int GetPostTabOffset() { return 1; }
     private:
 };
