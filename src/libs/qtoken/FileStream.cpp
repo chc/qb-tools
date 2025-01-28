@@ -1,6 +1,7 @@
 #include "FileStream.h"
 #include <stdint.h>
 #include <cassert>
+#include <stdlib.h>
 #include <string.h>
 
 //this is only designed to run on little endian cpus - so swap is to/from big endian
