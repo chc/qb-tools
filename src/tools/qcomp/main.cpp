@@ -81,6 +81,7 @@
 
 #if QTOKEN_SUPPORT_LEVEL > 2
     #define ENABLE_INLINEPACKSTRUCT
+    #define ENABLE_ARGPACK
     #include <InlinePackStructToken.h>
     #include <ArgumentPackToken.h>
 #endif
@@ -130,7 +131,9 @@ enum EReadMode {
 #ifdef ENABLE_SQS_TOKENS
     EReadMode_ReadSQSToken,
 #endif
+#ifdef ENABLE_ARGPACK
     EReadMode_ReadDollarToken,
+#endif
 };
 
 //these state variables are used interchangably depending on the read mode, so the names are a bit generic due to this
@@ -147,14 +150,18 @@ typedef struct {
     int current_line_number;
 
     std::stack<QScriptToken*> if_token_list; //used for offset writing after
+#ifdef ENABLE_INLINEPACKSTRUCT
     bool do_inlinestruct_token;
+#endif
     bool got_negate;
 
+#ifdef ENABLE_ARGPACK
     bool do_arg_pack;
 #ifdef WITH_SYMBOL_SUPPORT
         ESymbolType argpack_type;
 #endif
     bool argpack_isreqparam;
+#endif
 
 #ifdef ENABLE_WIDESTRING
     bool do_widestring;
@@ -187,7 +194,7 @@ void update_switch_offsets(FileStream& fs_out);
 void update_random_offsets(FileStream& fs_out);
 void emit_token(int type, FileStream &fs_out);
 void emit_pair_or_vec(std::string token, FileStream &fs_out);
-#if ENABLE_SQS_TOKENS
+#ifdef ENABLE_SQS_TOKENS
 void emit_sqs_token(std::string token, FileStream &fs_out);
 #endif
 
@@ -251,6 +258,7 @@ void emit_name(std::string name, FileStream &fs_out) {
     assert(!name.empty());
     uint32_t checksum = gen_checksum(name, false);
 
+#ifdef ENABLE_ARGPACK
     if(g_QCompState.do_arg_pack) {
         #ifdef WITH_SYMBOL_SUPPORT
         g_QCompState.do_arg_pack = false;
@@ -263,7 +271,7 @@ void emit_name(std::string name, FileStream &fs_out) {
         assert(false);
         #endif
     }
-
+#endif
 
     NameToken *nt = new NameToken(checksum);
     nt->Write(&fs_out);
@@ -312,14 +320,17 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
         std::string accum;
         bool got_less = false;
         int dot_count = 0;
+#ifdef ENABLE_ARGPACK
         bool got_dollar = false;
         std::string dollar_accum;
+#endif
 
         //ideally this logic gets cleaned up, would be best to eliminate it and have it exist solely within one of the existing functions
         while(it != current_token.end()) {
             char ch = *it;
             uint8_t token = 0;
 
+#ifdef ENABLE_ARGPACK
             if(got_dollar) {
                 if(!handle_dollar_char_accum(ch, dollar_accum)) {
                     if(!dollar_accum.empty()) {
@@ -333,6 +344,7 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
                 it++;
                 continue;
             }
+#endif
             switch(ch) {
                 case '.':
                     if(!got_less) {
@@ -356,9 +368,11 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
                         assert(false);
                     }
                 break;
+#ifdef ENABLE_ARGPACK
                 case '$':
                     got_dollar = true;                   
                 break;                
+#endif
                 default:
                     accum += ch;
                 break;
@@ -435,7 +449,7 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_KEYWORD_ENDSWITCH:
             token = new EndSwitchToken;
         break;
-#if ENABLE_SHORTJUMP
+#ifdef ENABLE_SHORTJUMP
         case ESCRIPTTOKEN_SHORTJUMP:
             assert(false);
         break;
@@ -449,14 +463,14 @@ void emit_token(int type, FileStream &fs_out) {
         #endif
         break;
 #endif
+#ifndef ENABLE_NEWIFS
         case ESCRIPTTOKEN_KEYWORD_IF:
             token = new IfToken;
         break;
         case ESCRIPTTOKEN_KEYWORD_ELSE:
             token = new ElseToken;
-            g_QCompState.if_token_list.push(token);
-            no_free = true;
         break;
+#endif
         case ESCRIPTTOKEN_KEYWORD_ENDIF:
             token = new EndIfToken;
             g_QCompState.if_token_list.push(token);
@@ -611,7 +625,7 @@ void emit_token(int type, FileStream &fs_out) {
         default:
             assert(false);
    }
-
+#ifdef ENABLE_ARGPACK
    if(type == ESCRIPTTOKEN_ARG) {
         if(g_QCompState.do_arg_pack) {
 #ifdef WITH_SYMBOL_SUPPORT
@@ -625,7 +639,9 @@ void emit_token(int type, FileStream &fs_out) {
 #endif
         }
    }
+#endif
 
+#ifdef ENABLE_INLINEPACKSTRUCT
    if(g_QCompState.do_inlinestruct_token) {
     #ifdef WITH_SYMBOL_SUPPORT
         g_QCompState.do_inlinestruct_token = false;
@@ -635,6 +651,7 @@ void emit_token(int type, FileStream &fs_out) {
         assert(false);
     #endif
    }
+#endif
 
 #ifdef ENABLE_SHORTJUMP
    bool insert_shortjump_before = false;
@@ -717,7 +734,7 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
     } else if (token.compare("endscript") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_ENDSCRIPT, fs_out);        
     } else if(token.compare("if") == 0) {
-        #if ENABLE_NEWIFS
+        #ifdef ENABLE_NEWIFS
             emit_token(ESCRIPTTOKEN_KEYWORD_FASTIF, fs_out);
         #else
             emit_token(ESCRIPTTOKEN_KEYWORD_IF, fs_out);
@@ -725,7 +742,7 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
     } else if(token.compare("elseif") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_ELSEIF, fs_out);
     } else if(token.compare("else") == 0) {
-        #if ENABLE_NEWIFS
+        #ifdef ENABLE_NEWIFS
             emit_token(ESCRIPTTOKEN_KEYWORD_FASTELSE, fs_out);
         #else
             emit_token(ESCRIPTTOKEN_KEYWORD_ELSE, fs_out);
@@ -841,6 +858,7 @@ void handle_read_name(char ch, FileStream &fs_out) {
             g_QCompState.read_index = 0;
             return;
         break;
+#ifdef ENABLE_ARGPACK
         case '$':
             skip_token = true;
             g_QCompState.read_mode = EReadMode_ReadDollarToken;
@@ -849,6 +867,7 @@ void handle_read_name(char ch, FileStream &fs_out) {
             g_QCompState.temp_token.clear();
             return;
         break;
+#endif
         case '&':
             g_QCompState.emit_type = ESCRIPTTOKEN_ARG;
         break;
@@ -973,7 +992,7 @@ void handle_read_name(char ch, FileStream &fs_out) {
     }
     
 }
-#if ENABLE_SQS_TOKENS
+#ifdef ENABLE_SQS_TOKENS
 void emit_sqs_token(std::string token, FileStream &fs_out) {
     std::string t = token.substr(4);
     size_t end = t.find_first_of(')');
@@ -1065,6 +1084,7 @@ void handle_read_string(char ch, FileStream &fs_out) {
             append_to_random_or_delete(lst);
         } else if (g_QCompState.emit_type == ESCRIPTTOKEN_NAME) {
             uint32_t checksum = gen_checksum(g_QCompState.current_token, true);
+#ifdef ENABLE_ARGPACK
             if(g_QCompState.do_arg_pack) {
             #ifdef WITH_SYMBOL_SUPPORT
                 g_QCompState.do_arg_pack = false;
@@ -1077,6 +1097,7 @@ void handle_read_string(char ch, FileStream &fs_out) {
                 assert(false);
             #endif
             }
+#endif
             NameToken *nt = new NameToken(checksum);
             nt->Write(&fs_out);
 
@@ -1089,7 +1110,7 @@ void handle_read_string(char ch, FileStream &fs_out) {
         g_QCompState.current_token.clear();
     }
 }
-#if ENABLE_SQS_TOKENS
+#ifdef ENABLE_SQS_TOKENS
 void handle_read_sqs_token(char ch, FileStream &fs_out) {
     bool exit_state = false;
     switch(ch) {
@@ -1116,14 +1137,16 @@ void handle_character(char ch, FileStream &fsout) {
     } else if(g_QCompState.read_mode == EReadMode_ReadString) {
         handle_read_string(ch, fsout);
     } 
-#if ENABLE_SQS_TOKENS
+#ifdef ENABLE_SQS_TOKENS
     else if (g_QCompState.read_mode == EReadMode_ReadSQSToken) {
         handle_read_sqs_token(ch, fsout);
     }
 #endif
+#ifdef ENABLE_ARGPACK
      else if(g_QCompState.read_mode == EReadMode_ReadDollarToken) {
         handle_read_dollar_token(ch, fsout);
     }
+#endif
 }
 void handle_characters(std::string input, FileStream &fsout) {
     std::string::iterator it = input.begin();
@@ -1181,9 +1204,13 @@ int main(int argc, const char* argv[]) {
 
     g_QCompState.current_line_number = 1;
 
+#ifdef ENABLE_ARGPACK
     g_QCompState.do_arg_pack = false;
     g_QCompState.argpack_isreqparam = false;
+#endif
+#ifdef ENABLE_INLINEPACKSTRUCT
     g_QCompState.do_inlinestruct_token = false;
+#endif
     g_QCompState.got_negate = false;
 #ifdef ENABLE_WIDESTRING
     g_QCompState.do_widestring = false;
@@ -1221,10 +1248,10 @@ int main(int argc, const char* argv[]) {
     }
     fsout.WriteByte(ESCRIPTTOKEN_ENDOFFILE);
 
-#if ENABLE_NEWIFS
+#ifdef ENABLE_NEWIFS
     update_if_offsets(fsout);
 #endif
-#if ENABLE_SHORTJUMP
+#ifdef ENABLE_SHORTJUMP
     update_switch_offsets(fsout);
 #endif
     update_random_offsets(fsout);
@@ -1281,7 +1308,7 @@ void update_switch_offsets(FileStream &fs_out) {
 }
 #endif
 
-#if ENABLE_NEWIFS
+#ifdef ENABLE_NEWIFS
 void update_if_offsets(FileStream &fs_out) {
     EndIfToken* last_endif_token = NULL;
     FastElseToken* last_else_token = NULL;
@@ -1412,7 +1439,7 @@ void update_random_offsets(FileStream& fs_out) {
         }
     }
 }
-
+#ifdef ENABLE_ARGPACK
 bool handle_dollar_char_accum(char ch, std::string &accum) {
     switch(ch) {
 #ifdef ENABLE_WIDESTRING
@@ -1436,6 +1463,7 @@ bool handle_dollar_char_accum(char ch, std::string &accum) {
     }
     return true;
 }
+#endif
 
 void handle_dollar_char_str(std::string &accum) {
 #ifdef WITH_SYMBOL_SUPPORT
@@ -1478,6 +1506,7 @@ void handle_dollar_char_str(std::string &accum) {
 
     accum.clear();
 }
+#ifdef ENABLE_ARGPACK
 void handle_read_dollar_token(char ch, FileStream &fs_out) {
     if(!handle_dollar_char_accum(ch, g_QCompState.temp_token)) {
         g_QCompState.read_mode = EReadMode_ReadName;
@@ -1508,6 +1537,7 @@ void handle_read_dollar_token(char ch, FileStream &fs_out) {
         }
     }
 }
+#endif
 int calculate_random_token_num_items() {
     long pos = ftell(mp_input_fd);
 
