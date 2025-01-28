@@ -24,8 +24,11 @@ Unpaks PAK/PAB files
 ### Pregen
 Creates THUG-style PRE files
 
-## Unpre
+### Unpre
 Extract THUG-style pre files
+
+### Unwad
+Extracts PS2 HED/WAD files
 
 ## Misc
 Set the `QBTOOLS_DBGINFO_PATH` to point to the path to store the dbginfo checksum db. Import data using `dbginfo_pakimport` and `dbginfo_preimport` to import names from a DBG.PAK or QB.PRE file
