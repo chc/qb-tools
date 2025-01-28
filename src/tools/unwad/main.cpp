@@ -8,6 +8,8 @@
 #include <Windows.h>
 #endif
 
+
+FILE *list_out_fd = nullptr;
 const char **file_list;
 int num_files;
 
@@ -76,6 +78,10 @@ bool unwad_list_callback(WADItem *item) {
     printf("\toffset: %08x\n", item->offset);
     printf("\tsize: %d\n\n", item->size);
 
+    if(list_out_fd != nullptr) {
+        fprintf(list_out_fd, "%s\n", item->filename);
+    }
+
     return true;
 }
 
@@ -90,7 +96,7 @@ bool unwad_extract_file_callback(WADItem *item) {
 }
 void dump_usage(int argc, const char* argv[]) {
     fprintf(stderr, "usage: %s [hed_path] [wad_path] [mode] (options) \n", argv[0]);
-    fprintf(stderr,"modes:\n\tl\tlist all entries\n\te\textract specific files\n\tx\textract all entries\n");
+    fprintf(stderr,"modes:\n\tl\tlist all entries - optional filename option to write list to file\n\te\textract specific files\n\tx\textract all entries\n");
 }
 int main(int argc, const char* argv[]) {
     if (argc < 4) {
@@ -105,6 +111,11 @@ int main(int argc, const char* argv[]) {
     switch(argv[3][0]) {
         case 'l':
             callback = unwad_list_callback;
+            if(argc >= 5) { //save file list to path
+                list_out_fd = fopen(argv[OPTIONS_INDEX], "w");
+            }
+
+
         break;
         case 'e':
             callback = unwad_extract_file_callback;
@@ -126,5 +137,9 @@ int main(int argc, const char* argv[]) {
     }
 
     wad_iterate_files(argv[1], argv[2], callback);
+
+    if(list_out_fd != nullptr) {
+        fclose(list_out_fd);
+    }
     return 0;
 }

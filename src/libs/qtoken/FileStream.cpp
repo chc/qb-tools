@@ -194,3 +194,23 @@ void FileStream::SetReadEndian(uint8_t endian_mode) {
 void FileStream::SetWriteEndian(uint8_t endian_mode) {
     m_write_endian_mode = endian_mode;
 }
+
+FILE *thps_fopen(const char *path, const char *mode) {
+    char *file_path = strdup(path);
+
+    char *tmp = file_path;
+    if(tmp[0] == '\\' || tmp[0] == '/') tmp++;
+    
+    char *p = tmp;
+    while(*p) {
+        if(*p == '\\') {
+            *p = '/';
+        }
+        p++;
+    }
+
+    FILE *fd = fopen(tmp, mode);
+    free(file_path);
+
+    return fd;
+}

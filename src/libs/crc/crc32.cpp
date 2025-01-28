@@ -1,4 +1,5 @@
 #include "crc32.h"
+#include <ctype.h>
 static uint32_t crc32_tab[] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
 	0xe963a535, 0x9e6495a3,	0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -55,5 +56,21 @@ crc32(uint32_t crc, const void* buf, int size)
 	while (size--)
 		crc = crc32_tab[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
 
+	return crc;
+}
+
+uint32_t thps_gen_checksum(const char *path) {
+	const char* p = path;
+	uint32_t crc = -1;
+	while (*p) {
+		char ch = *p++;
+		if(ch == '/') {
+			ch = '\\';
+		} else {
+			ch = tolower(ch);
+		}
+
+		crc = crc32(crc, &ch, 1);;
+	}
 	return crc;
 }

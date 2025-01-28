@@ -86,7 +86,7 @@ void pak_append_end_file(PakContext *ctx) {
     ctx->last_pak_item = item;
 }
 void pak_append_file(PakContext *ctx, const char *path) {
-     FILE *fd = fopen(path, "rb");
+     FILE *fd = thps_fopen(path, "rb");
      if(!fd) {
         assert(false);
         return;
@@ -101,7 +101,6 @@ void pak_append_file(PakContext *ctx, const char *path) {
     size_t total_size = ftell(fd);
     item->size = total_size;
     
-    fseek(fd, 0, SEEK_SET);
     fclose(fd);
 
    

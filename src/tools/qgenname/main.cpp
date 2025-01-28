@@ -22,8 +22,6 @@ int main(int argc, const char* argv[]) {
     char *name = strdup(argv[1]);
     int len = strlen(name);
 
-    uint32_t checksum = crc32(-1, name, len);
-    printf("Checksum (case sensitive): 0x%08x - %d\n", checksum, checksum);
 
     const char* dbginfo_path = getenv("QBTOOLS_DBGINFO_PATH");
     if (dbginfo_path != NULL) {
@@ -33,17 +31,9 @@ int main(int argc, const char* argv[]) {
     else {
         printf("** no dbg data specified\n");
     }
-
-    if(dbginfo_append && dbginfo_path) {
-        append_checksum(name, checksum, dbginfo_path);
-    }
     
-    for(int i=0;i<len;i++) {
-        name[i] = tolower(name[i]);
-    }
-
-    checksum = crc32(-1, name, len);
-    printf("Checksum (Lower): 0x%08x - %d\n", checksum, checksum);
+    uint32_t checksum = thps_gen_checksum(name);
+    printf("Checksum: 0x%08x - %d\n", checksum, checksum);
 
     if(dbginfo_append && dbginfo_path) {
         append_checksum(name, checksum, dbginfo_path);

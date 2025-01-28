@@ -60,11 +60,11 @@ PreContext *pre_open(const char *pre_path) {
     return ctx; 
 }
 void pre_append_file(PreContext *ctx, const char *path) {
-     FILE *fd = fopen(path, "rb");
-     if(!fd) {
+    FILE *fd = thps_fopen(path, "rb");
+    if(!fd) {
         assert(false);
         return;
-     }
+    }
     
     PreItem *item = new PreItem;
     memset(item, 0, sizeof(PreItem));
@@ -75,9 +75,7 @@ void pre_append_file(PreContext *ctx, const char *path) {
     size_t total_size = ftell(fd);
     item->original_size = total_size;
     
-    fseek(fd, 0, SEEK_SET);
     fclose(fd);
-
 
     if(ctx->first_pre_item == nullptr) {
         ctx->first_pre_item = item;
@@ -87,24 +85,11 @@ void pre_append_file(PreContext *ctx, const char *path) {
     }
     ctx->last_pre_item = item;
 }
-uint32_t gen_checksum(const char* name) {
-	int len = strlen(name);
-    uint32_t checksum = -1;
-    while (len--) {
-        char c = *name;
-        c = tolower(c);
-        if(c == '/') { //path checksums must have backslash
-            c = '\\';
-        }
-        checksum = crc32(checksum, &c, 1);
-        name++;
-    }
-	return checksum;
-}
+
 void pre_close(PreContext *ctx) {
     PreItem *current_item = ctx->first_pre_item;
     while(current_item != nullptr) {
-        FILE *fd = fopen(current_item->file_path, "rb");
+        FILE *fd = thps_fopen(current_item->file_path, "rb");
         if(!fd) {
             current_item = current_item->next;
             continue;
@@ -136,7 +121,7 @@ void pre_close(PreContext *ctx) {
         
 
         #if PRE_VERSION == 3
-        uint32_t checksum = gen_checksum(current_item->file_path);
+        uint32_t checksum = thps_gen_checksum(current_item->file_path);
         ctx->pre_fd->WriteUInt32(checksum); //checksum            
         #endif
 

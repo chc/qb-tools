@@ -40,4 +40,7 @@ class FileStream : public IStream {
         uint8_t m_read_endian_mode;
         uint8_t m_write_endian_mode;
 };
+
+//this is used for stuff like pregen and wadgen where THPS expects backslash for file paths which breaks on unix
+FILE *thps_fopen(const char *path, const char *mode);
 #endif //_IQFILESTREAM_H

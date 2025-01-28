@@ -310,6 +310,11 @@ if(QBTOOLS_BUILD_WADTOOLS)
     target_link_libraries(wad qtoken lzss crc)
     INSTALL(TARGETS wad)
 
+    file (GLOB WADGEN_SRCS "src/tools/wadgen/*.cpp")
+    add_executable (wadgen ${WADGEN_SRCS})
+    target_link_libraries(wadgen PRIVATE wad)
+    INSTALL(TARGETS wadgen)
+
     file (GLOB UNWAD_SRCS "src/tools/unwad/*.cpp")
     add_executable (unwad ${UNWAD_SRCS})
     target_link_libraries(unwad PRIVATE wad)

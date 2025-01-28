@@ -19,18 +19,6 @@ void dump_token_list(std::vector<QScriptToken *> token_list, FILE *out);
 
 extern bool dump_endofline_numbers;
 
-uint32_t gen_checksum(const char *name) {
-    char *cpy = strdup(name);
-    for(int i=0;i<strlen(cpy);i++) {
-        cpy[i] = tolower(cpy[i]);
-    }
-
-    uint32_t checksum = crc32(-1, cpy, strlen(cpy));
-    free((void *)cpy);
-    return checksum;
-}
-
-
 void map_checksum_names() {
     std::map<uint32_t, ChecksumNameToken*> checksum_map;
     std::vector<QScriptToken*>::iterator it = token_list.begin();

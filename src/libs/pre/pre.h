@@ -5,6 +5,8 @@
 
 class FileStream;
 
+#define PRE_MAX_FILENAME 0xA0
+
 #if PRE_VERSION == 2
 #define PRE_VERSION 0xABCD0002
 #elif PRE_VERSION == 3
@@ -15,7 +17,7 @@ typedef struct _PreItem {
     uint32_t original_size;
     uint32_t compressed_size;
     uint32_t filename_checksum;
-    char filename[0xA0];
+    char filename[PRE_MAX_FILENAME];
 
     uint32_t data_offset;
 

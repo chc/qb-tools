@@ -9,7 +9,7 @@
 #include <pre.h>
 
 void import_file_list(PreContext *ctx, const char *file_list) {
-    char line[256];
+    char line[PRE_MAX_FILENAME];
     int line_index = 0;
 
     FILE *fd = fopen(file_list, "r");

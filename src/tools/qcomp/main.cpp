@@ -167,17 +167,10 @@ uint32_t gen_checksum(std::string str, bool with_conversion) {
         return v;
     }
 
-    char *name = strdup(str.c_str());
-    int len = strlen(name);
 
-    for(int i=0;i<len;i++) {
-        name[i] = tolower(name[i]);
-    }
-
-    uint32_t checksum = crc32(-1, name, len);
+    uint32_t checksum = thps_gen_checksum(str.c_str());
 
     g_QCompState.checksum_names[checksum] = str;
-    free(name);
     return checksum;
 }
 

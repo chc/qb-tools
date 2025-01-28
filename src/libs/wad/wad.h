@@ -15,6 +15,7 @@ typedef struct _WADItem {
     //internal info
     _WADItem *next;
     FILE *wad_fd;
+    const char *file_path;
 } WADItem;
 
 
