@@ -5,14 +5,18 @@
 #include <FileStream.h>
 #include <QStream.h>
 #include <QScriptToken.h>
-#include <FastIfToken.h>
-#include <FastElseToken.h>
-#include <ElseIfToken.h>
 #include <JumpToken.h>
-#include <ShortJumpToken.h>
+
 #include <RandomToken.h>
 #include <NameToken.h>
 #include <cassert>
+
+#if QTOKEN_SUPPORT_LEVEL > 1
+    #include <FastIfToken.h>
+    #include <FastElseToken.h>
+    #include <ElseIfToken.h>
+    #include <ShortJumpToken.h>
+#endif
 
 std::vector<QScriptToken *> g_tokens;
 
@@ -27,6 +31,8 @@ QScriptToken *find_by_offset(size_t offset) {
     }
     return nullptr;
 }
+
+#if QTOKEN_SUPPORT_LEVEL > 1
 
 void dump_fastif(FastIfToken *fif) {
     uint32_t file_offset = fif->GetFileOffset() + sizeof(uint8_t); //skip type
@@ -58,13 +64,6 @@ void dump_fastelseif(ElseIfToken *fif) {
 
     printf("ELSEIF END: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
 }
-void dump_jump(JumpToken *fif) {
-    uint32_t file_offset = fif->GetFileOffset() + sizeof(uint8_t); //skip type
-    uint32_t target_offset = fif->GetOffset() + file_offset + sizeof(uint32_t);
-    QScriptToken *p = find_by_offset(target_offset);
-    assert(p);
-    printf("JUMP: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
-}
 void dump_shortjump(ShortJumpToken *fif) {
     uint32_t file_offset = fif->GetFileOffset() + sizeof(uint8_t); //skip type
     uint32_t target_offset = fif->GetOffset() + file_offset;
@@ -72,6 +71,14 @@ void dump_shortjump(ShortJumpToken *fif) {
 
     assert(p);
     printf("SJUMP: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
+}
+#endif
+void dump_jump(JumpToken *fif) {
+    uint32_t file_offset = fif->GetFileOffset() + sizeof(uint8_t); //skip type
+    uint32_t target_offset = fif->GetOffset() + file_offset + sizeof(uint32_t);
+    QScriptToken *p = find_by_offset(target_offset);
+    assert(p);
+    printf("JUMP: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
 }
 void dump_random(RandomToken *fif) {
     printf("random: %08x\n", fif->GetFileOffset());
@@ -86,6 +93,7 @@ void dump_random(RandomToken *fif) {
 void dump_token_offsets(QScriptToken *token) {
     static bool got_script = false;
     switch(token->GetType()) {
+#if QTOKEN_SUPPORT_LEVEL > 1
         case ESCRIPTTOKEN_KEYWORD_FASTIF:
             dump_fastif(reinterpret_cast<FastIfToken*>(token));
             break;
@@ -95,6 +103,10 @@ void dump_token_offsets(QScriptToken *token) {
         case ESCRIPTTOKEN_KEYWORD_ELSEIF:
             dump_fastelseif(reinterpret_cast<ElseIfToken*>(token));
             break;
+        case ESCRIPTTOKEN_SHORTJUMP:
+            dump_shortjump(reinterpret_cast<ShortJumpToken*>(token));
+            break;
+#endif
         case ESCRIPTTOKEN_KEYWORD_SCRIPT:
             got_script = true;
         break;
@@ -106,9 +118,6 @@ void dump_token_offsets(QScriptToken *token) {
         break;
         case ESCRIPTTOKEN_JUMP:
             dump_jump(reinterpret_cast<JumpToken*>(token));
-            break;
-        case ESCRIPTTOKEN_SHORTJUMP:
-            dump_shortjump(reinterpret_cast<ShortJumpToken*>(token));
             break;
         case ESCRIPTTOKEN_KEYWORD_RANDOM:
         case ESCRIPTTOKEN_KEYWORD_RANDOM_PERMUTE:

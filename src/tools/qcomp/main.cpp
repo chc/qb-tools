@@ -54,7 +54,6 @@
 #include <LessThanEqualToken.h>
 #include <LessThanToken.h>
 #include <DotToken.h>
-#include <StringQSToken.h>
 #include <BreakToken.h>
 #include <ReturnToken.h>
 #include <AllArgsToken.h>
@@ -71,14 +70,22 @@
 #include <AndToken.h>
 #include <OrToken.h>
 
-#include <RandomIntegerToken.h>
-#include <RandomFloatToken.h>
 #include <RandomRangeToken.h>
 
 #include <RandomToken.h>
 #include <RandomNoRepeatToken.h>
 #include <RandomPermuteToken.h>
 #include <JumpToken.h>
+
+#if QTOKEN_SUPPORT_LEVEL > 5
+    #include <StringQSToken.h>
+    #define ENABLE_SQS_TOKENS
+#endif
+
+#if QTOKEN_SUPPORT_LEVEL > 6
+    #include <RandomIntegerToken.h>
+    #include <RandomFloatToken.h>
+#endif
 
 class RandomData {
 public:
@@ -99,7 +106,9 @@ enum EReadMode {
     EReadMode_ReadName,
     EReadMode_ReadPairOrVector,
     EReadMode_ReadString,
+#ifdef ENABLE_SQS_TOKENS
     EReadMode_ReadSQSToken,
+#endif
     EReadMode_ReadDollarToken,
 };
 
@@ -153,7 +162,9 @@ void update_switch_offsets(FileStream& fs_out);
 void update_random_offsets(FileStream& fs_out);
 void emit_token(int type, FileStream &fs_out);
 void emit_pair_or_vec(std::string token, FileStream &fs_out);
+#if ENABLE_SQS_TOKENS
 void emit_sqs_token(std::string token, FileStream &fs_out);
+#endif
 
 void handle_read_dollar_token(char ch, FileStream &fs_out);
 void handle_dollar_char_str(std::string &accum);
@@ -529,12 +540,14 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_AND:
             token = new AndToken;
         break;
+#if QTOKEN_SUPPORT_LEVEL > 6
         case ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER:
             token = new RandomIntegerToken;
         break;
         case ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT:
             token = new RandomFloatToken;
         break;
+#endif //QTOKEN_SUPPORT_LEVEL > 6
         case ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE:
             token = new RandomRangeToken;
         break;
@@ -700,12 +713,16 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         emit_token(ESCRIPTTOKEN_LESSTHANEQUAL, fs_out);
     } else if(token.compare("!=") == 0) {
         emit_token(ESCRIPTTOKEN_NOTEQUAL, fs_out);
-    } else if(token.compare(0, 3, "SQS") == 0 && g_QCompState.emit_type == ESCRIPTTOKEN_OPENPARENTH) {
+    } 
+#ifdef ENABLE_SQS_TOKENS
+    else if(token.compare(0, 3, "SQS") == 0 && g_QCompState.emit_type == ESCRIPTTOKEN_OPENPARENTH) {
         g_QCompState.read_mode = EReadMode_ReadSQSToken;
         assert(g_QCompState.emit_type == ESCRIPTTOKEN_OPENPARENTH);
         g_QCompState.emit_type = 0;
         g_QCompState.temp_token = token + "("; //left over ( is still processed later, will need to clear before changing states again too
-    } else if(token.compare("return") == 0) {
+    }
+#endif
+     else if(token.compare("return") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RETURN, fs_out);
     } else if(token.compare("break") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_BREAK, fs_out);
@@ -730,11 +747,14 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         assert(g_QCompState.emit_type == ESCRIPTTOKEN_OPENPARENTH);
         g_QCompState.emit_type = 0;
         g_QCompState.temp_token = token + "("; //left over ( is still processed later, will need to clear before changing states again too
-    } else if(token.compare("RandomInt") == 0) {
+    } 
+#if QTOKEN_SUPPORT_LEVEL > 6
+    else if(token.compare("RandomInt") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER, fs_out);
     } else if(token.compare("RandomFloat") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT, fs_out);
     }
+#endif //QTOKEN_SUPPORT_LEVEL > 6
     else if (token.compare("RandomRange") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE, fs_out);
     }
@@ -911,6 +931,7 @@ void handle_read_name(char ch, FileStream &fs_out) {
     }
     
 }
+#if ENABLE_SQS_TOKENS
 void emit_sqs_token(std::string token, FileStream &fs_out) {
     std::string t = token.substr(4);
     size_t end = t.find_first_of(')');
@@ -922,6 +943,7 @@ void emit_sqs_token(std::string token, FileStream &fs_out) {
     sqs.Write(&fs_out);
     
 }
+#endif
 void emit_pair_or_vec(std::string token, FileStream &fs_out) {
     QScriptToken* script_token;
     if(token.compare(0, 5, "Pair(") == 0) {
@@ -1025,6 +1047,7 @@ void handle_read_string(char ch, FileStream &fs_out) {
         g_QCompState.current_token.clear();
     }
 }
+#if ENABLE_SQS_TOKENS
 void handle_read_sqs_token(char ch, FileStream &fs_out) {
     bool exit_state = false;
     switch(ch) {
@@ -1042,6 +1065,7 @@ void handle_read_sqs_token(char ch, FileStream &fs_out) {
         g_QCompState.current_token.clear();
     }
 }
+#endif
 void handle_character(char ch, FileStream &fsout) {
     if(g_QCompState.read_mode == EReadMode_ReadName) {
         handle_read_name(ch, fsout);
@@ -1049,9 +1073,13 @@ void handle_character(char ch, FileStream &fsout) {
         handle_read_pair_or_vec(ch, fsout);
     } else if(g_QCompState.read_mode == EReadMode_ReadString) {
         handle_read_string(ch, fsout);
-    } else if (g_QCompState.read_mode == EReadMode_ReadSQSToken) {
+    } 
+#if ENABLE_SQS_TOKENS
+    else if (g_QCompState.read_mode == EReadMode_ReadSQSToken) {
         handle_read_sqs_token(ch, fsout);
-    } else if(g_QCompState.read_mode == EReadMode_ReadDollarToken) {
+    }
+#endif
+     else if(g_QCompState.read_mode == EReadMode_ReadDollarToken) {
         handle_read_dollar_token(ch, fsout);
     }
 }

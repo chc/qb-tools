@@ -21,7 +21,6 @@
 #include "ElseToken.h"
 #include "EndIfToken.h"
 #include "NotToken.h"
-#include "NotEqualToken.h"
 #include "AndToken.h"
 #include "OrToken.h"
 #include "LessThanToken.h"
@@ -54,18 +53,32 @@
 #include "DivideToken.h"
 #include "JumpToken.h"
 #include "DotToken.h"
-#include "FastIfToken.h"
-#include "FastElseToken.h"
-#include "ArgumentPackToken.h"
-#include "InlinePackStructToken.h"
-#include "WideStringToken.h"
-#include "ShortJumpToken.h"
-#include "ElseIfToken.h"
+
 #include "LessThanEqualToken.h"
 #include "GreaterThanEqualToken.h"
-#include "StringQSToken.h"
-#include "RandomIntegerToken.h"
-#include "RandomFloatToken.h"
+
+
+#if QTOKEN_SUPPORT_LEVEL > 1
+    #include "FastIfToken.h"
+    #include "FastElseToken.h"    
+    #include "ShortJumpToken.h"
+    #if QTOKEN_SUPPORT_LEVEL > 2
+        #include "ArgumentPackToken.h"
+        #include "InlinePackStructToken.h"
+        #if QTOKEN_SUPPORT_LEVEL > 3
+            #include "WideStringToken.h"
+            #if QTOKEN_SUPPORT_LEVEL > 4
+            #include "NotEqualToken.h"
+            #include "ElseIfToken.h"
+            #if QTOKEN_SUPPORT_LEVEL > 5
+            #include "StringQSToken.h"
+            #include "RandomIntegerToken.h"
+            #include "RandomFloatToken.h"
+            #endif
+            #endif // QTOKEN_SUPPORT_LEVEL > 4
+        #endif // QTOKEN_SUPPORT_LEVEL > 3
+    #endif //QTOKEN_SUPPORT_LEVEL > 2
+#endif // QTOKEN_SUPPORT_LEVEL > 1
 QScriptToken::QScriptToken() {
 
 }
@@ -74,6 +87,43 @@ QScriptToken::~QScriptToken() {
 }
 QScriptToken *QScriptToken::Resolve(uint8_t token) {
     switch(token) {
+#if QTOKEN_SUPPORT_LEVEL > 1
+        case ESCRIPTTOKEN_KEYWORD_FASTIF:
+            return new FastIfToken();
+        case ESCRIPTTOKEN_KEYWORD_FASTELSE:
+            return new FastElseToken();
+        case ESCRIPTTOKEN_SHORTJUMP:
+            return new ShortJumpToken();
+
+
+//newer than thug2
+#if QTOKEN_SUPPORT_LEVEL > 2
+        case ESCRIPTTOKEN_ARGUMENTPACK:
+            return new ArgumentPackToken();
+#ifdef WITH_SYMBOL_SUPPORT
+        case ESCRIPTTOKEN_INLINEPACKSTRUCT:
+            return new InlinePackStructToken();
+#endif
+#if QTOKEN_SUPPORT_LEVEL > 3
+        case ESCRIPTTOKEN_WIDESTRING:
+            return new WideStringToken();
+#if QTOKEN_SUPPORT_LEVEL > 4
+        case ESCRIPTTOKEN_NOTEQUAL:
+            return new NotEqualToken();
+        case ESCRIPTTOKEN_KEYWORD_ELSEIF:
+            return new ElseIfToken();
+#if QTOKEN_SUPPORT_LEVEL > 5
+        case ESCRIPTTOKEN_STRINGQS:
+            return new StringQSToken();
+        case ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT:
+            return new RandomFloatToken();
+        case ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER:
+            return new RandomIntegerToken();
+#endif // QTOKEN_SUPPORT_LEVEL > 5
+#endif // QTOKEN_SUPPORT_LEVEL > 4
+#endif // QTOKEN_SUPPORT_LEVEL > 3
+#endif // QTOKEN_SUPPORT_LEVEL > 2
+#endif // QTOKEN_SUPPORT_LEVEL > 1
         case ESCRIPTTOKEN_ENDOFLINE:
             return new EndOfLineToken();
         case ESCRIPTTOKEN_ENDOFLINENUMBER:
@@ -102,14 +152,10 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
             return new IfToken();
         case ESCRIPTTOKEN_KEYWORD_ELSE:
             return new ElseToken();
-        case ESCRIPTTOKEN_KEYWORD_ELSEIF:
-            return new ElseIfToken();
         case ESCRIPTTOKEN_KEYWORD_ENDIF:
             return new EndIfToken();
         case ESCRIPTTOKEN_KEYWORD_NOT:
-            return new NotToken();
-        case ESCRIPTTOKEN_NOTEQUAL:
-            return new NotEqualToken();            
+            return new NotToken();        
         case ESCRIPTTOKEN_AND:
             return new AndToken();
         case ESCRIPTTOKEN_OR:
@@ -182,37 +228,6 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
             return new JumpToken();
         case ESCRIPTTOKEN_DOT:
             return new DotToken();
-        case ESCRIPTTOKEN_KEYWORD_FASTIF:
-            return new FastIfToken();
-        case ESCRIPTTOKEN_KEYWORD_FASTELSE:
-            return new FastElseToken();
-        case ESCRIPTTOKEN_ARGUMENTPACK:
-            return new ArgumentPackToken();
-#ifdef WITH_SYMBOL_SUPPORT
-        case ESCRIPTTOKEN_INLINEPACKSTRUCT:
-            return new InlinePackStructToken();
-#endif
-        case ESCRIPTTOKEN_WIDESTRING:
-            return new WideStringToken();
-        case ESCRIPTTOKEN_SHORTJUMP:
-            return new ShortJumpToken();
-        case ESCRIPTTOKEN_STRINGQS:
-            return new StringQSToken();
-        case ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT:
-            return new RandomFloatToken();
-        case 81:
-        case 82:
-        case 83:
-        case 84:
-        case 85:
-        case 86:
-        case 87:
-        case 88:
-        case 89:
-        case 90:
-        printf("** unhandled type: %d\n", token);
-        case ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER:
-            return new RandomIntegerToken();
             
     }
     fprintf(stderr, "Failed to resolve token with id: %d - %02x\n", token, token);

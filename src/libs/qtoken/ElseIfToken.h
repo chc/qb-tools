@@ -1,3 +1,4 @@
+#if QTOKEN_SUPPORT_LEVEL > 3
 #ifndef _ELSEIFTOKEN_H
 #define _ELSEIFTOKEN_H
 #include "QScriptToken.h"
@@ -76,3 +77,4 @@ class ElseIfToken : public QScriptToken {
         uint16_t m_endif_offset;
 };
 #endif //_ELSEIFTOKEN_H
+#endif // QTOKEN_SUPPORT_LEVEL > 3

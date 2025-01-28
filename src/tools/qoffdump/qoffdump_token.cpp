@@ -3,7 +3,10 @@
 #include <FileStream.h>
 #include <QStream.h>
 #include <QScriptToken.h>
-#include <ArgumentPackToken.h>
+
+#if QTOKEN_SUPPORT_LEVEL > 2
+    #include <ArgumentPackToken.h>
+#endif
 
 int main(int argc, const char *argv[]) {
     if(argc  < 2) {
@@ -27,10 +30,12 @@ int main(int argc, const char *argv[]) {
         if(token == NULL || token->GetType() == ESCRIPTTOKEN_ENDOFFILE) {
             break;
         }
+#if QTOKEN_SUPPORT_LEVEL > 2
         if(token->GetType() == ESCRIPTTOKEN_ARGUMENTPACK) {
             ArgumentPackToken *apt = reinterpret_cast<ArgumentPackToken*>(token);
             apt->LoadExtendedParams(&fs);
         }
+#endif
         g_tokens.push_back(token);
     }
 

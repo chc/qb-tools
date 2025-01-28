@@ -8,7 +8,10 @@
 #include <ChecksumNameToken.h>
 #include <JumpToken.h>
 #include <InjectedToken.h>
-#include <ArgumentPackToken.h>
+
+#if QTOKEN_SUPPORT_LEVEL > 2
+    #include <ArgumentPackToken.h>
+#endif
 
 #include <vector>
 #include <map>
@@ -153,9 +156,11 @@ int main(int argc, const char *argv[]) {
             if(token->GetType() == ESCRIPTTOKEN_JUMP) {
                 update_jump_injection(fs, reinterpret_cast<JumpToken*>(token));
             }
+            #if QTOKEN_SUPPORT_LEVEL > 2
             if(token->GetType() == ESCRIPTTOKEN_ARGUMENTPACK) {
                 reinterpret_cast<ArgumentPackToken*>(token)->LoadExtendedParams(&fs);
             }
+            #endif
             token_list.push_back(token);
             perform_injections(fs);
         }

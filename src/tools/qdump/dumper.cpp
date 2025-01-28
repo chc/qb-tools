@@ -131,8 +131,10 @@ bool exclude_space_after_by_this_token(QScriptToken *token) {
         case ESCRIPTTOKEN_STARTSTRUCT:
         case ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE:
         case ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE2:
+#if QTOKEN_SUPPORT_LEVEL > 6
         case ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT:
         case ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER:
+#endif
             return true;
     }
     return false;
