@@ -28,13 +28,6 @@
 #include <ScriptToken.h>
 #include <EndScriptToken.h>
 
-
-#include <FastIfToken.h>
-#include <IfToken.h>
-#include <FastElseToken.h>
-#include <ElseToken.h>
-#include <EndIfToken.h>
-
 #include <OpenParenthesisToken.h>
 #include <CloseParenthesisToken.h>
 #include <NotToken.h>
@@ -61,7 +54,6 @@
 #include <CaseToken.h>
 #include <DefaultToken.h>
 #include <EndSwitchToken.h>
-#include <ShortJumpToken.h>
 
 #include <AndToken.h>
 #include <OrToken.h>
@@ -73,7 +65,22 @@
 #include <RandomPermuteToken.h>
 #include <JumpToken.h>
 
+#if QTOKEN_SUPPORT_LEVEL > 1
+    #define ENABLE_NEWIFS
+    #include <FastIfToken.h>
+    #include <FastElseToken.h>
+
+    #define ENABLE_SHORTJUMP
+    #include <ShortJumpToken.h>
+#else
+    #include <IfToken.h>
+    #include <ElseToken.h>
+#endif
+
+#include <EndIfToken.h>
+
 #if QTOKEN_SUPPORT_LEVEL > 2
+    #define ENABLE_INLINEPACKSTRUCT
     #include <InlinePackStructToken.h>
     #include <ArgumentPackToken.h>
 #endif
@@ -137,7 +144,6 @@ typedef struct {
     int last_emitted_type;
 
     bool use_eol_line_numbers;
-    bool use_new_ifs;
     int current_line_number;
 
     std::stack<QScriptToken*> if_token_list; //used for offset writing after
@@ -155,7 +161,9 @@ typedef struct {
 #endif
 
     int case_count;
+#ifdef ENABLE_SHORTJUMP
     std::stack<QScriptToken *> switch_token_list;
+#endif
 
     std::stack<RandomData*> randoms;
     RandomData* current_random;
@@ -427,9 +435,12 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_KEYWORD_ENDSWITCH:
             token = new EndSwitchToken;
         break;
+#if ENABLE_SHORTJUMP
         case ESCRIPTTOKEN_SHORTJUMP:
             assert(false);
         break;
+#endif
+#ifdef ENABLE_INLINEPACKSTRUCT
         case ESCRIPTTOKEN_INLINEPACKSTRUCT:
         #ifdef WITH_SYMBOL_SUPPORT
             token = new InlinePackStructToken;
@@ -437,6 +448,7 @@ void emit_token(int type, FileStream &fs_out) {
             assert(false);
         #endif
         break;
+#endif
         case ESCRIPTTOKEN_KEYWORD_IF:
             token = new IfToken;
         break;
@@ -450,6 +462,7 @@ void emit_token(int type, FileStream &fs_out) {
             g_QCompState.if_token_list.push(token);
             no_free = true;
         break;
+#ifdef ENABLE_NEWIFS
         case ESCRIPTTOKEN_KEYWORD_FASTIF:
             token = new FastIfToken;
             g_QCompState.if_token_list.push(token);
@@ -460,6 +473,7 @@ void emit_token(int type, FileStream &fs_out) {
             g_QCompState.if_token_list.push(token);
             no_free = true;
         break;
+#endif
 #ifdef ENABLE_ELSEIF
         case ESCRIPTTOKEN_KEYWORD_ELSEIF:
             token = new ElseIfToken;
@@ -622,8 +636,10 @@ void emit_token(int type, FileStream &fs_out) {
     #endif
    }
 
+#ifdef ENABLE_SHORTJUMP
    bool insert_shortjump_before = false;
    bool insert_shortjump_after = false;
+#endif
    bool is_switch = false;
 
    switch(type) {
@@ -639,18 +655,21 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_KEYWORD_DEFAULT:
             is_switch = true;
             g_QCompState.case_count++;
+            #ifdef ENABLE_SHORTJUMP
             if(g_QCompState.case_count > 2) {
                 insert_shortjump_before = true;    
             }
             insert_shortjump_after = true;
+            #endif
             
    }
-
+#ifdef ENABLE_SHORTJUMP
    if(insert_shortjump_before) {
         ShortJumpToken *sjt = new ShortJumpToken;
         sjt->Write(&fs_out);
         g_QCompState.switch_token_list.push(sjt);
    }
+#endif
 
    g_QCompState.last_emitted_type = token->GetType();
 
@@ -664,18 +683,18 @@ void emit_token(int type, FileStream &fs_out) {
 
        no_free = true;
    }
-
+#ifdef ENABLE_SHORTJUMP
     if(is_switch) {
         no_free = true;
         g_QCompState.switch_token_list.push(token);
     }
-
 
    if(insert_shortjump_after) {
         ShortJumpToken *sjt = new ShortJumpToken;
         sjt->Write(&fs_out);
         g_QCompState.switch_token_list.push(sjt);
    }
+#endif
 
    if (g_QCompState.next_is_random_start_token && token->GetType() != ESCRIPTTOKEN_JUMP) {
        g_QCompState.next_is_random_start_token = false;
@@ -698,20 +717,19 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
     } else if (token.compare("endscript") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_ENDSCRIPT, fs_out);        
     } else if(token.compare("if") == 0) {
-        if(g_QCompState.use_new_ifs) {
+        #if ENABLE_NEWIFS
             emit_token(ESCRIPTTOKEN_KEYWORD_FASTIF, fs_out);
-        } else {
+        #else
             emit_token(ESCRIPTTOKEN_KEYWORD_IF, fs_out);
-        }
-        
+        #endif        
     } else if(token.compare("elseif") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_ELSEIF, fs_out);
     } else if(token.compare("else") == 0) {
-        if(g_QCompState.use_new_ifs) {
+        #if ENABLE_NEWIFS
             emit_token(ESCRIPTTOKEN_KEYWORD_FASTELSE, fs_out);
-        } else {
+        #else
             emit_token(ESCRIPTTOKEN_KEYWORD_ELSE, fs_out);
-        }        
+        #endif    
     } else if(token.compare("endif") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_ENDIF, fs_out);       
     }else if(token.compare("switch") == 0) {
@@ -1131,20 +1149,11 @@ int main(int argc, const char* argv[]) {
     }
 
     g_QCompState.use_eol_line_numbers = false;
-    g_QCompState.use_new_ifs = true;
-
-    #ifdef QCOMP_USE_OLDIFS
-    g_QCompState.use_new_ifs = false;
-    #endif
 
     int arg_index = 1;
     for (int i = 1; i < argc - 1; i++) {
         if (strstr(argv[i], "-linenumber")) {
             g_QCompState.use_eol_line_numbers = true;
-            arg_index = i+1;
-        }
-        if (strstr(argv[i], "-oldifs")) {
-            g_QCompState.use_new_ifs = false;
             arg_index = i+1;
         }
     }
@@ -1212,12 +1221,17 @@ int main(int argc, const char* argv[]) {
     }
     fsout.WriteByte(ESCRIPTTOKEN_ENDOFFILE);
 
+#if ENABLE_NEWIFS
     update_if_offsets(fsout);
+#endif
+#if ENABLE_SHORTJUMP
     update_switch_offsets(fsout);
+#endif
     update_random_offsets(fsout);
     return 0;
 }
 
+#ifdef ENABLE_SHORTJUMP
 void update_switch_offsets(FileStream &fs_out) {
     EndSwitchToken *last_endswitch_token = NULL;
     QScriptToken *last_case_or_default_token = NULL;
@@ -1265,7 +1279,9 @@ void update_switch_offsets(FileStream &fs_out) {
     }
     assert(endswitch_stack.empty());
 }
+#endif
 
+#if ENABLE_NEWIFS
 void update_if_offsets(FileStream &fs_out) {
     EndIfToken* last_endif_token = NULL;
     FastElseToken* last_else_token = NULL;
@@ -1369,6 +1385,7 @@ void update_if_offsets(FileStream &fs_out) {
 #endif
     assert(endif_stack.empty());
 }
+#endif
 void update_random_offsets(FileStream& fs_out) {
     while (!g_QCompState.randoms.empty()) {
         RandomData* rnd = g_QCompState.randoms.top();
