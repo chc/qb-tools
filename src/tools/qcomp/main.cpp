@@ -1167,7 +1167,6 @@ int main(int argc, const char* argv[]) {
         fprintf(stderr, "usage: %s (options) [in] [out]\n", argv[0]);
         fprintf(stderr, "options: \n");
         fprintf(stderr, "\t-linenumber - Enable line numbers\n");
-        fprintf(stderr, "\t-oldifs - Enable old (THUG style) if statements\n");
         return -1;
     }
 
