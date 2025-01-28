@@ -25,24 +25,20 @@
 #include <EndStructToken.h>
 #include <StringToken.h>
 #include <LocalStringToken.h>
-#include <WideStringToken.h>
 #include <ScriptToken.h>
 #include <EndScriptToken.h>
-#include <InlinePackStructToken.h>
-#include <ArgumentPackToken.h>
 
 
 #include <FastIfToken.h>
 #include <IfToken.h>
 #include <FastElseToken.h>
 #include <ElseToken.h>
-#include <ElseIfToken.h>
 #include <EndIfToken.h>
 
 #include <OpenParenthesisToken.h>
 #include <CloseParenthesisToken.h>
 #include <NotToken.h>
-#include <NotEqualToken.h>
+
 #include <AddToken.h>
 #include <MinusToken.h>
 #include <MultiplyToken.h>
@@ -76,6 +72,24 @@
 #include <RandomNoRepeatToken.h>
 #include <RandomPermuteToken.h>
 #include <JumpToken.h>
+
+#if QTOKEN_SUPPORT_LEVEL > 2
+    #include <InlinePackStructToken.h>
+    #include <ArgumentPackToken.h>
+#endif
+
+#if QTOKEN_SUPPORT_LEVEL > 3
+    #define ENABLE_WIDESTRING
+    #include <WideStringToken.h>
+#endif
+
+#if QTOKEN_SUPPORT_LEVEL > 4
+    #define ENABLE_ELSEIF
+    #define ENABLE_NOTEQUAL
+
+    #include <ElseIfToken.h>
+    #include <NotEqualToken.h>
+#endif
 
 #if QTOKEN_SUPPORT_LEVEL > 5
     #include <StringQSToken.h>
@@ -131,11 +145,14 @@ typedef struct {
     bool got_negate;
 
     bool do_arg_pack;
-    #ifdef WITH_SYMBOL_SUPPORT
+#ifdef WITH_SYMBOL_SUPPORT
         ESymbolType argpack_type;
-    #endif
+#endif
     bool argpack_isreqparam;
+
+#ifdef ENABLE_WIDESTRING
     bool do_widestring;
+#endif
 
     int case_count;
     std::stack<QScriptToken *> switch_token_list;
@@ -443,11 +460,13 @@ void emit_token(int type, FileStream &fs_out) {
             g_QCompState.if_token_list.push(token);
             no_free = true;
         break;
+#ifdef ENABLE_ELSEIF
         case ESCRIPTTOKEN_KEYWORD_ELSEIF:
             token = new ElseIfToken;
             g_QCompState.if_token_list.push(token);
             no_free = true;
         break;
+#endif
         case ESCRIPTTOKEN_KEYWORD_RANDOM_PERMUTE:
             if (token == nullptr)
                 token = new RandomPermuteToken(calculate_random_token_num_items());
@@ -522,9 +541,11 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_KEYWORD_BREAK:
             token = new BreakToken;
         break;
+#ifdef ENABLE_NOTEQUAL
         case ESCRIPTTOKEN_NOTEQUAL:
             token = new NotEqualToken;
         break;
+#endif
         case ESCRIPTTOKEN_COLON:
             token = new ColonToken;
         break;
@@ -711,9 +732,12 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         emit_token(ESCRIPTTOKEN_GREATERTHANEQUAL, fs_out);
     } else if(token.compare("<=") == 0) {
         emit_token(ESCRIPTTOKEN_LESSTHANEQUAL, fs_out);
-    } else if(token.compare("!=") == 0) {
+    } 
+#ifdef ENABLE_NOTEQUAL
+    else if(token.compare("!=") == 0) {
         emit_token(ESCRIPTTOKEN_NOTEQUAL, fs_out);
     } 
+#endif
 #ifdef ENABLE_SQS_TOKENS
     else if(token.compare(0, 3, "SQS") == 0 && g_QCompState.emit_type == ESCRIPTTOKEN_OPENPARENTH) {
         g_QCompState.read_mode = EReadMode_ReadSQSToken;
@@ -1152,7 +1176,9 @@ int main(int argc, const char* argv[]) {
     g_QCompState.argpack_isreqparam = false;
     g_QCompState.do_inlinestruct_token = false;
     g_QCompState.got_negate = false;
+#ifdef ENABLE_WIDESTRING
     g_QCompState.do_widestring = false;
+#endif
     g_QCompState.next_is_random_start_token = false;
 
     g_QCompState.mark_end_of_random = 0;
@@ -1243,25 +1269,35 @@ void update_switch_offsets(FileStream &fs_out) {
 void update_if_offsets(FileStream &fs_out) {
     EndIfToken* last_endif_token = NULL;
     FastElseToken* last_else_token = NULL;
+#ifdef ENABLE_ELSEIF
     ElseIfToken* last_elseif_token = NULL;
+#endif
 
     std::stack<FastElseToken *> else_stack;
+#ifdef ENABLE_ELSEIF
     std::stack<ElseIfToken *> elseif_stack;
+#endif
     std::stack<EndIfToken *> endif_stack;
 
     while(!g_QCompState.if_token_list.empty()) {
         QScriptToken *token = g_QCompState.if_token_list.top();
 
         FastIfToken *if_token = NULL;
+
+#ifdef ENABLE_ELSEIF
         ElseIfToken *elseif_token = NULL;
+#endif
 
         switch(token->GetType()) {
             case ESCRIPTTOKEN_KEYWORD_FASTIF:
                  if_token = reinterpret_cast<FastIfToken*>(token);
                 //set last elseif, or else offset
+                #ifdef ENABLE_ELSEIF
                 if(last_elseif_token != NULL) {
                     if_token->RewriteOffset(&fs_out, last_elseif_token->GetFileOffset() - if_token->GetFileOffset() - sizeof(uint8_t));
-                } else if(last_else_token != NULL) {
+                } else
+                #endif //ENABLE_ELSEIF
+                 if(last_else_token != NULL) {
                     if_token->RewriteOffset(&fs_out, last_else_token->GetFileOffset() - if_token->GetFileOffset() + sizeof(uint16_t));
                 }  else if(last_endif_token != NULL) {
                     if_token->RewriteOffset(&fs_out, last_endif_token->GetFileOffset() - if_token->GetFileOffset());
@@ -1277,9 +1313,11 @@ void update_if_offsets(FileStream &fs_out) {
                 last_else_token = else_stack.top();
                 else_stack.pop();
 
+#ifdef ENABLE_ELSEIF
                 assert(!elseif_stack.empty());
                 last_elseif_token = elseif_stack.top();
                 elseif_stack.pop();
+#endif // ENABLE_ELSEIF
 
             break;
             case ESCRIPTTOKEN_KEYWORD_FASTELSE:
@@ -1289,6 +1327,7 @@ void update_if_offsets(FileStream &fs_out) {
                 //set last endif offset
                 last_else_token->RewriteOffset(&fs_out, last_endif_token->GetFileOffset() - last_else_token->GetFileOffset());
             break;
+#ifdef ENABLE_ELSEIF
             case ESCRIPTTOKEN_KEYWORD_ELSEIF:
                 elseif_token = reinterpret_cast<ElseIfToken*>(token);
 
@@ -1307,14 +1346,17 @@ void update_if_offsets(FileStream &fs_out) {
                 
                 last_elseif_token = elseif_token;
             break;
+#endif
             case ESCRIPTTOKEN_KEYWORD_ENDIF:
                 endif_stack.push(last_endif_token);
                 last_endif_token = reinterpret_cast<EndIfToken*>(token);
                 
                 else_stack.push(last_else_token);
-                elseif_stack.push(last_elseif_token);
                 last_else_token = NULL;
+#ifdef ENABLE_ELSEIF
+                elseif_stack.push(last_elseif_token);
                 last_elseif_token = NULL;
+#endif
             break;
         }
 
@@ -1322,7 +1364,9 @@ void update_if_offsets(FileStream &fs_out) {
     }
     
     assert(else_stack.empty());
+#ifdef ENABLE_ELSEIF
     assert(elseif_stack.empty());
+#endif
     assert(endif_stack.empty());
 }
 void update_random_offsets(FileStream& fs_out) {
@@ -1354,12 +1398,14 @@ void update_random_offsets(FileStream& fs_out) {
 
 bool handle_dollar_char_accum(char ch, std::string &accum) {
     switch(ch) {
+#ifdef ENABLE_WIDESTRING
         case '\'': //wide string token
             if(g_QCompState.do_widestring) {
                 return false;
             }
             g_QCompState.do_widestring = true;
             break;
+#endif
         case '$':
             return false;
         case '{':
@@ -1419,6 +1465,7 @@ void handle_read_dollar_token(char ch, FileStream &fs_out) {
     if(!handle_dollar_char_accum(ch, g_QCompState.temp_token)) {
         g_QCompState.read_mode = EReadMode_ReadName;
         
+        #ifdef ENABLE_WIDESTRING
         if(g_QCompState.do_widestring) {
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t, 0x10ffff,
                     std::codecvt_mode::little_endian>, char16_t> cnv;
@@ -1430,6 +1477,7 @@ void handle_read_dollar_token(char ch, FileStream &fs_out) {
             g_QCompState.do_widestring = false;
             return;
         }
+        #endif
         
         g_QCompState.do_arg_pack = true;
 

@@ -14,8 +14,11 @@
 #if QTOKEN_SUPPORT_LEVEL > 1
     #include <FastIfToken.h>
     #include <FastElseToken.h>
-    #include <ElseIfToken.h>
     #include <ShortJumpToken.h>
+#endif
+
+#if QTOKEN_SUPPORT_LEVEL > 4
+    #include <ElseIfToken.h>
 #endif
 
 std::vector<QScriptToken *> g_tokens;
@@ -50,6 +53,7 @@ void dump_fastelse(FastElseToken *fif) {
 
     printf("ELSE: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
 }
+#if QTOKEN_SUPPORT_LEVEL > 4
 void dump_fastelseif(ElseIfToken *fif) {
     uint32_t file_offset = fif->GetFileOffset() + sizeof(uint8_t); //skip type
     uint32_t target_offset = fif->GetNextOffset() + file_offset;
@@ -64,6 +68,7 @@ void dump_fastelseif(ElseIfToken *fif) {
 
     printf("ELSEIF END: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
 }
+#endif
 void dump_shortjump(ShortJumpToken *fif) {
     uint32_t file_offset = fif->GetFileOffset() + sizeof(uint8_t); //skip type
     uint32_t target_offset = fif->GetOffset() + file_offset;
@@ -100,11 +105,13 @@ void dump_token_offsets(QScriptToken *token) {
         case ESCRIPTTOKEN_KEYWORD_FASTELSE:
             dump_fastelse(reinterpret_cast<FastElseToken*>(token));
             break;
-        case ESCRIPTTOKEN_KEYWORD_ELSEIF:
-            dump_fastelseif(reinterpret_cast<ElseIfToken*>(token));
-            break;
         case ESCRIPTTOKEN_SHORTJUMP:
             dump_shortjump(reinterpret_cast<ShortJumpToken*>(token));
+            break;
+#endif
+#if QTOKEN_SUPPORT_LEVEL > 4
+        case ESCRIPTTOKEN_KEYWORD_ELSEIF:
+            dump_fastelseif(reinterpret_cast<ElseIfToken*>(token));
             break;
 #endif
         case ESCRIPTTOKEN_KEYWORD_SCRIPT:

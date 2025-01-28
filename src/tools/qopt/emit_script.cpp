@@ -18,13 +18,16 @@
 
 #include <FastIfToken.h>
 #include <FastElseToken.h>
-#include <ElseIfToken.h>
 #include <StructureSymbol.h>
 #include <InlinePackStructToken.h>
 #include <JumpToken.h>
 #include <ShortJumpToken.h>
 #include <RandomToken.h>
 #include <ArgumentPackToken.h>
+
+#if QTOKEN_SUPPORT_LEVEL > 4
+    #include <ElseIfToken.h>
+#endif
 
 #include <map>
 std::map<QScriptToken *, size_t> original_offsets;
@@ -74,7 +77,9 @@ void rewrite_offsets(IStream *stream, QScriptToken *token) {
 
         size_t updated_offset = updated_offsets[t] - fif->GetFileOffset() - sizeof(uint8_t);
         fif->RewriteOffset(stream, updated_offset);
-    } else if(token->GetType() == ESCRIPTTOKEN_KEYWORD_ELSEIF) {
+    } 
+#if QTOKEN_SUPPORT_LEVEL > 4
+    else if(token->GetType() == ESCRIPTTOKEN_KEYWORD_ELSEIF) {
         size_t original_offset = original_offsets[token];
         ElseIfToken* fif = reinterpret_cast<ElseIfToken*>(token);
 
@@ -93,7 +98,9 @@ void rewrite_offsets(IStream *stream, QScriptToken *token) {
 
         updated_offset = updated_offsets[t] - fif->GetFileOffset() - sizeof(uint8_t);  
         fif->SetEndIfOffset(stream, updated_offset);
-    } else if(token->GetType() == ESCRIPTTOKEN_SHORTJUMP) {
+    } 
+#endif
+    else if(token->GetType() == ESCRIPTTOKEN_SHORTJUMP) {
         size_t original_offset = original_offsets[token] + sizeof(uint8_t); //skip type
         ShortJumpToken* jt = reinterpret_cast<ShortJumpToken*>(token);
         size_t endif_offset = jt->GetOffset() + original_offset;

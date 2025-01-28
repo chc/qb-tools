@@ -27,7 +27,7 @@
 #include <PairToken.h>
 #include <VectorToken.h>
 #include <FastIfToken.h>
-#include <ElseIfToken.h>
+
 #include <FastElseToken.h>
 #include <RandomToken.h>
 #include <JumpToken.h>
@@ -37,6 +37,10 @@
 
 #include <ReferenceItemSymbol.h>
 #include <ArgumentPackToken.h>
+
+#if QTOKEN_SUPPORT_LEVEL > 4
+    #include <ElseIfToken.h>
+#endif
 
 #include <string>
 
@@ -141,7 +145,9 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             } else {
                 assert(false);
             }
-        } else if(token->GetType() == ESCRIPTTOKEN_KEYWORD_ELSEIF) {
+        } 
+        #if QTOKEN_SUPPORT_LEVEL > 4
+        else if(token->GetType() == ESCRIPTTOKEN_KEYWORD_ELSEIF) {
             ElseIfToken *t = reinterpret_cast<ElseIfToken*>(token);
             uint32_t offset = original_offsets[t] + t->GetNextOffset() + sizeof(uint8_t);
             QScriptToken *r = token_at_offset(offset, original_offsets);
@@ -160,7 +166,9 @@ void rewrite_offsets(std::map<QScriptToken *, uint32_t> &original_offsets, IStre
             } else {
                 assert(false);
             }
-        } else if(token->GetType() == ESCRIPTTOKEN_JUMP) {
+        } 
+        #endif //QTOKEN_SUPPORT_LEVEL > 4
+        else if(token->GetType() == ESCRIPTTOKEN_JUMP) {
             JumpToken *t = reinterpret_cast<JumpToken*>(token);
             uint32_t offset = original_offsets[t] + sizeof(uint32_t) + sizeof(uint8_t) + t->GetOffset();
             QScriptToken *r = token_at_offset(offset, original_offsets);
