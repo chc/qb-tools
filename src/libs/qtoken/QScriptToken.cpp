@@ -62,23 +62,24 @@
     #include "FastIfToken.h"
     #include "FastElseToken.h"    
     #include "ShortJumpToken.h"
-    #if QTOKEN_SUPPORT_LEVEL > 2
-        #include "ArgumentPackToken.h"
-        #include "InlinePackStructToken.h"
-        #if QTOKEN_SUPPORT_LEVEL > 3
-            #include "WideStringToken.h"
-            #if QTOKEN_SUPPORT_LEVEL > 4
-            #include "NotEqualToken.h"
-            #include "ElseIfToken.h"
-            #if QTOKEN_SUPPORT_LEVEL > 5
-            #include "StringQSToken.h"
-            #include "RandomIntegerToken.h"
-            #include "RandomFloatToken.h"
-            #endif
-            #endif // QTOKEN_SUPPORT_LEVEL > 4
-        #endif // QTOKEN_SUPPORT_LEVEL > 3
-    #endif //QTOKEN_SUPPORT_LEVEL > 2
-#endif // QTOKEN_SUPPORT_LEVEL > 1
+#endif
+#if QTOKEN_SUPPORT_LEVEL > 2
+    #include "ArgumentPackToken.h"
+    #include "InlinePackStructToken.h"
+#endif
+#if QTOKEN_SUPPORT_LEVEL > 3
+    #include "WideStringToken.h"
+#endif
+#if QTOKEN_SUPPORT_LEVEL > 4
+    #include "NotEqualToken.h"
+    #include "ElseIfToken.h"
+#endif
+#if QTOKEN_SUPPORT_LEVEL > 5
+    #include "StringQSToken.h"
+    #include "RandomIntegerToken.h"
+    #include "RandomFloatToken.h"
+#endif
+
 QScriptToken::QScriptToken() {
 
 }
