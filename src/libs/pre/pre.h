@@ -8,9 +8,9 @@ class FileStream;
 #define PRE_MAX_FILENAME 0xA0
 
 #if PRE_VERSION == 2
-#define PRE_VERSION 0xABCD0002
+#define PRE_MAGIC 0xABCD0002
 #elif PRE_VERSION == 3
-#define PRE_VERSION 0xABCD0003 //version 3 is used in THUG/THUG2
+#define PRE_MAGIC 0xABCD0003 //version 3 is used in THUG/THUG2
 #endif
 
 typedef struct _PreItem {

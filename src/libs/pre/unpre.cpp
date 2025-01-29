@@ -16,7 +16,7 @@ void unpre_iterate_files(const char *path, FileInfoCallback callback) {
 
     uint32_t total_size = pre_fd.ReadUInt32();
     uint32_t version = pre_fd.ReadUInt32();
-    assert(version == PRE_VERSION);
+    assert(version == PRE_MAGIC);
     uint32_t num_files = pre_fd.ReadUInt32();
 
     PreItem item;

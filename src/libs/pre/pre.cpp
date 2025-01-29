@@ -52,7 +52,7 @@ PreContext *pre_open(const char *pre_path) {
 
     uint32_t total_size = ctx->pre_fd->ReadUInt32();
     uint32_t version = ctx->pre_fd->ReadUInt32();
-    assert(version == PRE_VERSION);
+    assert(version == PRE_MAGIC);
     ctx->total_files = ctx->pre_fd->ReadUInt32();
 
     ctx->pre_fd->SetCursor(total_size);
@@ -158,6 +158,6 @@ void pre_close(PreContext *ctx) {
     ctx->pre_fd->SetCursor(0);
 
     ctx->pre_fd->WriteUInt32(total_size); //total size
-    ctx->pre_fd->WriteUInt32(PRE_VERSION);
+    ctx->pre_fd->WriteUInt32(PRE_MAGIC);
     ctx->pre_fd->WriteUInt32(ctx->total_files); //total files
 }
