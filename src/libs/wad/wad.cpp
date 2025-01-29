@@ -7,6 +7,8 @@ WADContext *wad_create(const char *hed_path, const char *wad_path) {
         return nullptr;
     }
     WADContext *ctx = new WADContext;
+    ctx->first_item = nullptr;
+    ctx->last_item = nullptr;
 
     //create HED
     ctx->hed_fd = new FileStream(hed_path, true);
