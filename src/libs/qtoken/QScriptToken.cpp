@@ -88,43 +88,6 @@ QScriptToken::~QScriptToken() {
 }
 QScriptToken *QScriptToken::Resolve(uint8_t token) {
     switch(token) {
-#if QTOKEN_SUPPORT_LEVEL > 1
-        case ESCRIPTTOKEN_KEYWORD_FASTIF:
-            return new FastIfToken();
-        case ESCRIPTTOKEN_KEYWORD_FASTELSE:
-            return new FastElseToken();
-        case ESCRIPTTOKEN_SHORTJUMP:
-            return new ShortJumpToken();
-
-
-//newer than thug2
-#if QTOKEN_SUPPORT_LEVEL > 2
-        case ESCRIPTTOKEN_ARGUMENTPACK:
-            return new ArgumentPackToken();
-#ifdef WITH_SYMBOL_SUPPORT
-        case ESCRIPTTOKEN_INLINEPACKSTRUCT:
-            return new InlinePackStructToken();
-#endif
-#if QTOKEN_SUPPORT_LEVEL > 3
-        case ESCRIPTTOKEN_WIDESTRING:
-            return new WideStringToken();
-#if QTOKEN_SUPPORT_LEVEL > 4
-        case ESCRIPTTOKEN_NOTEQUAL:
-            return new NotEqualToken();
-        case ESCRIPTTOKEN_KEYWORD_ELSEIF:
-            return new ElseIfToken();
-#if QTOKEN_SUPPORT_LEVEL > 5
-        case ESCRIPTTOKEN_STRINGQS:
-            return new StringQSToken();
-        case ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT:
-            return new RandomFloatToken();
-        case ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER:
-            return new RandomIntegerToken();
-#endif // QTOKEN_SUPPORT_LEVEL > 5
-#endif // QTOKEN_SUPPORT_LEVEL > 4
-#endif // QTOKEN_SUPPORT_LEVEL > 3
-#endif // QTOKEN_SUPPORT_LEVEL > 2
-#endif // QTOKEN_SUPPORT_LEVEL > 1
         case ESCRIPTTOKEN_ENDOFLINE:
             return new EndOfLineToken();
         case ESCRIPTTOKEN_ENDOFLINENUMBER:
@@ -229,7 +192,40 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
             return new JumpToken();
         case ESCRIPTTOKEN_DOT:
             return new DotToken();
-            
+#if QTOKEN_SUPPORT_LEVEL > 1
+        case ESCRIPTTOKEN_KEYWORD_FASTIF:
+            return new FastIfToken();
+        case ESCRIPTTOKEN_KEYWORD_FASTELSE:
+            return new FastElseToken();
+        case ESCRIPTTOKEN_SHORTJUMP:
+            return new ShortJumpToken();
+#endif
+#if QTOKEN_SUPPORT_LEVEL > 2
+        case ESCRIPTTOKEN_ARGUMENTPACK:
+            return new ArgumentPackToken();
+#ifdef WITH_SYMBOL_SUPPORT
+        case ESCRIPTTOKEN_INLINEPACKSTRUCT:
+            return new InlinePackStructToken();
+#endif
+#endif
+#if QTOKEN_SUPPORT_LEVEL > 3
+        case ESCRIPTTOKEN_WIDESTRING:
+            return new WideStringToken();
+#endif
+#if QTOKEN_SUPPORT_LEVEL > 4
+        case ESCRIPTTOKEN_NOTEQUAL:
+            return new NotEqualToken();
+        case ESCRIPTTOKEN_KEYWORD_ELSEIF:
+            return new ElseIfToken();
+#endif
+#if QTOKEN_SUPPORT_LEVEL > 5
+        case ESCRIPTTOKEN_STRINGQS:
+            return new StringQSToken();
+        case ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT:
+            return new RandomFloatToken();
+        case ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER:
+            return new RandomIntegerToken();
+#endif            
     }
     fprintf(stderr, "Failed to resolve token with id: %d - %02x\n", token, token);
     assert(false);
