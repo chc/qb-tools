@@ -26,7 +26,7 @@ PreContext *pre_create(const char *pre_path) {
     ctx->pre_fd->SetWriteEndian(ISTREAM_PRE_ENDIAN);
 
     ctx->pre_fd->WriteUInt32(sizeof(uint32_t) * 3); //total size
-    ctx->pre_fd->WriteUInt32(PRE_VERSION); //version PRE_VERSION
+    ctx->pre_fd->WriteUInt32(PRE_MAGIC); //version PRE_VERSION
     ctx->pre_fd->WriteUInt32(0); //total files
 
     ctx->total_files = 0;
