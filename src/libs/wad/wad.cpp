@@ -59,12 +59,6 @@ void wad_append_file(WADContext *ctx, const char *path) {
 }
 
 static size_t write_to_wad(WADContext *ctx, WADItem *item) {
-    size_t new_diff = (ctx->wad_fd->GetOffset() + 0x7FF) & ~0x7FF;
-    new_diff -= ctx->wad_fd->GetOffset();
-    while (new_diff--) {
-		ctx->wad_fd->WriteByte(0);
-    }
-
     size_t offset = ctx->wad_fd->GetOffset();
 
     FILE *fd = thps_fopen(item->file_path, "rb");
@@ -74,6 +68,13 @@ static size_t write_to_wad(WADContext *ctx, WADItem *item) {
     assert(len == 1);
 
     ctx->wad_fd->WriteBuffer(tmp, item->size);
+
+    size_t new_diff = (ctx->wad_fd->GetOffset() + 0x7FF) & ~0x7FF;
+    new_diff -= ctx->wad_fd->GetOffset();
+    while (new_diff--) {
+        ctx->wad_fd->WriteByte(0);
+    }
+
     
     delete[] tmp;
     fclose(fd);
@@ -105,6 +106,7 @@ void wad_close(WADContext *ctx) {
         fclose(fd);
         current_item = current_item->next;
     }
+
 
     //write terminator
     ctx->hed_fd->WriteUInt32(0xffffffff);
