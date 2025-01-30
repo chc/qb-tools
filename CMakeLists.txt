@@ -222,11 +222,11 @@ if(QBTOOLS_BUILD_PRETOOLS)
     target_link_libraries(unpre pre)
     INSTALL(TARGETS unpre)
 
-    file (GLOB DBGINFO_PREIMPORT_SRCS "src/tools/dbginfo_preimport/*.cpp")
+    file (GLOB DBGINFO_PREIMPORT_SRCS "src/tools/dbginfo_import/main_pre.cpp")
     source_group("Sources" FILES ${DBGINFO_PREIMPORT_SRCS})
-    add_executable (dbginfo_preimport ${DBGINFO_PREIMPORT_SRCS})
-    target_link_libraries(dbginfo_preimport pre qtoken dbginfo crc)
-    INSTALL(TARGETS dbginfo_preimport)
+    add_executable (dbginfo_import ${DBGINFO_PREIMPORT_SRCS})
+    target_link_libraries(dbginfo_import pre qtoken dbginfo crc)
+    INSTALL(TARGETS dbginfo_import)
 endif()
 
 
@@ -253,11 +253,11 @@ if(QBTOOLS_BUILD_PAKTOOLS)
     target_link_libraries(pakdir pak qtoken dbginfo crc)
     INSTALL(TARGETS pakdir)
 
-    file (GLOB DBGINFO_PAKIMPORT_SRCS "src/tools/dbginfo_pakimport/*.cpp")
+    file (GLOB DBGINFO_PAKIMPORT_SRCS "src/tools/dbginfo_import/main_pak.cpp")
     source_group("Sources" FILES ${DBGINFO_PAKIMPORT_SRCS})
-    add_executable (dbginfo_pakimport ${DBGINFO_PAKIMPORT_SRCS})
-    target_link_libraries(dbginfo_pakimport pak qtoken dbginfo crc)
-    INSTALL(TARGETS dbginfo_pakimport)
+    add_executable (dbginfo_import ${DBGINFO_PAKIMPORT_SRCS})
+    target_link_libraries(dbginfo_import pak qtoken dbginfo crc)
+    INSTALL(TARGETS dbginfo_import)
 endif()
 
 
