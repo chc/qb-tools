@@ -56,15 +56,15 @@ int main(int argc, const char *argv[]) {
         uint32_t next_size = read_fd.ReadUInt32();
         uint32_t decomp_size = read_fd.ReadUInt32();
         uint32_t total_decomp = read_fd.ReadUInt32(); //this is basically where to write it to in memory for the game
-        printf("Chunk at: %08x\nHeader Size: %d, compressed chunk size: %08x, next at: %08x\n", file_offset, header_size, chunk_size, file_offset+next_offset);
-        printf("Decompress size: %d, write mem address: %p, next total size: %d\n", decomp_size ,total_decomp, next_size);
+        fprintf(stderr, "Chunk at: %08x\nHeader Size: %d, compressed chunk size: %08x, next at: %08x\n", file_offset, header_size, chunk_size, file_offset+next_offset);
+        fprintf(stderr, "Decompress size: %d, write mem address: %p, next total size: %d\n", decomp_size ,total_decomp, next_size);
         read_fd.SetCursor(file_offset + header_size);
 
         assert(((file_offset + 0x7FF) & ~0x7FF) == file_offset);
 
         //uint8_t *comp_buff = new uint8_t[decomp_size];
         //uint8_t *decomp_buff = new uint8_t[decomp_size];
-        //printf("avail in:%d\n", strm.avail_in);
+        //fprintf(stderr, "avail in:%d\n", strm.avail_in);
 
         if(ferror(read_fd.GetHandle())) {
             fprintf(stderr, "chunk read error\n");
@@ -124,7 +124,7 @@ int main(int argc, const char *argv[]) {
             break;
         } while(decomp_size > 0);
 
-        printf("decomp written: %d / %08x\n\n", decomp_written, decomp_written);
+        fprintf(stderr, "decomp written: %d / %08x\n\n", decomp_written, decomp_written);
     
         inflateReset2(&strm, -MAX_WBITS);
 

@@ -43,7 +43,7 @@ void dump_fastif(FastIfToken *fif) {
     QScriptToken *p = find_by_offset(target_offset);
     assert(p);
 
-    printf("IF: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
+    fprintf(stderr, "IF: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
 }
 void dump_fastelse(FastElseToken *fif) {
     uint32_t file_offset = fif->GetFileOffset() + sizeof(uint8_t); //skip type
@@ -51,7 +51,7 @@ void dump_fastelse(FastElseToken *fif) {
     QScriptToken *p = find_by_offset(target_offset);
     assert(p);
 
-    printf("ELSE: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
+    fprintf(stderr, "ELSE: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
 }
 #if QTOKEN_SUPPORT_LEVEL > 4
 void dump_fastelseif(ElseIfToken *fif) {
@@ -60,13 +60,13 @@ void dump_fastelseif(ElseIfToken *fif) {
     QScriptToken *p = find_by_offset(target_offset);
     assert(p);
 
-    printf("ELSEIF NEXT: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
+    fprintf(stderr, "ELSEIF NEXT: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
 
     target_offset = fif->GetEndIfOffset() + file_offset;
     p = find_by_offset(target_offset);
     assert(p);
 
-    printf("ELSEIF END: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
+    fprintf(stderr, "ELSEIF END: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
 }
 #endif
 void dump_shortjump(ShortJumpToken *fif) {
@@ -75,7 +75,7 @@ void dump_shortjump(ShortJumpToken *fif) {
     QScriptToken *p = find_by_offset(target_offset);
 
     assert(p);
-    printf("SJUMP: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
+    fprintf(stderr, "SJUMP: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
 }
 #endif
 void dump_jump(JumpToken *fif) {
@@ -83,16 +83,16 @@ void dump_jump(JumpToken *fif) {
     uint32_t target_offset = fif->GetOffset() + file_offset + sizeof(uint32_t);
     QScriptToken *p = find_by_offset(target_offset);
     assert(p);
-    printf("JUMP: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
+    fprintf(stderr, "JUMP: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
 }
 void dump_random(RandomToken *fif) {
-    printf("random: %08x\n", fif->GetFileOffset());
+    fprintf(stderr, "random: %08x\n", fif->GetFileOffset());
     uint32_t num_items = fif->GetNumItems();
     for(int i=0;i<num_items;i++) {
         uint32_t target_offset = fif->GetFileOffset() + fif->CalculateTokenOffset(i) + fif->GetRandomOffset(i);
         QScriptToken *p = find_by_offset(target_offset);        
         assert(p);
-        printf("RAND: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
+        fprintf(stderr, "RAND: %08x - %d:%08x\n", fif->GetFileOffset(), p->GetType(), target_offset);
     }
 }
 void dump_token_offsets(QScriptToken *token) {
@@ -120,7 +120,7 @@ void dump_token_offsets(QScriptToken *token) {
         case ESCRIPTTOKEN_NAME:
             if(got_script) {
                 got_script = false;
-                printf("on script: %08x\n", reinterpret_cast<NameToken*>(token)->GetChecksum());
+                fprintf(stderr, "on script: %08x\n", reinterpret_cast<NameToken*>(token)->GetChecksum());
             }
         break;
         case ESCRIPTTOKEN_JUMP:

@@ -10,19 +10,19 @@ SymbolFileStream::~SymbolFileStream() {
 QSymbol *SymbolFileStream::NextSymbol() {
     mp_stream->ReadByte();
     uint8_t flags = mp_stream->ReadByte();
-    //printf("flags: %04x - %d\n", flags, mp_stream->GetOffset());
+    //fprintf(stderr, "flags: %04x - %d\n", flags, mp_stream->GetOffset());
 
     assert(flags & SYMBOL_ROOT_FLAG);
 
     uint8_t type = mp_stream->ReadByte();
-    //printf("type: %d\n", type);
+    //fprintf(stderr, "type: %d\n", type);
     mp_stream->ReadByte();
 
     uint32_t name_checksum = mp_stream->ReadUInt32();
-    //printf("name_checksum: %08x\n", name_checksum);
+    //fprintf(stderr, "name_checksum: %08x\n", name_checksum);
 
     uint32_t source_checksum = mp_stream->ReadUInt32();
-    //printf("source_checksum: %08x\n", source_checksum);
+    //fprintf(stderr, "source_checksum: %08x\n", source_checksum);
 
     QSymbol *token = QSymbol::Resolve(type);
     token->SetNameChecksum(name_checksum);

@@ -60,11 +60,11 @@ int main(int argc, const char *argv[]) {
     
     const char* dbgcache_path = getenv("QBTOOLS_DBGINFO_PATH");
     if (dbgcache_path != NULL) {
-        printf("** loading dbginfo: %s\n", dbgcache_path);
+        fprintf(stderr, "** loading dbginfo: %s\n", dbgcache_path);
         dbginfo_load_cache(dbgcache_path);
     }
     else {
-        printf("** no dbg data specified\n");
+        fprintf(stderr, "** no dbg data specified\n");
     }
     
 

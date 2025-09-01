@@ -16,7 +16,7 @@
 void handle_script(QScriptSymbol *qscript) {
     MemoryStream ms(qscript->GetDecompBuff(), qscript->GetDecompLen());
     ms.SetReadEndian(ISTREAM_LITTLE_ENDIAN);
-    printf("on script: %08x\n", qscript->GetNameChecksum());
+    fprintf(stderr, "on script: %08x\n", qscript->GetNameChecksum());
     #if 0
     
     char name[256];

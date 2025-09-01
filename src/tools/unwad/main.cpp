@@ -44,10 +44,10 @@ void create_dir(char *path) {
 }
 
 bool unwad_extract_entry_callback(WADItem *item) {
-    printf("File entry:\n");
-    printf("\tfile: %s\n", item->filename);
-    printf("\toffset: %08x\n", item->offset);
-    printf("\tsize: %d\n\n", item->size);
+    fprintf(stderr, "File entry:\n");
+    fprintf(stderr, "\tfile: %s\n", item->filename);
+    fprintf(stderr, "\toffset: %08x\n", item->offset);
+    fprintf(stderr, "\tsize: %d\n\n", item->size);
 
 
     uint8_t* buf = new uint8_t[item->size];
@@ -73,10 +73,10 @@ bool unwad_extract_entry_callback(WADItem *item) {
 
 
 bool unwad_list_callback(WADItem *item) {
-    printf("File entry:\n");
-    printf("\tfile: %s\n", item->filename);
-    printf("\toffset: %08x\n", item->offset);
-    printf("\tsize: %d\n\n", item->size);
+    fprintf(stderr, "File entry:\n");
+    fprintf(stderr, "\tfile: %s\n", item->filename);
+    fprintf(stderr, "\toffset: %08x\n", item->offset);
+    fprintf(stderr, "\tsize: %d\n\n", item->size);
 
     if(list_out_fd != nullptr) {
         fprintf(list_out_fd, "%s\n", item->filename);
@@ -131,7 +131,7 @@ int main(int argc, const char* argv[]) {
             callback = unwad_extract_entry_callback;
         break;
         default:
-            printf("Invalid option!\n");
+            fprintf(stderr, "Invalid option!\n");
             dump_usage(argc, argv);
             return -1;
     }

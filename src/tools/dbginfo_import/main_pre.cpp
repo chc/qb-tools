@@ -55,11 +55,11 @@ int main(int argc, const char* argv[]) {
         dbginfo_load_cache(dbginfo_path);
     }
     else {
-        printf("** no dbg data specified\n");
+        fprintf(stderr, "** no dbg data specified\n");
         return -1;
     }
 
-    printf("importing dbginfo pre at: %s\n", argv[1]);
+    fprintf(stderr, "importing dbginfo pre at: %s\n", argv[1]);
 
     unpre_iterate_files(argv[1], unpre_file_info_callback);
     return 0;
