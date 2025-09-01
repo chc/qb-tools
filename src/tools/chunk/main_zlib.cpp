@@ -64,7 +64,7 @@ int main(int argc, const char* argv[]) {
     strm.avail_in = 0;
     strm.next_in = Z_NULL;
 
-    int ret = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, MAX_MEM_LEVEL, Z_HUFFMAN_ONLY);
+    int ret = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
     if (ret != Z_OK) {
         fprintf(stderr, "Failed to init zlib: %d\n", ret);
         return ret;
