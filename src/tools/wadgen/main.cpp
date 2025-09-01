@@ -22,7 +22,7 @@ void import_file_list(WADContext *ctx, const char *file_list) {
             case '\n':
                 line[line_index] = 0;
                 line_index = 0;
-                printf("Adding file to wad: %s\n", line);
+                fprintf(stderr, "Adding file to wad: %s\n", line);
                 wad_append_file(ctx, line);
             break;
             default:
@@ -39,7 +39,7 @@ void import_file_list(WADContext *ctx, const char *file_list) {
     if(line_index > 0) {
         line[line_index] = 0;
         line_index = 0;
-        printf("Adding file to wad: %s\n", line);
+        fprintf(stderr, "Adding file to wad: %s\n", line);
         wad_append_file(ctx, line);
     }
     fclose(fd);

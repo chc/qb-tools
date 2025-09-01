@@ -19,6 +19,13 @@
 FileStream::FileStream(const char *path, bool create_new) {
     m_read_endian_mode = ISTREAM_LITTLE_ENDIAN;
     m_write_endian_mode = ISTREAM_LITTLE_ENDIAN;
+    if(strcmp(path,"in") == 0) {
+        mp_fd = stdin;
+        return;
+    } else if(strcmp(path,"out") == 0) {
+        mp_fd = stdout;
+        return;
+    }
     if(create_new) {
         mp_fd = fopen(path,"wb"); 
     } else {

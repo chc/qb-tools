@@ -23,10 +23,10 @@ const char* get_checksum(uint32_t key) {
 
 #define PRINT_FIELD(name, var) c = get_checksum(var); \
 if(c) { \
-    printf("%s: %s / %d\n", name, c, var); \
+    fprintf(stderr, "%s: %s / %d\n", name, c, var); \
 } \
 else {\
-    printf("%s: %d\n",name,var); \
+    fprintf(stderr, "%s: %d\n",name,var); \
 } 
 
 
@@ -34,8 +34,8 @@ void print_pak_item(PakItem *item) {
 
 
     const char* c = NULL;
-    printf("**** BEGIN ITEM ****\n");
-    printf("File offset: %08x\n", item->file_offset);
+    fprintf(stderr, "**** BEGIN ITEM ****\n");
+    fprintf(stderr, "File offset: %08x\n", item->file_offset);
     PRINT_FIELD("Type", item->type);
     PRINT_FIELD("Fullname", item->fullname);
     PRINT_FIELD("Pak Name", item->pakname);
@@ -43,14 +43,14 @@ void print_pak_item(PakItem *item) {
     PRINT_FIELD("fileNameKey", item->fileNameKey);
     PRINT_FIELD("flags", item->flags);
     if (item->flags & PAK_FLAGS_HAS_FILENAME) {
-        printf("filename: %s\n", item->filename);
+        fprintf(stderr, "filename: %s\n", item->filename);
     }
-    printf("Offset: %08x - %d\n", item->offset, item->offset);
-    printf("Expected End Offset: %08x - %d\n", item->size + item->offset, item->size + item->offset);
-    printf("Size: %08x - %d\n", item->size, item->size);
+    fprintf(stderr, "Offset: %08x - %d\n", item->offset, item->offset);
+    fprintf(stderr, "Expected End Offset: %08x - %d\n", item->size + item->offset, item->size + item->offset);
+    fprintf(stderr, "Size: %08x - %d\n", item->size, item->size);
     
 
-    printf("\n");
+    fprintf(stderr, "\n");
 }
 
 void create_dir(char *path) {
@@ -147,11 +147,11 @@ int main(int argc, const char* argv[]) {
 
     const char* dbgcache_path = getenv("QBTOOLS_DBGINFO_PATH");
     if (dbgcache_path != NULL) {
-        printf("** loading dbginfo: %s\n", dbgcache_path);
+        fprintf(stderr, "** loading dbginfo: %s\n", dbgcache_path);
         dbginfo_load_cache(dbgcache_path);
     }
     else {
-        printf("** no dbg data specified\n");
+        fprintf(stderr, "** no dbg data specified\n");
     }
 
     unpak_iterate_files(argv[1], argv[2], unpak_file_info_callback);

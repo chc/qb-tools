@@ -30,7 +30,7 @@ void import_file_list(PreContext *ctx, const char *file_list) {
             case '\n':
                 line[line_index] = 0;
                 line_index = 0;
-                printf("Adding file to pre: %s\n", line);
+                fprintf(stderr, "Adding file to pre: %s\n", line);
                 pre_append_file(ctx, line);
             break;
             default:
@@ -47,7 +47,7 @@ void import_file_list(PreContext *ctx, const char *file_list) {
     if(line_index > 0) {
         line[line_index] = 0;
         line_index = 0;
-        printf("Adding file to pre: %s\n", line);
+        fprintf(stderr, "Adding file to pre: %s\n", line);
         pre_append_file(ctx, line);
     }
     fclose(fd);
@@ -90,7 +90,7 @@ int main(int argc, const char* argv[]) {
         }
         import_file_list(ctx, argv[3]);
     } else if(argc > 3) {
-        printf("Adding file to pre: %s\n",  argv[3]);
+        fprintf(stderr, "Adding file to pre: %s\n",  argv[3]);
         pre_append_file(ctx, argv[3]);
     }
     

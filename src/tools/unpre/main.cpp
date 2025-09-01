@@ -43,7 +43,7 @@ void create_dir(char *path) {
 void print_pre_item(PreItem* item) {
 
     const char* c = NULL;
-    printf("extracting: %s\n", item->filename);
+    fprintf(stderr, "extracting: %s\n", item->filename);
 
     size_t alloc_size = item->original_size * 2;
     if (alloc_size < 128) {
@@ -78,7 +78,7 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
 
-    printf("Extracting pre at: %s\n", argv[1]);
+    fprintf(stderr, "Extracting pre at: %s\n", argv[1]);
 
     unpre_iterate_files(argv[1], unpre_file_info_callback);
     return 0;

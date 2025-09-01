@@ -37,13 +37,13 @@ void handle_read_token_value(QScriptToken *token) {
         case ESCRIPTTOKEN_STARTARRAY:
             g_QOpt.currentState = QOptState_ReadArrayTokens;
             g_QOpt.depth_index = 1;
-            //printf("root start array\n");
+            //fprintf(stderr, "root start array\n");
             break;
         case ESCRIPTTOKEN_STARTSTRUCT:
             g_QOpt.currentState = QOptState_ReadStructTokens;
             g_QOpt.depth_index = 1;
             g_QOpt.script_tokens.push_back(token);
-            //printf("root start struct\n");
+            //fprintf(stderr, "root start struct\n");
             break;
         case ESCRIPTTOKEN_ENDOFLINE:
         case ESCRIPTTOKEN_ENDOFLINENUMBER:
@@ -120,7 +120,7 @@ void handle_read_root_array(QScriptToken *token) {
     }
 
     if(g_QOpt.depth_index == 0) {
-        //printf("Got end of array, %08x\n", g_QOpt.root_name_checksum);
+        //fprintf(stderr, "Got end of array, %08x\n", g_QOpt.root_name_checksum);
         emit_array();
         g_QOpt.script_tokens.clear();
         g_QOpt.currentState = QOptState_ReadNextGlobalToken;
@@ -135,7 +135,7 @@ void handle_read_root_struct(QScriptToken *token) {
     g_QOpt.script_tokens.push_back(token);
 
     if(g_QOpt.depth_index == 0) {
-        //printf("Got end of struct, %08x\n", g_QOpt.root_name_checksum);
+        //fprintf(stderr, "Got end of struct, %08x\n", g_QOpt.root_name_checksum);
         emit_struct();
         g_QOpt.currentState = QOptState_ReadNextGlobalToken;
     }

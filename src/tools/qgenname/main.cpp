@@ -25,15 +25,15 @@ int main(int argc, const char* argv[]) {
 
     const char* dbginfo_path = getenv("QBTOOLS_DBGINFO_PATH");
     if (dbginfo_path != NULL) {
-        printf("** loadin dbginfo: %s\n", dbginfo_path);
+        fprintf(stderr, "** loadin dbginfo: %s\n", dbginfo_path);
         dbginfo_load_cache(dbginfo_path);
     }
     else {
-        printf("** no dbg data specified\n");
+        fprintf(stderr, "** no dbg data specified\n");
     }
     
     uint32_t checksum = thps_gen_checksum(name);
-    printf("Checksum: 0x%08x - %d\n", checksum, checksum);
+    fprintf(stderr, "Checksum: 0x%08x - %d\n", checksum, checksum);
 
     if(dbginfo_append && dbginfo_path) {
         append_checksum(name, checksum, dbginfo_path);

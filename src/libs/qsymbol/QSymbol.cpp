@@ -52,7 +52,7 @@ QSymbol* QSymbol::Resolve(uint8_t token) {
             return new StructureSymbol();
     }
 
-    printf("Failed to resolve symbol type: %d\n", token);
+    fprintf(stderr, "Failed to resolve symbol type: %d\n", token);
     assert(false);
     return nullptr;
 }

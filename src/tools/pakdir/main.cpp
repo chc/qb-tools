@@ -22,7 +22,7 @@ void handle_directory(PakContext *ctx, const char *dir_name, int initial_len) {
     dp = opendir(dir_name);
 
     if(!dp) {
-        printf("failed to open dir: %s\n", dir_name);
+        fprintf(stderr, "failed to open dir: %s\n", dir_name);
         return;
     }
 
@@ -38,7 +38,7 @@ void handle_directory(PakContext *ctx, const char *dir_name, int initial_len) {
             }                
         } else if (entry->d_type & DT_REG){
             if(entry->d_name[0] != '.') {
-                printf("Adding file to pak: %s\n", temp_str + initial_len);
+                fprintf(stderr, "Adding file to pak: %s\n", temp_str + initial_len);
                 pak_append_file(ctx, temp_str + initial_len);  
             }           
         }

@@ -67,7 +67,7 @@ int main(int argc, const char* argv[]) {
         dbginfo_load_cache(dbginfo_path);
     }
     else {
-        printf("** no dbg data specified\n");
+        fprintf(stderr, "** no dbg data specified\n");
         return -1;
     }
 
