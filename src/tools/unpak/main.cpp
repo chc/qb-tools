@@ -115,10 +115,10 @@ bool unpak_file_info_callback(PakItem *item) {
             char tmp[32];
             const char* ext = get_checksum(item->type);
             if (ext == NULL) {
-                snprintf(tmp, sizeof(tmp), "%08x.bin", item->pakname);
+                snprintf(tmp, sizeof(tmp), "%08x.bin", item->fullname);
             }
             else {
-                snprintf(tmp, sizeof(tmp), "%08x%s",item->pakname, ext);
+                snprintf(tmp, sizeof(tmp), "%08x%s",item->fullname, ext);
             }            
             name = strdup(tmp);
         }
