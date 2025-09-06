@@ -11,7 +11,7 @@
 
 class WideStringToken : public QScriptToken {
     public:
-        WideStringToken(std::u16string value) {
+        WideStringToken(std::u16string value) : m_value(value) {
 
         }
         WideStringToken() {
