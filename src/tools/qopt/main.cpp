@@ -177,7 +177,7 @@ int main(int argc, const char *argv[]) {
     SymbolFileStream sym_fs(&out_fs);
     uint32_t src_checksum_name = thps_gen_checksum(argv[2]);
     sym_fs.SetSourceChecksum(src_checksum_name);
-
+    printf("write src checksum: %08x - %d\n", src_checksum_name, src_checksum_name);
     sym_fs.WriteHeader();
 
     g_QOpt.write_stream = reinterpret_cast<ISStream *>(&sym_fs);
