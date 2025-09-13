@@ -73,6 +73,9 @@ class ArgumentPackToken : public QScriptToken {
                 case 8: //ESYMBOLTYPE_CFUNCTION
                     result += "cfunc$";
                 break;
+                case 9: //ESYMBOLTYPE_MEMBERFUNCTION
+                    result += "memberfunc$";
+                break;
                 case 10: // ESYMBOLTYPE_STRUCTURE
                     result += "struct$";
                 break;

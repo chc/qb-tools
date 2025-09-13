@@ -102,11 +102,16 @@
 #if QTOKEN_SUPPORT_LEVEL > 5
     #include <StringQSToken.h>
     #define ENABLE_SQS_TOKENS
+    #include <RandomIntegerToken.h>
+    #include <RandomFloatToken.h>
 #endif
 
 #if QTOKEN_SUPPORT_LEVEL > 6
-    #include <RandomIntegerToken.h>
-    #include <RandomFloatToken.h>
+    #include <TypeHint_Controller.h>
+    #include <TypeHint_ID.h>
+    #include <TypeHint_UserInput.h>
+    #include <TypeHint_Callback.h>
+    #include <TypeHint_Playlist.h>
 #endif
 
 class RandomData {
@@ -589,7 +594,7 @@ void emit_token(int type, FileStream &fs_out) {
         case ESCRIPTTOKEN_AND:
             token = new AndToken;
         break;
-#if QTOKEN_SUPPORT_LEVEL > 6
+#if QTOKEN_SUPPORT_LEVEL > 5
         case ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER:
             token = new RandomIntegerToken;
         break;
@@ -597,6 +602,23 @@ void emit_token(int type, FileStream &fs_out) {
             token = new RandomFloatToken;
         break;
 #endif //QTOKEN_SUPPORT_LEVEL > 6
+#if QTOKEN_SUPPORT_LEVEL > 6
+        case ESCRIPTTOKEN_TYPEHINT_CONTROLLER:
+            token = new TypeHint_Controller;
+        break;
+        case ESCRIPTTOKEN_TYPEHINT_ID:
+            token = new TypeHint_ID;
+        break;
+        case ESCRIPTTOKEN_TYPEHINT_USERINPUT:
+            token = new TypeHint_UserInput;
+        break;
+        case ESCRIPTTOKEN_TYPEHINT_CALLBACK:
+            token = new TypeHint_Callback;
+        break;
+        case ESCRIPTTOKEN_TYPEHINT_PLAYLIST:
+            token = new TypeHint_Playlist;
+        break;
+#endif
         case ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE:
             token = new RandomRangeToken;
         break;
@@ -807,13 +829,30 @@ bool handle_keyword_check(std::string token, FileStream &fs_out) {
         g_QCompState.emit_type = 0;
         g_QCompState.temp_token = token + "("; //left over ( is still processed later, will need to clear before changing states again too
     } 
-#if QTOKEN_SUPPORT_LEVEL > 6
+#if QTOKEN_SUPPORT_LEVEL > 5
     else if(token.compare("RandomInt") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER, fs_out);
     } else if(token.compare("RandomFloat") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RANDOMFLOAT, fs_out);
     }
 #endif //QTOKEN_SUPPORT_LEVEL > 6
+#if QTOKEN_SUPPORT_LEVEL > 6
+    else if(token.compare("TypeHint_Controller") == 0) {
+        emit_token(ESCRIPTTOKEN_TYPEHINT_CONTROLLER, fs_out);
+    }
+    else if(token.compare("TypeHint_ID") == 0) {
+        emit_token(ESCRIPTTOKEN_TYPEHINT_ID, fs_out);
+    }
+    else if(token.compare("TypeHint_UserInput") == 0) {
+        emit_token(ESCRIPTTOKEN_TYPEHINT_USERINPUT, fs_out);
+    }
+    else if(token.compare("TypeHint_Callback") == 0) {
+        emit_token(ESCRIPTTOKEN_TYPEHINT_CALLBACK, fs_out);
+    }
+    else if(token.compare("TypeHint_Playlist") == 0) {
+        emit_token(ESCRIPTTOKEN_TYPEHINT_PLAYLIST, fs_out);
+    }
+#endif
     else if (token.compare("RandomRange") == 0) {
         emit_token(ESCRIPTTOKEN_KEYWORD_RANDOM_RANGE, fs_out);
     }
@@ -1486,6 +1525,8 @@ void handle_dollar_char_str(std::string &accum) {
         g_QCompState.argpack_type = ESYMBOLTYPE_QSCRIPT;
     } else if(accum.compare("cfunc") == 0) {
         g_QCompState.argpack_type = ESYMBOLTYPE_CFUNCTION;
+    } else if(accum.compare("memberfunc") == 0) {
+        g_QCompState.argpack_type = ESYMBOLTYPE_MEMBERFUNCTION;
     } else if(accum.compare("struct") == 0) {
         g_QCompState.argpack_type = ESYMBOLTYPE_STRUCTURE;
     } else if(accum.compare("ptr_struct") == 0) {

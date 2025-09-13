@@ -80,6 +80,16 @@
     #include "RandomFloatToken.h"
 #endif
 
+#if QTOKEN_SUPPORT_LEVEL > 6
+    #include "TypeHint_Controller.h"
+    #include "TypeHint_ID.h"
+    #include "TypeHint_UserInput.h"
+    #include "TypeHint_Callback.h"    
+    #include "TypeHint_Playlist.h"    
+#endif
+
+#include "UnknownToken.h"
+
 QScriptToken::QScriptToken() {
 
 }
@@ -225,11 +235,28 @@ QScriptToken *QScriptToken::Resolve(uint8_t token) {
             return new RandomFloatToken();
         case ESCRIPTTOKEN_KEYWORD_RANDOMINTEGER:
             return new RandomIntegerToken();
-#endif            
+#if QTOKEN_SUPPORT_LEVEL > 6
+        case ESCRIPTTOKEN_TYPEHINT_CONTROLLER:
+            return new TypeHint_Controller();
+        case ESCRIPTTOKEN_TYPEHINT_ID:
+            return new TypeHint_ID();
+        case ESCRIPTTOKEN_TYPEHINT_USERINPUT:
+            return new TypeHint_UserInput();
+        case ESCRIPTTOKEN_TYPEHINT_CALLBACK:
+            return new TypeHint_Callback();
+        case ESCRIPTTOKEN_TYPEHINT_PLAYLIST:
+            return new TypeHint_Playlist();
+#endif
+#endif
     }
+    #if 1
     fprintf(stderr, "Failed to resolve token with id: %d - %02x\n", token, token);
     assert(false);
     return nullptr;
+    #else
+    return new UnknownToken(token);
+    #endif
+    
 }
 int	QScriptToken::GetPreTabOffset() {
     return 0;
