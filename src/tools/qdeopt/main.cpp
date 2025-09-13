@@ -12,6 +12,7 @@
 
 
 void WriteSymbolAsScriptToken(QSymbol *symbol, IStream *stream);
+void write_source_name(uint32_t checksum);
 
 std::map<uint32_t, const char *> m_checksum_names;
 
@@ -45,16 +46,17 @@ int main(int argc, const char *argv[]) {
     fs.ReadUInt32();
     fs.ReadUInt32();
 
-
     SymbolFileStream ss = SymbolFileStream(&fs);
 
     QSymbol *symbol;
+    uint32_t src_file_checksum = 0;
     int x = 0;
     while(fs.GetOffset() < total_length) {
         symbol = ss.NextSymbol();
         if(symbol == nullptr) {
             break;
         }
+        src_file_checksum = symbol->GetSourceChecksum();
         WriteSymbolAsScriptToken(symbol, &fsout);        
     }
     
@@ -80,5 +82,11 @@ int main(int argc, const char *argv[]) {
     }
     fsout.WriteByte(ESCRIPTTOKEN_ENDOFFILE);
 
+    write_source_name(src_file_checksum);
+
     return 0;
+}
+
+void write_source_name(uint32_t checksum) {
+    printf("src file: %08x - %d: %s\n", checksum, checksum, dbginfo_resolve(checksum));
 }

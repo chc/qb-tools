@@ -59,6 +59,7 @@ class QSymbol {
         void SetNameChecksum(uint32_t name) { m_name_checksum = name; }
         uint32_t GetNameChecksum() { return m_name_checksum; }
         void SetSourceChecksum(uint32_t name) { m_source_checksum = name; }
+        uint32_t GetSourceChecksum() { return m_source_checksum; }
         void SetIsStructItem(bool active) { m_struct_item = active; }
         bool GetIsStructItem() { return m_struct_item; }
 
