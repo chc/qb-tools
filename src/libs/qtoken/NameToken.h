@@ -42,12 +42,38 @@ class NameToken : public QScriptToken {
         void SetChecksumName(ChecksumNameToken *token) {
             m_checksum_name = token;
         }
+        static bool isAbnormal(const char *name) {
+            if(strcmp(name, "switch") == 0) {
+                return true;
+            } else if(strcmp(name, "if") == 0) {
+                return true;
+            } else if(strcmp(name, "begin") == 0) {
+                return true;
+            } else if(strcmp(name, "case") == 0) {
+                return true;
+            } else if(strcmp(name, "default") == 0) {
+                return true;
+            } else if(strcmp(name, "repeat") == 0) {
+                return true;
+            } else if(strcmp(name, "Pair") == 0) {
+                return true;
+            } else if(strcmp(name, "Vec") == 0) {
+                return true;
+            } else if(strcmp(name, "Random") == 0) {
+                return true;
+            } else if(strcmp(name, "switch") == 0) {
+                return true;
+            } else if(strcmp(name, "endswitch") == 0) {
+                return true;
+            }
+            return false;
+        }
         std::string ToString() {
             std::ostringstream ss;
             
             const char *name = GetName();
             if(name != nullptr) {
-                bool abnormal = false;
+                bool abnormal = isAbnormal(name);
                 int i = 0;
                 while (name[i] != '\0') {
                     //for (int i = 0; i < length; i++) {
