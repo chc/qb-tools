@@ -181,10 +181,16 @@ void emit_token(std::string &current_token, FileStream &fs_out) {
 void emit_token(int type, FileStream &fs_out) {
     if (RandomToken::is_random_token((EScriptToken)g_QCompState.last_emitted_type)) {
         if (type == ESCRIPTTOKEN_OPENPARENTH) { //do not emit open parenthesis token if last token was random token
+            g_QCompState.last_emitted_type = 0; //clear to support unrelated ( within random
             return;
         }
+    } else if(type == ESCRIPTTOKEN_OPENPARENTH && g_QCompState.random_depth > 0) {
+        g_QCompState.random_parenthesis_depth++;
     }
-    if (type == ESCRIPTTOKEN_CLOSEPARENTH && g_QCompState.random_depth > 0) {
+    if(type == ESCRIPTTOKEN_CLOSEPARENTH && g_QCompState.random_parenthesis_depth > 0)  {
+        g_QCompState.random_parenthesis_depth--;
+        assert(g_QCompState.random_parenthesis_depth >= 0);
+    } else if (type == ESCRIPTTOKEN_CLOSEPARENTH && g_QCompState.random_depth > 0) {
         g_QCompState.random_depth--;
         g_QCompState.mark_end_of_random++;
         return;

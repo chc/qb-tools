@@ -50,7 +50,7 @@
                 stream->WriteByte(ESCRIPTTOKEN_INLINEPACKSTRUCT);
                 uint32_t len = 0;
 
-                const int STRUCT_BUFF_SIZE = 1024;
+                const int STRUCT_BUFF_SIZE = 1024*4;
                 uint8_t struct_buff[STRUCT_BUFF_SIZE];
 
                 if(m_inner_struct == NULL) {

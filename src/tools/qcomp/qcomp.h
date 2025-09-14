@@ -195,6 +195,8 @@ typedef struct {
     int mark_end_of_random;
     bool random_read_weight;
     int random_next_weight;
+
+    int random_parenthesis_depth;
 } QCompState;
 
 extern QCompState g_QCompState;

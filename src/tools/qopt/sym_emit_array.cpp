@@ -358,16 +358,19 @@ void emit_array() {
 
     bool in_ref_mode = false;
     std::vector<QSymbol *> array_tokens;
+    ArgumentPackToken *last_argpack = NULL;
     for(int i=0;i<g_QOpt.script_tokens.size();i++) {
         QScriptToken *t = g_QOpt.script_tokens.at(i);
 
         if(t->GetType() == ESCRIPTTOKEN_ARGUMENTPACK) {
             assert(in_ref_mode == false);
             in_ref_mode = true;
+            last_argpack = (ArgumentPackToken*)t;
             continue;
         }
 
-        QSymbol *converted_token = ConvertToken(t, in_ref_mode);
+        QSymbol *converted_token = ConvertToken(t, in_ref_mode, last_argpack);
+        last_argpack = NULL;
         assert(converted_token);
         array_tokens.push_back(converted_token);
         in_ref_mode = false;
