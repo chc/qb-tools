@@ -1,5 +1,6 @@
 #include "script.h"
 #include <assert.h>
+#include <stack>
 #include <NameToken.h>
 #include "engine.h"
 
