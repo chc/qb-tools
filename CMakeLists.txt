@@ -381,3 +381,14 @@ if(QBTOOLS_BUILD_WADTOOLS)
     target_link_libraries(unwad PRIVATE wad)
     INSTALL(TARGETS unwad)
 endif()
+
+
+file (GLOB QENGINE_SRCS "src/tools/qengine/*.cpp")
+source_group("Sources" FILES ${QENGINE_SRCS})
+add_executable (qengine ${QENGINE_SRCS})
+if(QBTOOLS_BUILD_SYMBOLTOOLS) #this is currently required...
+    target_link_libraries(qengine qtoken qsymbol crc)
+else()
+    target_link_libraries(qengine qtoken crc)
+endif()
+INSTALL(TARGETS qengine)
