@@ -173,6 +173,7 @@ QScriptToken * perform_add(EScriptToken output_type, std::stack<QScriptToken *> 
             return new IntegerToken(get_integer(rh)+get_integer(lh));
         break;
     }
+    return nullptr;
 }
 
 QScriptToken * perform_subtract(EScriptToken output_type, std::stack<QScriptToken *> &stack) {
@@ -184,6 +185,7 @@ QScriptToken * perform_subtract(EScriptToken output_type, std::stack<QScriptToke
             return new IntegerToken(get_integer(rh)-get_integer(lh));
         break;
     }
+    return nullptr;
 }
 QScriptToken * perform_multiply(EScriptToken output_type, std::stack<QScriptToken *> &stack) {
     QScriptToken *lh, *rh;
@@ -194,6 +196,7 @@ QScriptToken * perform_multiply(EScriptToken output_type, std::stack<QScriptToke
             return new IntegerToken(get_integer(rh)*get_integer(lh));
         break;
     }
+    return nullptr;
 }
 QScriptToken * perform_divide(EScriptToken output_type, std::stack<QScriptToken *> &stack) {
     QScriptToken *lh, *rh;
@@ -207,6 +210,7 @@ QScriptToken * perform_divide(EScriptToken output_type, std::stack<QScriptToken 
             return new IntegerToken(get_integer(rh)/get_integer(lh));
         break;
     }
+    return nullptr;
 }
 
 std::vector<QScriptToken *> convertToRPN(std::vector<QScriptToken *> token_list) {
